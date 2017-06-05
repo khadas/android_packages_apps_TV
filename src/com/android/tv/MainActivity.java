@@ -117,6 +117,7 @@ import com.android.tv.ui.sidepanel.CustomizeChannelListFragment;
 import com.android.tv.ui.sidepanel.DebugOptionFragment;
 import com.android.tv.ui.sidepanel.DisplayModeFragment;
 import com.android.tv.ui.sidepanel.MultiAudioFragment;
+import com.android.tv.ui.sidepanel.MultiOptionFragment;
 import com.android.tv.ui.sidepanel.SettingsFragment;
 import com.android.tv.ui.sidepanel.SideFragment;
 import com.android.tv.util.CaptionSettings;
@@ -333,6 +334,8 @@ public class MainActivity extends Activity implements AudioManager.OnAudioFocusC
 
     private final Handler mHandler = new MainActivityHandler(this);
 
+    public QuickKeyInfo mQuickKeyInfo;
+
     private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -481,6 +484,8 @@ public class MainActivity extends Activity implements AudioManager.OnAudioFocusC
         mChannelTuner = new ChannelTuner(mChannelDataManager, mTvInputManagerHelper);
         mChannelTuner.addListener(mChannelTunerListener);
         mChannelTuner.start();
+        mChannelTuner.setContext(this);
+        mQuickKeyInfo = new QuickKeyInfo(MainActivity.this, mTvInputManagerHelper, mChannelTuner);
         mPipInputManager = new PipInputManager(this, mTvInputManagerHelper, mChannelTuner);
         mPipInputManager.start();
         mMemoryManageables.add(mProgramDataManager);
@@ -2515,6 +2520,19 @@ public class MainActivity extends Activity implements AudioManager.OnAudioFocusC
                     mOverlayManager.showBanner();
                     return true;
                 }
+                case QuickKeyInfo.KEYCODE_TV_SHORTCUTKEY_VIEWMODE:
+                case QuickKeyInfo.KEYCODE_TV_SHORTCUTKEY_VOICEMODE:
+                case QuickKeyInfo.KEYCODE_TV_SHORTCUTKEY_DISPAYMODE:
+                case QuickKeyInfo.KEYCODE_TV_SLEEP:
+                    mQuickKeyInfo.QuickKeyAction(keyCode);
+                     return true;
+                case QuickKeyInfo.KEYCODE_FAV:
+                case QuickKeyInfo.KEYCODE_LIST:
+                    mOverlayManager.getSideFragmentManager().show(new MultiOptionFragment(keyCode));
+                    return true;
+                case KeyEvent.KEYCODE_LAST_CHANNEL:
+                     mQuickKeyInfo.tuneToRecentChannel();
+                     return true;
             }
         }
         if (SystemProperties.USE_DEBUG_KEYS.getValue()) {

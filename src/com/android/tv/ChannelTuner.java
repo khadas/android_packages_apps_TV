@@ -24,6 +24,8 @@ import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
 import android.util.ArraySet;
 import android.util.Log;
+import android.provider.Settings;
+import android.content.Context;
 
 import com.android.tv.common.SoftPreconditions;
 import com.android.tv.data.Channel;
@@ -62,6 +64,7 @@ public class ChannelTuner {
     private final TvInputManagerHelper mInputManager;
     @Nullable
     private TvInputInfo mCurrentChannelInputInfo;
+    private Context mContext;
 
     private final ChannelDataManager.Listener mChannelDataManagerListener =
             new ChannelDataManager.Listener() {
@@ -144,6 +147,10 @@ public class ChannelTuner {
         return Collections.unmodifiableList(mBrowsableChannels);
     }
 
+    public List<Channel> getBrowsableChannelList2() {
+        return mBrowsableChannels;
+    }
+
     /**
      * Returns the number of browsable channels.
      */
@@ -167,6 +174,32 @@ public class ChannelTuner {
      */
     public void setCurrentChannel(Channel currentChannel) {
         mCurrentChannel = currentChannel;
+    }
+
+    public void setContext(Context context) {
+        mContext = context;
+    }
+
+    private void setRecentChannelIndex(long id) {
+        if (mContext != null) {
+            long recentChannelIndex = Settings.System.getLong(mContext.getContentResolver(), "recentchannel", -1);
+            if (recentChannelIndex != id) {
+                Log.d(TAG, "save recentchannel:" + id);
+                Settings.System.putLong(mContext.getContentResolver(), "recentchannel", id);
+            }
+        }
+    }
+
+    public Map<Long, Channel> getChannelMap() {
+        return mChannelMap;
+    }
+
+    public Channel getChannelById(long id) {
+        Channel channelbyid = null;
+        if (mChannelMap != null) {
+            channelbyid = mChannelMap.get(id);
+        }
+        return channelbyid;
     }
 
     /**
@@ -354,6 +387,9 @@ public class ChannelTuner {
             return;
         }
         Channel previousChannel = mCurrentChannel;
+        if (previousChannel != null) {
+            setRecentChannelIndex(previousChannel.getId());
+        }
         mCurrentChannel = channel;
         if (mCurrentChannel != null) {
             mCurrentChannelInputInfo = mInputManager.getTvInputInfo(mCurrentChannel.getInputId());

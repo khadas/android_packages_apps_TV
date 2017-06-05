@@ -19,4 +19,9 @@
     <string name="action_text_done">Done</string>
   <!-- The episode title format displayed on the info banner. For example, "S1: Ep. 1 Winter is coming". -->
   <string name="episode_format">S<xliff:g id="season_number" example="1">%1$s</xliff:g>: Ep. <xliff:g id="episode_number" example="1">%2$s</xliff:g> <xliff:g id="episode_title" example="Winder is coming">%3$s</xliff:g></string>
+  <!-- fav & list-->
+    <string name="tv">TV</string>
+    <string name="radio">Radio</string>
+    <string name="favourite_list">Favourite_channels</string>
+    <string name="channel_list">Channel list</string>
 </resources>

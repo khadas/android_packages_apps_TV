@@ -191,4 +191,9 @@
     <string name="msg_read_tv_listing_permission_denied" msgid="8882813301235518909">"直播频道需要获取相应权限才能读取电视节目列表。"</string>
     <string name="setup_sources_text" msgid="4988039637873759839">"设置您的频道来源"</string>
     <string name="setup_sources_description" msgid="5695518946225445202">"直播频道结合了传统电视频道和网络直播频道（由应用提供）的观看体验。\n\n要开始使用，请先设置已安装的频道来源，或前往 Google Play 商店浏览查找更多提供直播频道的应用。"</string>
+    <!-- fav & list-->
+    <string name="tv">电视</string>
+    <string name="radio">广播</string>
+    <string name="favourite_list">喜爱列表</string>
+    <string name="channel_list">频道列表</string>
 </resources>

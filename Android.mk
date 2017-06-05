@@ -62,6 +62,8 @@ LOCAL_STATIC_JAVA_LIBRARIES += usbtuner-tvinput
 LOCAL_JNI_SHARED_LIBRARIES := libtunertvinput_jni
 LOCAL_AAPT_FLAGS += --extra-packages com.android.usbtuner
 
+LOCAL_JAVA_LIBRARIES := droidlogic droidlogic-tv
+
 include $(BUILD_PACKAGE)
 
 include $(call all-makefiles-under,$(LOCAL_PATH))
