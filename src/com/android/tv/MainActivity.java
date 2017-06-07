@@ -148,7 +148,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-
+import com.droidlogic.app.SystemControlManager;
 /**
  * The main activity for the Live TV app.
  */
@@ -329,6 +329,7 @@ public class MainActivity extends Activity implements AudioManager.OnAudioFocusC
     private RecurringRunner mSendConfigInfoRecurringRunner;
     private RecurringRunner mChannelStatusRecurringRunner;
 
+    private SystemControlManager mSystemControlManager;
     // A caller which started this activity. (e.g. TvSearch)
     private String mSource;
 
@@ -660,6 +661,7 @@ public class MainActivity extends Activity implements AudioManager.OnAudioFocusC
         mTvInputManagerHelper.getContentRatingsManager().update();
 
         initForTest();
+        mSystemControlManager = new SystemControlManager(this);
     }
 
     @Override
@@ -3262,5 +3264,14 @@ public class MainActivity extends Activity implements AudioManager.OnAudioFocusC
             }
             updateChannelBannerAndShowIfNeeded(UPDATE_CHANNEL_BANNER_REASON_LOCK_OR_UNLOCK);
         }
+    }
+
+    @Override
+    public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
+        Log.i(TAG, "onPictureInPictureModeChanged:"+isInPictureInPictureMode);
+        if (isInPictureInPictureMode)
+            mSystemControlManager.setProperty("tv.need.preview_window", "false");
+        else
+            mSystemControlManager.setProperty("tv.need.preview_window", "true");
     }
 }
