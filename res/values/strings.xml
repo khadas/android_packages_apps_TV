@@ -599,5 +599,14 @@
     <string name="dvr_epg_do_not_record" translatable="false">Do not record</string>
     <string name="dvr_epg_conflict_dialog_title" translatable="false">Recording this program will
         prevent the recording of the following programs:</string>
+    <!-- fav & list-->
+    <string name="tv">TV</string>
+    <string name="radio">Radio</string>
+    <string name="favourite_list">Favourite_channels</string>
+    <string name="channel_list">Channel list</string>
+    <!-- atv sound mode-->
+    <string name="audio_outmode_mono">Mono</string>
+    <string name="audio_outmode_stereo">Stereo</string>
+    <string name="audio_outmode_sap">SAP</string>
 
 </resources>

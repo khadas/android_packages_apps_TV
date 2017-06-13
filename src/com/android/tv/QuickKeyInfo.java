@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.ComponentName;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
+import android.media.tv.TvContract;
 import android.media.tv.TvContract.Channels;
 import android.provider.Settings;
 import android.app.Activity;
@@ -22,6 +23,7 @@ import com.droidlogic.app.DroidLogicKeyEvent;
 import com.droidlogic.app.tv.DroidLogicTvUtils;
 import com.droidlogic.app.tv.ChannelInfo;
 import com.droidlogic.app.tv.TvDataBaseManager;
+import com.droidlogic.app.tv.TvControlManager;
 
 public class QuickKeyInfo  {
     private TvInputManagerHelper mTvInputManagerHelper;
@@ -36,6 +38,8 @@ public class QuickKeyInfo  {
     public static final int KEYCODE_FAV = DroidLogicKeyEvent.KEYCODE_FAV;
     public static final int KEYCODE_LIST = DroidLogicKeyEvent.KEYCODE_LIST;
     public static final int KEYCODE_LAST_CHANNEL = DroidLogicKeyEvent.KEYCODE_LAST_CHANNEL;
+
+    private TvControlManager mTvControlManager = TvControlManager.getInstance();
 
     public QuickKeyInfo(MainActivity mainactivity, TvInputManagerHelper tvinputmanagerhelper, ChannelTuner channeltuner) {
         this.mChannelTuner = channeltuner;
@@ -115,5 +119,55 @@ public class QuickKeyInfo  {
                 mActivity.tuneToChannel(mChannelTuner.getChannelById(recentChannelIndex));
             }
         }
+    }
+
+    public String getAtvAudioOutmodestring(int mode){
+        switch (mode) {
+            case TvControlManager.AUDIO_OUTMODE_MONO:
+                return mActivity.getResources().getString(R.string.audio_outmode_mono);
+            case TvControlManager.AUDIO_OUTMODE_STEREO:
+                return mActivity.getResources().getString(R.string.audio_outmode_stereo);
+            case TvControlManager.AUDIO_OUTMODE_SAP:
+                return mActivity.getResources().getString(R.string.audio_outmode_sap);
+            default:
+                return mActivity.getResources().getString(R.string.audio_outmode_stereo);
+        }
+    }
+
+    public int getAtvAudioOutmodeint(){
+        int mode = mTvControlManager.GetAudioOutmode();
+        if (mDebug) {
+            Log.d(TAG, "getAtvAudioOutmode"+" mode = " + mode);
+        }
+        return mode;
+    }
+
+    public void setAtvAudioOutmode(int mode) {
+        if (mDebug) {
+            Log.d(TAG, "setAtvAudioOutmode"+" mode = " + mode);
+        }
+        mTvControlManager.SetAudioOutmode(mode);
+    }
+
+    public Boolean isAtvSign() {
+        if (mChannelTuner != null) {
+            if (mDebug) {
+                Log.d(TAG, "getCurrentChannel Type: " + mChannelTuner.getCurrentChannel().getType());
+            }
+            return isAnalogChannnel(mChannelTuner.getCurrentChannel().getType());
+        }
+        return false;
+    }
+
+    private boolean isAnalogChannnel(String type) {
+        return (type.equals(TvContract.Channels.TYPE_PAL)
+            || type.equals(TvContract.Channels.TYPE_NTSC)
+            || type.equals(TvContract.Channels.TYPE_SECAM));
+    }
+
+    private boolean isAtscChannnel(String type) {
+        return (type.equals(TvContract.Channels.TYPE_ATSC_C)
+            || type.equals(TvContract.Channels.TYPE_ATSC_T)
+            || type.equals(TvContract.Channels.TYPE_ATSC_M_H));
     }
 }

@@ -48,6 +48,34 @@ public class MultiAudioFragment extends SideFragment {
 
     @Override
     protected List<Item> getItemList() {
+        if (getMainActivity().mQuickKeyInfo.isAtvSign()) {
+            return getAtvTrackList();
+        } else {
+            return getDefaultTrackList();
+        }
+    }
+
+    private List<Item> getAtvTrackList() {
+        int mode = getMainActivity().mQuickKeyInfo.getAtvAudioOutmodeint();
+        List<Item> items = new ArrayList<>();
+        int pos = 0;
+        for (int i = 0; i < 3; i++) {
+                RadioButtonItem item = new MultiAudioOptionItem(
+                        getMainActivity().mQuickKeyInfo.getAtvAudioOutmodestring(i),
+                        String.valueOf(i));
+                if (mode == i) {
+                    item.setChecked(true);
+                    mInitialSelectedPosition = pos;
+                    mSelectedTrackId = mFocusedTrackId = String.valueOf(i);
+                }
+                items.add(item);
+                ++pos;
+            }
+
+        return items;
+    }
+
+    private List<Item> getDefaultTrackList() {
         List<TvTrackInfo> tracks = getMainActivity().getTracks(TvTrackInfo.TYPE_AUDIO);
         mSelectedTrackId = getMainActivity().getSelectedTrack(TvTrackInfo.TYPE_AUDIO);
 
@@ -91,7 +119,11 @@ public class MultiAudioFragment extends SideFragment {
         protected void onSelected() {
             super.onSelected();
             mSelectedTrackId = mFocusedTrackId = mTrackId;
-            getMainActivity().selectAudioTrack(mTrackId);
+            if (getMainActivity().mQuickKeyInfo.isAtvSign()) {
+                getMainActivity().mQuickKeyInfo.setAtvAudioOutmode(Integer.parseInt(mTrackId));
+            } else {
+                getMainActivity().selectAudioTrack(mTrackId);
+            }
             closeFragment();
         }
 
@@ -99,7 +131,11 @@ public class MultiAudioFragment extends SideFragment {
         protected void onFocused() {
             super.onFocused();
             mFocusedTrackId = mTrackId;
-            getMainActivity().selectAudioTrack(mTrackId);
+            if (getMainActivity().mQuickKeyInfo.isAtvSign()) {
+                getMainActivity().mQuickKeyInfo.setAtvAudioOutmode(Integer.parseInt(mTrackId));
+            } else {
+                getMainActivity().selectAudioTrack(mTrackId);
+            }
         }
     }
 

@@ -2527,14 +2527,14 @@ public class MainActivity extends Activity implements AudioManager.OnAudioFocusC
                 case QuickKeyInfo.KEYCODE_TV_SHORTCUTKEY_DISPAYMODE:
                 case QuickKeyInfo.KEYCODE_TV_SLEEP:
                     mQuickKeyInfo.QuickKeyAction(keyCode);
-                     return true;
+                    return true;
                 case QuickKeyInfo.KEYCODE_FAV:
                 case QuickKeyInfo.KEYCODE_LIST:
                     mOverlayManager.getSideFragmentManager().show(new MultiOptionFragment(keyCode));
                     return true;
                 case KeyEvent.KEYCODE_LAST_CHANNEL:
-                     mQuickKeyInfo.tuneToRecentChannel();
-                     return true;
+                    mQuickKeyInfo.tuneToRecentChannel();
+                    return true;
             }
         }
         if (SystemProperties.USE_DEBUG_KEYS.getValue()) {
