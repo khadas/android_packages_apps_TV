@@ -10,6 +10,7 @@ import android.media.tv.TvContract;
 import android.media.tv.TvContract.Channels;
 import android.provider.Settings;
 import android.app.Activity;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,10 +27,12 @@ import com.droidlogic.app.tv.TvDataBaseManager;
 import com.droidlogic.app.tv.TvControlManager;
 
 public class QuickKeyInfo  {
+    private final static String TAG = "QuickKeyInfo";
     private TvInputManagerHelper mTvInputManagerHelper;
     private Context mContext;
     private ChannelTuner mChannelTuner;
     private MainActivity mActivity;
+    private final static boolean mDebug = false;
 
     public static final int KEYCODE_TV_SHORTCUTKEY_VIEWMODE = DroidLogicKeyEvent.KEYCODE_TV_SHORTCUTKEY_VIEWMODE;
     public static final int KEYCODE_TV_SHORTCUTKEY_VOICEMODE = DroidLogicKeyEvent.KEYCODE_TV_SHORTCUTKEY_VOICEMODE;
