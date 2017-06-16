@@ -202,8 +202,11 @@ public class SelectInputView extends VerticalGridView implements
         mTvInputManagerHelper.addCallback(mTvInputCallback);
         String currentInputId = mCurrentChannel != null && mCurrentChannel.isPassthrough() ?
                 mCurrentChannel.getInputId() : null;
-        if (currentInputId != null
-                && !isInputEnabled(mTvInputManagerHelper.getTvInputInfo(currentInputId))) {
+        TvInputInfo temp = null;
+        if (currentInputId != null) {
+            temp = mTvInputManagerHelper.getTvInputInfo(currentInputId);
+        }
+        if (temp == null || !isInputEnabled(temp)) {
             // If current input is disabled, the tuner input will be focused.
             setSelectedPosition(TUNER_INPUT_POSITION);
         } else {
