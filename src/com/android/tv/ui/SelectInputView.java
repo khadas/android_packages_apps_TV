@@ -330,15 +330,16 @@ public class SelectInputView extends VerticalGridView implements
         public void onBindViewHolder(ViewHolder holder, final int position) {
             TvInputInfo input = mInputList.get(position);
             if (input.isPassthroughInput()) {
-                if (isInputEnabled(input)) {
+                //if (isInputEnabled(input)) {
                     holder.itemView.setFocusable(true);
                     holder.inputLabelView.setTextColor(mTextColorPrimary);
                     holder.secondaryInputLabelView.setTextColor(mTextColorSecondary);
+                /*
                 } else {
                     holder.itemView.setFocusable(false);
                     holder.inputLabelView.setTextColor(mTextColorDisabled);
                     holder.secondaryInputLabelView.setTextColor(mTextColorDisabled);
-                }
+                }*/
                 setItemViewText(holder.itemView, input);
             } else {
                 holder.itemView.setFocusable(true);
