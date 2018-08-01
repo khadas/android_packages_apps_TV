@@ -27,10 +27,9 @@ import com.android.tv.TvOptionsManager.OptionType;
 public class MenuAction {
     // Actions in the TV option row.
     public static final MenuAction SELECT_CLOSED_CAPTION_ACTION =
-            new MenuAction(
-                    R.string.options_item_closed_caption,
+            new MenuAction(R.string.side_panel_subtitle/*R.string.options_item_closed_caption*/,
                     TvOptionsManager.OPTION_CLOSED_CAPTIONS,
-                    R.drawable.ic_tvoption_cc);
+                    R.drawable.ic_settings/*R.drawable.ic_tvoption_cc*/);
     public static final MenuAction SELECT_DISPLAY_MODE_ACTION =
             new MenuAction(
                     R.string.options_item_display_mode,

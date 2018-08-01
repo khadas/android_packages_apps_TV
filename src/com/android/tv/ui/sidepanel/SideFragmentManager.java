@@ -292,6 +292,10 @@ public class SideFragmentManager implements AccessibilityStateChangeListener {
     }
 
     /** Should {@code keyCode} hide the current panel. */
+    public void closeScheduleHideAll() {
+        mHandler.removeCallbacks(mHideAllRunnable);
+    }
+
     public boolean isHideKeyForCurrentPanel(int keyCode) {
         if (isActive()) {
             SideFragment current =

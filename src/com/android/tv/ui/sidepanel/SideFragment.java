@@ -222,6 +222,10 @@ public abstract class SideFragment<T extends Item> extends Fragment implements H
         }
     }
 
+    protected void resetItemList(List<Item> items) {
+        mAdapter.reset(items);
+    }
+
     /*
      * END HACK
      */

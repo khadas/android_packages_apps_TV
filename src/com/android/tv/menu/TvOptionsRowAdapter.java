@@ -29,6 +29,10 @@ import com.android.tv.ui.sidepanel.ClosedCaptionFragment;
 import com.android.tv.ui.sidepanel.DeveloperOptionFragment;
 import com.android.tv.ui.sidepanel.DisplayModeFragment;
 import com.android.tv.ui.sidepanel.MultiAudioFragment;
+
+import com.android.tv.util.Utils;
+import com.android.tv.droidlogic.subtitleui.SubtitleFragment;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -119,10 +123,8 @@ public class TvOptionsRowAdapter extends CustomizableOptionsRowAdapter {
     protected void executeBaseAction(int type) {
         switch (type) {
             case TvOptionsManager.OPTION_CLOSED_CAPTIONS:
-                getMainActivity()
-                        .getOverlayManager()
-                        .getSideFragmentManager()
-                        .show(new ClosedCaptionFragment());
+                getMainActivity().getOverlayManager().getSideFragmentManager()
+                        .show(new SubtitleFragment()/*new ClosedCaptionFragment()*/);
                 break;
             case TvOptionsManager.OPTION_DISPLAY_MODE:
                 getMainActivity()

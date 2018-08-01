@@ -474,4 +474,33 @@
     <!--close caption-->
     <string name="cc_enable_cc_style">字幕をつける</string>
     <string name="cc_disable_cc_style">字幕を閉じる</string>
+
+    <!-- subtitle-->
+    <string name="side_panel_subtitle">字幕</string>
+    <string name="side_panel_title_teletext">图文电视</string>
+    <string name="subtitle_teletext_switch">开关</string>
+    <string name="subtitle_teletext_switch_on">打开</string>
+    <string name="subtitle_teletext_switch_off">关闭</string>
+    <string name="subtitle_teletext_list">图文电视列表</string>
+    <string name="subtitle_teletext_settings">图文电视图像设置</string>
+    <string name="subtitle_teletext_open">图文电视图像设置</string>
+    <string name="subtitle_teletext_page_turn">翻页设置</string>
+    <string name="subtitle_teletext_page_up">上一页</string>
+    <string name="subtitle_teletext_page_down">下一页</string>
+    <string name="subtitle_teletext_page_setting">页数设定</string>
+    <string name="subtitle_teletext_page_number">选择页数</string>
+    <string name="subtitle_teletext_page_cuntry">通过国家选择页数</string>
+    <string name="subtitle_teletext_page_ok">确定</string>
+    <string name="subtitle_teletext_page_reset">重置</string>
+    <string name="subtitle_country_english">英国</string>
+    <string name="subtitle_country_deutsch">德国</string>
+    <string name="subtitle_country_svenska">瑞典/芬兰/匈牙利</string>
+    <string name="subtitle_country_italiano">意大利</string>
+    <string name="subtitle_country_france">法国</string>
+    <string name="subtitle_country_portugal">葡萄牙/西班牙</string>
+    <string name="subtitle_country_cesky">捷克/斯洛文尼亚</string>
+    <string name="subtitle_country_turkey">土耳其</string>
+    <string name="subtitle_country_ellinika">希腊</string>
+    <string name="subtitle_country_alarabia">阿拉伯/英国</string>
+    <string name="subtitle_country_russky">俄国/保加利亚</string>
 </resources>

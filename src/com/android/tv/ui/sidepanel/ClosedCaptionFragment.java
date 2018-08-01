@@ -189,6 +189,7 @@ public class ClosedCaptionFragment extends SideFragment {
         @Override
         protected void onFocused() {
             super.onFocused();
+            //getMainActivity().selectSubtitleTrack(mOption, mTrackId);
         }
     }
 }

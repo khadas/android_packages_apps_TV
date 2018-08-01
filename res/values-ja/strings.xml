@@ -409,4 +409,33 @@
     <!--close caption-->
     <string name="cc_enable_cc_style">打開字幕樣式</string>
     <string name="cc_disable_cc_style">關閉字幕樣式</string>
+
+    <!-- subtitle-->
+    <string name="side_panel_subtitle">字幕</string>
+    <string name="side_panel_title_teletext">テレテキスト</string>
+    <string name="subtitle_teletext_switch">スイッチ</string>
+    <string name="subtitle_teletext_switch_on">开き</string>
+    <string name="subtitle_teletext_switch_off">閉鎖</string>
+    <string name="subtitle_teletext_list">テレビリスト</string>
+    <string name="subtitle_teletext_settings">テレビの画像設定</string>
+    <string name="subtitle_teletext_open">テレビの画像設定</string>
+    <string name="subtitle_teletext_page_turn">ページをめくり</string>
+    <string name="subtitle_teletext_page_up">ページ数</string>
+    <string name="subtitle_teletext_page_down">次ページ</string>
+    <string name="subtitle_teletext_page_setting">ページ数設定</string>
+    <string name="subtitle_teletext_page_number">ページ数</string>
+    <string name="subtitle_teletext_page_cuntry">国を経由してページ数を選択する</string>
+    <string name="subtitle_teletext_page_ok">確定</string>
+    <string name="subtitle_teletext_page_reset">リセット</string>
+    <string name="subtitle_country_english">英国</string>
+    <string name="subtitle_country_deutsch">ドイツ</string>
+    <string name="subtitle_country_svenska">スウェーデン/フィンランド/ハンガリー</string>
+    <string name="subtitle_country_italiano">イタリア</string>
+    <string name="subtitle_country_france">フランス</string>
+    <string name="subtitle_country_portugal">ポルトガル/スペイン</string>
+    <string name="subtitle_country_cesky">チェコ/スロベニア</string>
+    <string name="subtitle_country_turkey">トルコ</string>
+    <string name="subtitle_country_ellinika">ギリシャ</string>
+    <string name="subtitle_country_alarabia">アラブ/英国</string>
+    <string name="subtitle_country_russky">ロシア/ブルガリア</string>
 </resources>

@@ -147,6 +147,7 @@ import com.android.tv.util.images.ImageCache;
 
 import com.android.tv.droidlogic.QuickKeyInfo;
 import com.android.tv.droidlogic.quickkeyui.MultiOptionFragment;
+import com.android.tv.droidlogic.subtitleui.SubtitleFragment;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -2914,7 +2915,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     }
                     // fall through.
                 case KeyEvent.KEYCODE_CAPTIONS:
-                    mOverlayManager.getSideFragmentManager().show(new ClosedCaptionFragment());
+                    mOverlayManager.getSideFragmentManager().show(new SubtitleFragment());
                     return true;
                 case KeyEvent.KEYCODE_A:
                     if (!SystemProperties.USE_DEBUG_KEYS.getValue()) {

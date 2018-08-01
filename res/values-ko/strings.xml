@@ -427,4 +427,33 @@
     <!--close caption-->
     <string name="cc_enable_cc_style">자막을 켜다</string>
     <string name="cc_disable_cc_style">자막을 폐쇄하다</string>
+
+    <!-- subtitle-->
+    <string name="side_panel_subtitle">자막</string>
+    <string name="side_panel_title_teletext">도문 tv</string>
+    <string name="subtitle_teletext_switch">스위치</string>
+    <string name="subtitle_teletext_switch_on">열</string>
+    <string name="subtitle_teletext_switch_off">폐쇄</string>
+    <string name="subtitle_teletext_list">도문 텔레비전 차트</string>
+    <string name="subtitle_teletext_settings">도문 텔레비전 영상 설치</string>
+    <string name="subtitle_teletext_open">도문 텔레비전 영상 설치</string>
+    <string name="subtitle_teletext_page_turn">페이 지를 열다</string>
+    <string name="subtitle_teletext_page_up">1 페이지</string>
+    <string name="subtitle_teletext_page_down">한 페이지</string>
+    <string name="subtitle_teletext_page_setting">쪽 수 설정</string>
+    <string name="subtitle_teletext_page_number">쪽 수를 고르다</string>
+    <string name="subtitle_teletext_page_cuntry">국가 선택 페이지</string>
+    <string name="subtitle_teletext_page_ok">확정</string>
+    <string name="subtitle_teletext_page_reset">작동</string>
+    <string name="subtitle_country_english">영국</string>
+    <string name="subtitle_country_deutsch">독일</string>
+    <string name="subtitle_country_svenska">스 웨 덴/핀 란 드/헝가리</string>
+    <string name="subtitle_country_italiano">이탈리아</string>
+    <string name="subtitle_country_france">프랑스</string>
+    <string name="subtitle_country_portugal">포르투갈/스페인</string>
+    <string name="subtitle_country_cesky">체 코/슬로베니아</string>
+    <string name="subtitle_country_turkey">터키</string>
+    <string name="subtitle_country_ellinika">그리스</string>
+    <string name="subtitle_country_alarabia">아라비아/영국</string>
+    <string name="subtitle_country_russky">러시아/불가리아</string>
 </resources>

@@ -75,6 +75,7 @@ import com.android.tv.TvSingletons;
 import com.android.tv.R;
 
 import com.android.tv.droidlogic.channelui.ChannelSourceSettingFragment;
+import com.android.tv.droidlogic.subtitleui.SubtitleFragment;
 
 import com.droidlogic.app.tv.TvControlManager;
 import com.droidlogic.app.tv.ChannelInfo;
@@ -341,7 +342,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
             return true;
         } else if (intent.getBooleanExtra(COMMAND_CLOSED_CAPTION, false)) {
             currentcommand = COMMAND_CLOSED_CAPTION;
-            mActivity.getOverlayManager().getSideFragmentManager().showByDroid(new ClosedCaptionFragment(), true);
+            mActivity.getOverlayManager().getSideFragmentManager().showByDroid(new SubtitleFragment(), false);
             othersStartTvFragment = true;
             Log.d(TAG, "[handleUiCommand] " + COMMAND_CLOSED_CAPTION);
             return true;
