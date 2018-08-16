@@ -44,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 public class ProgramManager {
     private static final String TAG = "ProgramManager";
     private static final boolean DEBUG = false;
+    private static final String PROP_SET_EPGUPDATE_ENABLED = "persist.sys.epgupdate.isneed";
 
     /**
      * If the first entry's visible duration is shorter than this value, we clip the entry out.
@@ -208,7 +209,9 @@ public class ProgramManager {
     }
 
     void programGuideVisibilityChanged(boolean visible) {
-        mProgramDataManager.setPauseProgramUpdate(visible);
+        if (!mProgramDataManager.getSystemProperty(PROP_SET_EPGUPDATE_ENABLED)) {
+            mProgramDataManager.setPauseProgramUpdate(visible);
+        }
         if (visible) {
             mChannelDataManager.addListener(mChannelDataManagerListener);
             mProgramDataManager.addListener(mProgramDataManagerListener);
@@ -741,8 +744,8 @@ public class ProgramManager {
         }
 
         /** Returns true if this program is on the air. */
-        boolean isCurrentProgram() {
-            long current = System.currentTimeMillis();
+        boolean isCurrentProgram(long currentTime) {
+            long current = currentTime;
             return entryStartUtcMillis <= current && entryEndUtcMillis > current;
         }
 

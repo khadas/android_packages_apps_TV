@@ -24,11 +24,38 @@ import com.android.tv.util.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.droidlogic.app.tv.TvControlManager;
+import com.droidlogic.app.tv.ChannelInfo;
+
+import android.util.Log;
+
 public class MultiAudioFragment extends SideFragment {
-    private static final String TRACKER_LABEL = "multi-audio";
+    private static final String TAG = "MultiAudioFragment";
     private int mInitialSelectedPosition = INVALID_POSITION;
     private String mSelectedTrackId;
     private String mFocusedTrackId;
+
+    private static final int[] STEREOSTATUS_BTSC = {
+        R.string.channel_audio_outmode_mono,
+        R.string.channel_audio_outmode_stereo,
+        R.string.channel_audio_outmode_sap
+    };
+
+    private static final int[] STEREOSTATUS_NICAM = {
+        R.string.channel_audio_outmode_mono,
+        R.string.channel_audio_outmode_nicam_mono,
+        R.string.channel_audio_outmode_stereo,
+        R.string.channel_audio_outmode_dualI,
+        R.string.channel_audio_outmode_dualII,
+        R.string.channel_audio_outmode_dualI_II
+    };
+
+    private static final int[] STEREOSTATUS_A2 = {
+        R.string.channel_audio_outmode_mono,
+        R.string.channel_audio_outmode_stereo,
+        R.string.channel_audio_outmode_dualI,
+        R.string.channel_audio_outmode_dualII
+    };
 
     public MultiAudioFragment() {
         super(KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK, KeyEvent.KEYCODE_A);
@@ -41,11 +68,198 @@ public class MultiAudioFragment extends SideFragment {
 
     @Override
     public String getTrackerLabel() {
-        return TRACKER_LABEL;
+        return TAG;
     }
 
     @Override
     protected List<Item> getItemList() {
+        if (getMainActivity().mQuickKeyInfo.isAtvSource()) {
+            return getAtvTrackList();
+        } else {
+            return getDefaultTrackList();
+        }
+    }
+
+    private final int BASC_MONO   = 0;
+    private final int BASC_STEREO = 1;
+    private final int BASC_SAP    = 2;
+
+    private final int A2_MONO     = 0;
+    private final int A2_STEREO   = 1;
+    private final int A2_DualI    = 2;
+    private final int A2_DualII   = 3;
+    private final int A2_DualI_II = 4;
+
+    private final int NICAM_MONO     = 0;
+    private final int NICAM_MONO1    = 1;
+    private final int NICAM_STEREO   = 2;
+    private final int NICAM_DualI    = 3;
+    private final int NICAM_DualII   = 4;
+    private final int NICAM_DualI_II = 5;
+
+    private ChannelInfo mAtvChannelInfo;
+    private int audio_std = 0;
+
+    private List<Item> getAtvTrackList() {
+        List<Item> items = new ArrayList<>();
+        mAtvChannelInfo = getMainActivity().mQuickKeyInfo.getCurrentChannelInfo();
+        int value = getMainActivity().mQuickKeyInfo.getAtvAudioPriorityMode();
+        int input = getMainActivity().mQuickKeyInfo.getAtvAudioStreamOutmode();
+        int readmode = getMainActivity().mQuickKeyInfo.getAtvAudioOutMode();
+
+        Log.d(TAG, "value 0x" + Integer.toHexString(value) + ", input 0x" + Integer.toHexString(input) + ", readmode " + readmode);
+
+        audio_std = (input >> 8) & 0xFF;
+
+        switch (audio_std) {
+            case TvControlManager.AUDIO_STANDARD_BTSC: {
+                boolean[] status = {false, false, false};// mono stereo sap
+                switch (input & 0xFF) {
+                    case TvControlManager.AUDIO_INMODE_MONO:
+                        status[BASC_MONO] = true;
+                        break;
+                    case TvControlManager.AUDIO_INMODE_STEREO:
+                        status[BASC_MONO] = true;
+                        status[BASC_STEREO] = true;
+                        break;
+                    case TvControlManager.AUDIO_INMODE_MONO_SAP:
+                        status[BASC_MONO] = true;
+                        status[BASC_SAP] = true;
+                        break;
+                    case TvControlManager.AUDIO_INMODE_STEREO_SAP:
+                        status[BASC_MONO] = true;
+                        status[BASC_STEREO] = true;
+                        status[BASC_SAP] = true;
+                        break;
+                }
+
+                int pos = 0;
+                for (int i = 0; i < STEREOSTATUS_BTSC.length; i++) {
+                    String info = getString(STEREOSTATUS_BTSC[i]);
+                    RadioButtonItem item = new MultiAudioOptionItem(info, String.valueOf(i));
+                    if (readmode == i) {
+                        if (readmode != (value & 0xFF)) {
+                            setAudioMode(String.valueOf(readmode));
+                        }
+                        item.setChecked(true);
+                        items.add(item);
+                        mInitialSelectedPosition = pos;
+                        mSelectedTrackId = mFocusedTrackId = String.valueOf(i);
+                    } else {
+                        if (!status[i]) {
+                            item.setEnabled(false);
+                        } else {
+                            items.add(item);
+                        }
+                    }
+
+                    ++pos;
+                }
+            }
+                break;
+            case TvControlManager.AUDIO_STANDARD_A2_K:
+            case TvControlManager.AUDIO_STANDARD_A2_BG:
+            case TvControlManager.AUDIO_STANDARD_A2_DK1:
+            case TvControlManager.AUDIO_STANDARD_A2_DK2:
+            case TvControlManager.AUDIO_STANDARD_A2_DK3: {
+                boolean[] status = {false, false, false, false};// mono stereo dual
+                switch (input & 0xFF) {
+                    case TvControlManager.AUDIO_INMODE_MONO:
+                        status[A2_MONO] = true;
+                        break;
+                    case TvControlManager.AUDIO_INMODE_STEREO:
+                        status[A2_MONO] = true;
+                        status[A2_STEREO] = true;
+                        break;
+                    case TvControlManager.AUDIO_INMODE_DUAL:
+                        //status[A2_MONO] = true;
+                        status[A2_DualI] = true;
+                        status[A2_DualII] = true;
+                        break;
+                }
+
+                int pos = 0;
+                for (int i = 0; i < STEREOSTATUS_A2.length; i++) {
+                    String info = getString(STEREOSTATUS_A2[i]);
+                    RadioButtonItem item = new MultiAudioOptionItem(info, String.valueOf(i));
+                    if (readmode == i) {
+                        if (readmode != (value & 0xFF)) {
+                            setAudioMode(String.valueOf(readmode));
+                        }
+                        item.setChecked(true);
+                        items.add(item);
+                        mInitialSelectedPosition = pos;
+                        mSelectedTrackId = mFocusedTrackId = String.valueOf(i);
+                    } else {
+                        if (!status[i]) {
+                            item.setEnabled(false);
+                        } else {
+                            items.add(item);
+                        }
+                    }
+
+                    ++pos;
+                }
+            }
+                break;
+            case TvControlManager.AUDIO_STANDARD_NICAM_I:
+            case TvControlManager.AUDIO_STANDARD_NICAM_BG:
+            case TvControlManager.AUDIO_STANDARD_NICAM_L:
+            case TvControlManager.AUDIO_STANDARD_NICAM_DK: {
+                boolean[] status = {false, false, false, false, false, false};// mono stereo dual
+                switch (input & 0xFF) {
+                    case TvControlManager.AUDIO_INMODE_MONO:
+                        status[NICAM_MONO] = true;
+                        break;
+                    case TvControlManager.AUDIO_INMODE_STEREO:
+                        status[NICAM_MONO] = true;
+                        status[NICAM_STEREO] = true;
+                        break;
+                    case TvControlManager.AUDIO_INMODE_DUAL:
+                        status[NICAM_MONO] = true;
+                        status[NICAM_DualI] = true;
+                        status[NICAM_DualII] = true;
+                        status[NICAM_DualI_II] = true;
+                        break;
+                    case TvControlManager.AUDIO_INMODE_NICAM_MONO:
+                        status[NICAM_MONO] = true;
+                        status[NICAM_MONO1] = true;
+                        break;
+                }
+
+                int pos = 0;
+                for (int i = 0; i < STEREOSTATUS_NICAM.length; i++) {
+                    String info = getString(STEREOSTATUS_NICAM[i]);
+                    RadioButtonItem item = new MultiAudioOptionItem(info, String.valueOf(i));
+                    if (readmode == i) {
+                        if (readmode != (value & 0xFF)) {
+                            setAudioMode(String.valueOf(readmode));
+                        }
+                        item.setChecked(true);
+                        items.add(item);
+                        mInitialSelectedPosition = pos;
+                        mSelectedTrackId = mFocusedTrackId = String.valueOf(i);
+                    } else {
+                        if (!status[i]) {
+                            item.setEnabled(false);
+                        } else {
+                            items.add(item);
+                        }
+                    }
+
+                    ++pos;
+                }
+            }
+                break;
+            default:
+                Log.d(TAG, "Unsupport audio std: 0x" + Integer.toHexString(readmode));
+                break;
+        }
+
+        return items;
+    }
+
+    protected List<Item> getDefaultTrackList() {
         List<TvTrackInfo> tracks = getMainActivity().getTracks(TvTrackInfo.TYPE_AUDIO);
         mSelectedTrackId = getMainActivity().getSelectedTrack(TvTrackInfo.TYPE_AUDIO);
 
@@ -79,6 +293,20 @@ public class MultiAudioFragment extends SideFragment {
         }
     }
 
+    private void setAudioMode(String trackid) {
+        if (getMainActivity().mQuickKeyInfo.isAtvSource()) {
+            int mode = Integer.parseInt(trackid);
+            getMainActivity().mQuickKeyInfo.setAtvAudioOutmode((audio_std << 8) | (mode & 0xFF));
+            if (mAtvChannelInfo == null) {
+                mAtvChannelInfo = getMainActivity().mQuickKeyInfo.getCurrentChannelInfo();
+            }
+            mAtvChannelInfo.setAudioOutPutMode((audio_std << 8) | (mode & 0xFF));
+            getMainActivity().mQuickKeyInfo.updateChnnelInfoToDb(mAtvChannelInfo);
+        } else {
+            getMainActivity().selectAudioTrack(String.valueOf(trackid));
+        }
+    }
+
     private class MultiAudioOptionItem extends RadioButtonItem {
         private final String mTrackId;
 
@@ -91,7 +319,9 @@ public class MultiAudioFragment extends SideFragment {
         protected void onSelected() {
             super.onSelected();
             mSelectedTrackId = mFocusedTrackId = mTrackId;
-            getMainActivity().selectAudioTrack(mTrackId);
+
+            setAudioMode(mTrackId);
+
             closeFragment();
         }
 
@@ -99,14 +329,16 @@ public class MultiAudioFragment extends SideFragment {
         protected void onFocused() {
             super.onFocused();
             mFocusedTrackId = mTrackId;
-            getMainActivity().selectAudioTrack(mTrackId);
+            //only deal when Selected
+            //getMainActivity().selectAudioTrack(mTrackId);
         }
     }
 
     @Override
     public void onDetach() {
         if (!TextUtils.equals(mSelectedTrackId, mFocusedTrackId)) {
-            getMainActivity().selectAudioTrack(mSelectedTrackId);
+            //only deal when Selected
+            //getMainActivity().selectAudioTrack(mSelectedTrackId);
         }
         super.onDetach();
     }

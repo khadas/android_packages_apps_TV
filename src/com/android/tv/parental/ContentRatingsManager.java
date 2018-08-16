@@ -34,6 +34,9 @@ public class ContentRatingsManager {
     private final Context mContext;
     private final TvInputManagerHelper.TvInputManagerInterface mTvInputManager;
 
+     //add new definition
+    public static String RATING_NO = "NoRating";
+
     public ContentRatingsManager(
             Context context, TvInputManagerHelper.TvInputManagerInterface tvInputManager) {
         mContext = context;

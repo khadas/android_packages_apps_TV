@@ -35,6 +35,8 @@ import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.text.TextUtils;
+
 import com.android.tv.MainActivity;
 import com.android.tv.R;
 import com.android.tv.TvSingletons;
@@ -70,29 +72,17 @@ public class KeypadChannelSwitchView extends LinearLayout
     private final LayoutInflater mLayoutInflater;
     private Channel mSelectedChannel;
 
-    private final Runnable mHideRunnable =
-            new Runnable() {
-                @Override
-                public void run() {
-                    mCurrentHeight = 0;
-                    if (mSelectedChannel != null) {
-                        mMainActivity.tuneToChannel(mSelectedChannel);
-                        mTracker.sendChannelNumberItemChosenByTimeout();
-                    } else {
-                        mMainActivity
-                                .getOverlayManager()
-                                .hideOverlays(
-                                        TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_DIALOG
-                                                | TvOverlayManager
-                                                        .FLAG_HIDE_OVERLAYS_KEEP_SIDE_PANELS
-                                                | TvOverlayManager
-                                                        .FLAG_HIDE_OVERLAYS_KEEP_PROGRAM_GUIDE
-                                                | TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_MENU
-                                                | TvOverlayManager
-                                                        .FLAG_HIDE_OVERLAYS_KEEP_FRAGMENT);
-                    }
-                }
-            };
+    private final Runnable mHideRunnable = new Runnable() {
+        @Override
+        public void run() {
+            mCurrentHeight = 0;
+            mMainActivity.getOverlayManager().hideOverlays(TvOverlayManager.FLAG_HIDE_OVERLAYS_WITHOUT_ANIMATION);
+            tuneToTypedNumber();
+            if (mSelectedChannel != null) {
+                mTracker.sendChannelNumberItemChosenByTimeout();
+            }
+        }
+    };
     private final long mShowDurationMillis;
     private final long mRippleAnimDurationMillis;
     private final int mBaseViewHeight;
@@ -134,7 +124,7 @@ public class KeypadChannelSwitchView extends LinearLayout
     protected void onFinishInflate() {
         super.onFinishInflate();
         mChannelNumberView = (TextView) findViewById(R.id.channel_number);
-        mChannelItemListView = (ListView) findViewById(R.id.channel_list);
+        /*mChannelItemListView = (ListView) findViewById(R.id.channel_list);
         mChannelItemListView.setAdapter(mAdapter);
         mChannelItemListView.setOnItemClickListener(
                 new AdapterView.OnItemClickListener() {
@@ -181,6 +171,11 @@ public class KeypadChannelSwitchView extends LinearLayout
                         mSelectedChannel = null;
                     }
                 });
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                mSelectedChannel = null;
+            }
+        });*/
     }
 
     @Override
@@ -191,6 +186,7 @@ public class KeypadChannelSwitchView extends LinearLayout
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+        scheduleHide();
         SoftPreconditions.checkNotNull(mChannels, TAG, "mChannels");
         if (isChannelNumberKey(keyCode)) {
             onNumberKeyUp(keyCode - KeyEvent.KEYCODE_0);
@@ -200,15 +196,18 @@ public class KeypadChannelSwitchView extends LinearLayout
             onDelimiterKeyUp();
             return true;
         }
-        return super.onKeyUp(keyCode, event);
+        if (keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER || keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+            tuneToTypedNumber();
+        }
+        return true;//super.onKeyUp(keyCode, event);
     }
 
     @Override
     public void onEnterAction(boolean fromEmptyScene) {
         reset();
-        if (fromEmptyScene) {
+        /*if (fromEmptyScene) {
             ViewUtils.setTransitionAlpha(mChannelItemListView, 1f);
-        }
+        }*/
         mNavigated = false;
         mViewDurationTimer.start();
         mTracker.sendShowChannelSwitch();
@@ -236,8 +235,8 @@ public class KeypadChannelSwitchView extends LinearLayout
     private void reset() {
         mTypedChannelNumber.reset();
         mSelectedChannel = null;
-        mChannelCandidates.clear();
-        mAdapter.notifyDataSetChanged();
+        /*mChannelCandidates.clear();
+        mAdapter.notifyDataSetChanged();*/
     }
 
     public void setChannels(@Nullable List<Channel> channels) {
@@ -281,7 +280,7 @@ public class KeypadChannelSwitchView extends LinearLayout
 
     private void updateView() {
         mChannelNumberView.setText(mTypedChannelNumber.toString() + "_");
-        mChannelCandidates.clear();
+        /*mChannelCandidates.clear();
         ArrayList<Channel> secondaryChannelCandidates = new ArrayList<>();
         for (Channel channel : mChannels) {
             ChannelNumber chNumber = ChannelNumber.parseChannelNumber(channel.getDisplayNumber());
@@ -316,7 +315,7 @@ public class KeypadChannelSwitchView extends LinearLayout
             mSelectedChannel = mChannelCandidates.get(0);
         }
 
-        updateViewHeight();
+        updateViewHeight();*/
     }
 
     private void updateViewHeight() {
@@ -381,6 +380,23 @@ public class KeypadChannelSwitchView extends LinearLayout
             }
         }
         return true;
+    }
+
+    private void  tuneToTypedNumber() {
+        for (Channel channel : mChannels) {
+            ChannelNumber chNumber = ChannelNumber.parseChannelNumber(channel.getDisplayNumber());
+            if (chNumber == null) {
+                continue;
+            }
+            if (mTypedChannelNumber.equals(chNumber)) {
+                mSelectedChannel = channel;
+            }
+        }
+        cancelHide();
+        mMainActivity.getOverlayManager().hideOverlays(TvOverlayManager.FLAG_HIDE_OVERLAYS_WITHOUT_ANIMATION);
+        if (mSelectedChannel != null) {
+            mMainActivity.tuneToChannel(mSelectedChannel);
+        }
     }
 
     class ChannelItemAdapter extends BaseAdapter {

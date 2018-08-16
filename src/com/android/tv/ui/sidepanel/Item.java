@@ -19,6 +19,7 @@ package com.android.tv.ui.sidepanel;
 import android.support.annotation.UiThread;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
 
 @UiThread
 public abstract class Item {
@@ -77,6 +78,13 @@ public abstract class Item {
     protected abstract void onSelected();
 
     protected void onFocused() {}
+    //add seekbar item for fragment ui
+    protected void onProgressChanged(SeekBar seekBar, int progress) {
+    }
+
+    //add edittext item for fragment ui
+    protected void onTextChanged(String text) {
+    }
 
     /** Returns true if the item is bound, i.e., onBind is called. */
     protected boolean isBound() {

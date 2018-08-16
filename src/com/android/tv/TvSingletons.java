@@ -40,6 +40,10 @@ import com.android.tv.util.account.AccountHelper;
 import java.util.concurrent.Executor;
 import javax.inject.Provider;
 
+import com.droidlogic.app.SystemControlManager;
+import com.droidlogic.app.tv.TvTime;
+import com.droidlogic.app.tv.TvControlDataManager;
+
 /** Interface with getters for application scoped singletons. */
 public interface TvSingletons extends BaseSingletons {
 
@@ -105,4 +109,9 @@ public interface TvSingletons extends BaseSingletons {
     ExperimentLoader getExperimentLoader();
 
     Executor getDbExecutor();
+    SystemControlManager getSystemControlManager();
+
+    TvTime getTvTime();
+
+    TvControlDataManager getTvControlDataManager();
 }

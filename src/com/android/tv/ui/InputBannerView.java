@@ -47,6 +47,9 @@ public class InputBannerView extends LinearLayout implements TvTransitionManager
 
     private TextView mInputLabelTextView;
     private TextView mSecondaryInputLabelTextView;
+    private TextView mResolutionTextView;
+    private TextView mCaptionTextView;
+    private TextView mVchipTextView;
 
     public InputBannerView(Context context) {
         this(context, null, 0);
@@ -67,6 +70,9 @@ public class InputBannerView extends LinearLayout implements TvTransitionManager
         super.onFinishInflate();
         mInputLabelTextView = (TextView) findViewById(R.id.input_label);
         mSecondaryInputLabelTextView = (TextView) findViewById(R.id.secondary_input_label);
+        mResolutionTextView = (TextView) findViewById(R.id.resolution);
+        mCaptionTextView = (TextView) findViewById(R.id.av_caption);
+        mVchipTextView = (TextView) findViewById(R.id.av_vchip);
     }
 
     public void updateLabel() {
@@ -87,12 +93,28 @@ public class InputBannerView extends LinearLayout implements TvTransitionManager
             mSecondaryInputLabelTextView.setText(label);
             mSecondaryInputLabelTextView.setVisibility(View.VISIBLE);
         }
+        mResolutionTextView.setText(mainActivity.mQuickKeyInfo.getResolution());
+        boolean hascaption = mainActivity.getTvView().hasClosedCaption();
+        String vchip = mainActivity.mQuickKeyInfo.getCurrentRatingsString();
+        final String DELIMITER = "  ";
+        final String EMPTY = "";
+        int inputType = input.getType();
+        if (inputType == TvInputInfo.TYPE_COMPOSITE) {//TYPE_COMPOSITE is AV type.
+            mCaptionTextView.setText(hascaption ? (DELIMITER + mainActivity.getString(R.string.closed_caption)) : EMPTY);
+            mVchipTextView.setText(TextUtils.isEmpty(vchip) ? EMPTY : (DELIMITER + vchip));
+            mCaptionTextView.setVisibility(View.VISIBLE);
+            mVchipTextView.setVisibility(View.VISIBLE);
+        } else if (inputType == TvInputInfo.TYPE_HDMI) {//TYPE_HDMI is HDMI type.
+            mCaptionTextView.setVisibility(View.GONE);
+            mVchipTextView.setVisibility(View.GONE);
+        }
     }
 
     @Override
     public void onEnterAction(boolean fromEmptyScene) {
         removeCallbacks(mHideRunnable);
         postDelayed(mHideRunnable, mShowDurationMillis);
+        updateLabel();
     }
 
     @Override

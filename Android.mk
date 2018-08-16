@@ -25,12 +25,15 @@ include $(LOCAL_PATH)/version.mk
 
 LOCAL_SRC_FILES := $(call all-java-files-under, src)
 
+LOCAL_JAVA_LIBRARIES := droidlogic droidlogic-tv
 LOCAL_PACKAGE_NAME := LiveTv
 
 # It is required for com.android.providers.tv.permission.ALL_EPG_DATA
 LOCAL_PRIVILEGED_MODULE := true
 
-LOCAL_SDK_VERSION := system_current
+LOCAL_PRIVATE_PLATFORM_APIS := true
+
+#LOCAL_SDK_VERSION := system_current
 LOCAL_MIN_SDK_VERSION := 23  # M
 
 LOCAL_USE_AAPT2 := true

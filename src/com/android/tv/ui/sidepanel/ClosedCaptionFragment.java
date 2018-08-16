@@ -18,6 +18,7 @@ package com.android.tv.ui.sidepanel;
 
 import android.media.tv.TvTrackInfo;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -36,6 +37,10 @@ public class ClosedCaptionFragment extends SideFragment {
     private String mClosedCaptionLanguage;
     private String mClosedCaptionTrackId;
     private ClosedCaptionOptionItem mSelectedItem;
+
+    private static final String CC_OPTION = "CC_OPTION";
+    private static final String CC_TRACKID = "CC_TRACKID";
+    private static final String CC_LANGUAGE = "CC_LANGUAGE";
 
     public ClosedCaptionFragment() {
         super(KeyEvent.KEYCODE_CAPTIONS, KeyEvent.KEYCODE_S);
@@ -154,6 +159,8 @@ public class ClosedCaptionFragment extends SideFragment {
             super.onSelected();
             mSelectedItem = this;
             getMainActivity().selectSubtitleTrack(mOption, mTrackId);
+            Settings.System.putInt(getActivity().getContentResolver(), CC_OPTION, mOption);
+            Settings.System.putString(getActivity().getContentResolver(), CC_TRACKID, mTrackId);
             mResetClosedCaption = false;
             closeFragment();
         }
@@ -161,7 +168,6 @@ public class ClosedCaptionFragment extends SideFragment {
         @Override
         protected void onFocused() {
             super.onFocused();
-            getMainActivity().selectSubtitleTrack(mOption, mTrackId);
         }
     }
 }

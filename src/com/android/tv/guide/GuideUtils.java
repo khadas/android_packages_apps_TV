@@ -64,7 +64,7 @@ class GuideUtils {
             View programRow,
             int focusRangeLeft,
             int focusRangeRight,
-            boolean keepCurrentProgramFocused) {
+            boolean keepCurrentProgramFocused, long currentTime) {
         ArrayList<View> focusables = new ArrayList<>();
         findFocusables(programRow, focusables);
 
@@ -73,7 +73,7 @@ class GuideUtils {
             for (int i = 0; i < focusables.size(); ++i) {
                 View focusable = focusables.get(i);
                 if (focusable instanceof ProgramItemView
-                        && isCurrentProgram((ProgramItemView) focusable)) {
+                        && isCurrentProgram((ProgramItemView) focusable, currentTime)) {
                     return focusable;
                 }
             }
@@ -119,8 +119,8 @@ class GuideUtils {
      * Returns {@code true} if the program displayed in the give {@link
      * com.android.tv.guide.ProgramItemView} is a current program.
      */
-    static boolean isCurrentProgram(ProgramItemView view) {
-        return view.getTableEntry().isCurrentProgram();
+    static boolean isCurrentProgram(ProgramItemView view, long currentTime) {
+        return view.getTableEntry().isCurrentProgram(currentTime);
     }
 
     /** Returns {@code true} if the given view is a descendant of the give container. */

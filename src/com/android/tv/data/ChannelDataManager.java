@@ -27,10 +27,12 @@ import android.database.sqlite.SQLiteException;
 import android.media.tv.TvContract;
 import android.media.tv.TvContract.Channels;
 import android.media.tv.TvInputManager.TvInputCallback;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.provider.Settings;
 import android.support.annotation.AnyThread;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
@@ -44,9 +46,17 @@ import com.android.tv.common.WeakHandler;
 import com.android.tv.common.util.PermissionUtils;
 import com.android.tv.common.util.SharedPreferencesUtils;
 import com.android.tv.data.api.Channel;
+import com.android.tv.data.ChannelImpl;
 import com.android.tv.util.AsyncDbTask;
 import com.android.tv.util.TvInputManagerHelper;
 import com.android.tv.util.Utils;
+import com.android.tv.droidlogic.QuickKeyInfo;
+
+import com.droidlogic.app.tv.DroidLogicTvUtils;
+import com.droidlogic.app.tv.TvDataBaseManager;
+import com.droidlogic.app.tv.ChannelInfo;
+import com.droidlogic.app.tv.TvControlDataManager;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,6 +78,8 @@ import java.util.concurrent.Executor;
 public class ChannelDataManager {
     private static final String TAG = "ChannelDataManager";
     private static final boolean DEBUG = false;
+    private static final String URI_TV_SEARCH_TYPE = "content://settings/system/tv_search_type";
+    private static final String URI_TV_COUNTRY = "content://settings/system/tv_country";
 
     private static final int MSG_UPDATE_CHANNELS = 1000;
 
@@ -93,6 +105,7 @@ public class ChannelDataManager {
     private final ContentObserver mChannelObserver;
     private final boolean mStoreBrowsableInSharedPreferences;
     private final SharedPreferences mBrowsableSharedPreferences;
+    private final TvDataBaseManager mTvDataBaseManager;
 
     private final TvInputCallback mTvInputCallback =
             new TvInputCallback() {
@@ -164,18 +177,29 @@ public class ChannelDataManager {
         mDbExecutor = executor;
         mContentResolver = contentResolver;
         mChannelComparator = new ChannelImpl.DefaultComparator(context, inputManager);
+        mTvDataBaseManager = new TvDataBaseManager(context);
         // Detect duplicate channels while sorting.
         mChannelComparator.setDetectDuplicatesEnabled(true);
         mHandler = new ChannelDataManagerHandler(this);
-        mChannelObserver =
-                new ContentObserver(mHandler) {
-                    @Override
-                    public void onChange(boolean selfChange) {
-                        if (!mHandler.hasMessages(MSG_UPDATE_CHANNELS)) {
-                            mHandler.sendEmptyMessage(MSG_UPDATE_CHANNELS);
-                        }
-                    }
-                };
+        mChannelObserver = new ContentObserver(mHandler) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri) {
+                if (!mHandler.hasMessages(MSG_UPDATE_CHANNELS)) {
+                    mHandler.sendEmptyMessage(MSG_UPDATE_CHANNELS);
+                }
+                //[DroidLogic]
+                //When tv_search_type changed,set the flag TV_SEARCH_TYPE_CHANGED for the BROADCAST_CHANGED_SEARCH_TYPE in MainActivity.
+                String mUri = uri.toString();
+                if (mUri.equals(URI_TV_SEARCH_TYPE)) {
+                    if (DEBUG) Log.d(TAG, "===== tv_search_type was changed");
+                    TvSingletons.getSingletons(mContext).getTvControlDataManager().putInt(mContentResolver, DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 1);
+                    //Settings.System.putInt(mContext.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 1);
+                } else if (mUri.equals(URI_TV_COUNTRY)) {
+                    if (DEBUG) Log.d(TAG, "===== tv_country was changed, so delete all channels");
+                    mTvDataBaseManager.deleteChannels(DroidLogicTvUtils.getInputId(context));
+                }
+            }
+        };
         mStoreBrowsableInSharedPreferences = !PermissionUtils.hasAccessAllEpg(mContext);
         mBrowsableSharedPreferences =
                 context.getSharedPreferences(
@@ -199,7 +223,24 @@ public class ChannelDataManager {
         handleUpdateChannels();
         mContentResolver.registerContentObserver(
                 TvContract.Channels.CONTENT_URI, true, mChannelObserver);
+        mContentResolver.registerContentObserver(TvContract.Channels.CONTENT_URI, true,
+                mChannelObserver);
         mInputManager.addCallback(mTvInputCallback);
+        //[DroidLogic]
+        //observe the tv_search_type and tv_country in Settings.
+        mContentResolver.registerContentObserver(Settings.System.getUriFor(DroidLogicTvUtils.TV_SEARCH_TYPE), true,
+                mChannelObserver);
+        mContentResolver.registerContentObserver(Settings.System.getUriFor(DroidLogicTvUtils.KEY_SEARCH_COUNTRY), true,
+                mChannelObserver);
+        /*try {
+            mContentResolver.registerContentObserver(QuickKeyInfo.getUriForKey(QuickKeyInfo.TABLE_SCAN_NAME_URI, DroidLogicTvUtils.TV_SEARCH_TYPE), true,
+                    mChannelObserver);
+            mContentResolver.registerContentObserver(QuickKeyInfo.getUriForKey(QuickKeyInfo.TABLE_SCAN_NAME_URI, DroidLogicTvUtils.KEY_SEARCH_COUNTRY), true,
+                    mChannelObserver);
+        } catch (RuntimeException e) {
+            Log.d(TAG,"start RuntimeException = " + e.getMessage());
+            e.printStackTrace();
+        }*/
     }
 
     /**
@@ -495,6 +536,30 @@ public class ChannelDataManager {
 
     @MainThread
     private void addChannel(ChannelData data, Channel channel) {
+        //[DroidLogic]
+        //When add channels, filter the channels according to current type.
+        if (DEBUG) Log.d(TAG, "===== addChannel");
+        if (DroidLogicTvUtils.isAtscCountry(mContext)) {
+            Uri channelUri = null;
+            if (channel.isPassthrough()) {
+                channelUri = TvContract.buildChannelUriForPassthroughInput(channel.getInputId());
+            } else {
+                channelUri = TvContract.buildChannelUri(channel.getId());
+            }
+            ChannelInfo channelInfo = mTvDataBaseManager.getChannelInfo(channelUri);
+            if (channelInfo.getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(mContext))) {
+                addChannelByType(data, channel);
+            }
+        } else {
+            if (DroidLogicTvUtils.isATV(mContext) && channel.isAnalogChannel()) {
+                addChannelByType(data, channel);
+            } else if (DroidLogicTvUtils.isDTV(mContext) && channel.isDigitalChannel()) {
+                addChannelByType(data, channel);
+            }
+        }
+    }
+
+    private void addChannelByType(ChannelData data, Channel channel) {
         data.channels.add(channel);
         String inputId = channel.getInputId();
         MutableInt count = data.channelCountMap.get(inputId);
@@ -660,7 +725,10 @@ public class ChannelDataManager {
                     }
                 } else {
                     channelWrapper = data.channelWrapperMap.get(channelId);
-                    if (!channelWrapper.mChannel.hasSameReadOnlyInfo(channel)) {
+                    if (!channelWrapper.mChannel.hasSameReadOnlyInfo(channel) ||
+                            !channelWrapper.mChannel.hasSameReadWriteInfo(channel) ||
+                            !(channelWrapper.mChannel.isBrowsable() == channel.isBrowsable()) ||
+                            !(channelWrapper.mChannel.isFavourite() == channel.isFavourite())) {
                         // Channel data updated
                         Channel oldChannel = channelWrapper.mChannel;
                         // We assume that mBrowsable and mLocked are controlled by only TV app.
@@ -668,8 +736,9 @@ public class ChannelDataManager {
                         // {@link #applyUpdatedValuesToDb} is called. Therefore, the value
                         // between DB and ChannelDataManager could be different for a while.
                         // Therefore, we'll keep the values in ChannelDataManager.
-                        channel.setBrowsable(oldChannel.isBrowsable());
+                        //channel.setBrowsable(oldChannel.isBrowsable());
                         channel.setLocked(oldChannel.isLocked());
+                        //channel.setFavourite(oldChannel.isFavourite());
                         channelWrapper.mChannel.copyFrom(channel);
                         if (!channelWrapper.mInputRemoved) {
                             channelUpdated = true;
@@ -711,6 +780,10 @@ public class ChannelDataManager {
                 notifyLoadFinished();
             } else if (channelAdded || channelUpdated || channelRemoved) {
                 notifyChannelListUpdated();
+            } else {
+                //[DroidLogic]
+                //when switched ATV or DTV,notify the channel loading finished.
+                notifyLoadFinished();
             }
             for (ChannelWrapper channelWrapper : removedChannelWrappers) {
                 channelWrapper.notifyChannelRemoved();

@@ -52,6 +52,7 @@
         android:listSelector="#33FFFFFF"
         android:divider="@null"
         android:dividerHeight="0dp"
-        android:clickable="true" />
+        android:clickable="true"
+        android:visibility="gone"/>
 
 </com.android.tv.ui.KeypadChannelSwitchView>

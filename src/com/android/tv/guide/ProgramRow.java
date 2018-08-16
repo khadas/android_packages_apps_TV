@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import com.android.tv.data.api.Channel;
 import com.android.tv.guide.ProgramManager.TableEntry;
+import com.android.tv.util.TvClock;
 import com.android.tv.util.Utils;
 import java.util.concurrent.TimeUnit;
 
@@ -41,6 +42,9 @@ public class ProgramRow extends TimelineGridView {
 
     private boolean mKeepFocusToCurrentProgram;
     private ChildFocusListener mChildFocusListener;
+
+    //for TvClock
+    private TvClock mClock;
 
     interface ChildFocusListener {
         /**
@@ -72,6 +76,7 @@ public class ProgramRow extends TimelineGridView {
 
     public ProgramRow(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        mClock = new TvClock(context);
     }
 
     /** Registers a listener focus events occurring on children to the {@code ProgramRow}. */
@@ -208,7 +213,7 @@ public class ProgramRow extends TimelineGridView {
                                 requestFocus();
                             }
                         });
-            } else if (entry.isCurrentProgram()) {
+            } else if (entry.isCurrentProgram(mClock.currentTimeMillis())) {
                 if (DEBUG) Log.d(TAG, "Keep focus to the current program");
                 // Current program is visible in the guide.
                 // Updated entries including current program's will be attached again soon
@@ -224,7 +229,7 @@ public class ProgramRow extends TimelineGridView {
         super.onChildAttachedToWindow(child);
         if (mKeepFocusToCurrentProgram) {
             TableEntry entry = ((ProgramItemView) child).getTableEntry();
-            if (entry.isCurrentProgram()) {
+            if (entry.isCurrentProgram(mClock.currentTimeMillis())) {
                 mKeepFocusToCurrentProgram = false;
                 post(
                         new Runnable() {
@@ -248,7 +253,7 @@ public class ProgramRow extends TimelineGridView {
                         this,
                         focusRange.getLower(),
                         focusRange.getUpper(),
-                        programGrid.isKeepCurrentProgramFocused());
+                        programGrid.isKeepCurrentProgramFocused(), mClock.currentTimeMillis());
 
         if (nextFocus != null) {
             return nextFocus.requestFocus();
@@ -272,7 +277,7 @@ public class ProgramRow extends TimelineGridView {
     private View getCurrentProgramView() {
         for (int i = 0; i < getChildCount(); ++i) {
             TableEntry entry = ((ProgramItemView) getChildAt(i)).getTableEntry();
-            if (entry.isCurrentProgram()) {
+            if (entry.isCurrentProgram(mClock.currentTimeMillis())) {
                 return getChildAt(i);
             }
         }

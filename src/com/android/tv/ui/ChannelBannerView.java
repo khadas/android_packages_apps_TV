@@ -26,6 +26,9 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.media.tv.TvContentRating;
 import android.media.tv.TvInputInfo;
+import android.media.tv.TvContract;
+import android.net.Uri;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -46,6 +49,8 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.graphics.drawable.Drawable;
+
 import com.android.tv.MainActivity;
 import com.android.tv.R;
 import com.android.tv.TvSingletons;
@@ -64,6 +69,11 @@ import com.android.tv.util.images.ImageCache;
 import com.android.tv.util.images.ImageLoader;
 import com.android.tv.util.images.ImageLoader.ImageLoaderCallback;
 import com.android.tv.util.images.ImageLoader.LoadTvInputLogoTask;
+
+import com.android.tv.util.TvSettings;
+import com.droidlogic.app.tv.ChannelInfo;
+import com.droidlogic.app.tv.TvDataBaseManager;
+import com.droidlogic.app.tv.TvControlManager;
 
 /** A view to render channel banner. */
 public class ChannelBannerView extends FrameLayout
@@ -89,6 +99,12 @@ public class ChannelBannerView extends FrameLayout
     private static final int DISPLAYED_CONTENT_RATINGS_COUNT = 3;
 
     private static final String EMPTY_STRING = "";
+    private static final String ATVRESOLUTION_NTSC = "480i";
+    private static final String ATVRESOLUTION_PAL = "576i";
+    private static final String ATVRESOLUTION_SECAM = "576i";
+
+    private static final String ATV_SYS_COLOR_FLAG = "video";
+    private static final String ATV_SYS_SOUND_FLAG = "audio";
 
     private Program mNoProgram;
     private Program mLockedChannelProgram;
@@ -109,8 +125,13 @@ public class ChannelBannerView extends FrameLayout
     private TextView mClosedCaptionTextView;
     private TextView mAspectRatioTextView;
     private TextView mResolutionTextView;
+    private TextView mAtvColorSysTextView;
+    private TextView mAtvSoundSysTextView;
     private TextView mAudioChannelTextView;
     private TextView[] mContentRatingsTextViews = new TextView[DISPLAYED_CONTENT_RATINGS_COUNT];
+    private TextView mVideoFormatTextView;
+    private TextView mAudioFormatTextView;
+    private TextView mTimeTextView;
     private TextView mProgramDescriptionTextView;
     private String mProgramDescriptionText;
     private View mAnchorView;
@@ -245,10 +266,15 @@ public class ChannelBannerView extends FrameLayout
         mClosedCaptionTextView = (TextView) findViewById(R.id.closed_caption);
         mAspectRatioTextView = (TextView) findViewById(R.id.aspect_ratio);
         mResolutionTextView = (TextView) findViewById(R.id.resolution);
+        mAtvColorSysTextView = (TextView) findViewById(R.id.atv_color_sytem);
+        mAtvSoundSysTextView = (TextView) findViewById(R.id.atv_sound_sytem);
         mAudioChannelTextView = (TextView) findViewById(R.id.audio_channel);
         mContentRatingsTextViews[0] = (TextView) findViewById(R.id.content_ratings_0);
         mContentRatingsTextViews[1] = (TextView) findViewById(R.id.content_ratings_1);
         mContentRatingsTextViews[2] = (TextView) findViewById(R.id.content_ratings_2);
+        mVideoFormatTextView = (TextView) findViewById(R.id.video_format);
+        mAudioFormatTextView = (TextView) findViewById(R.id.audio_format);
+        mTimeTextView = (TextView) findViewById(R.id.time);
         mProgramDescriptionTextView = (TextView) findViewById(R.id.program_description);
         mAnchorView = findViewById(R.id.anchor);
 
@@ -270,6 +296,7 @@ public class ChannelBannerView extends FrameLayout
             ViewUtils.setTransitionAlpha(mChannelView, 1f);
         }
         mAutoHideScheduler.schedule(mShowDurationMillis);
+        updateViews(mMainActivity.getTvView());
     }
 
     @Override
@@ -350,6 +377,15 @@ public class ChannelBannerView extends FrameLayout
                                 | TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_FRAGMENT);
     }
 
+    //force refresh when info is pressed
+    public void updateViews(StreamInfo info) {
+         resetAnimationEffects();
+         mChannelView.setVisibility(VISIBLE);
+         updateStreamInfo(info);
+         updateChannelInfo();
+         updateProgramInfo(mMainActivity.getCurrentProgram());
+    }
+
     /**
      * Update channel banner view with stream info.
      *
@@ -371,13 +407,90 @@ public class ChannelBannerView extends FrameLayout
             updateText(
                     mAudioChannelTextView,
                     Utils.getAudioChannelString(mMainActivity, info.getAudioChannelCount()));
+            updateText(mClosedCaptionTextView, info.hasClosedCaption() ? sClosedCaptionMark
+                    : EMPTY_STRING);
+            updateText(mAspectRatioTextView, Utils.getAspectRatioString(info.getVideoDisplayAspectRatio()));
+            //parse reslution from videoformat
+            String videoformat = mMainActivity.getCurrentChannel().getVideoFormat();
+            updateText(mResolutionTextView, parseReslutionFromVideoFormat(videoformat)
+                    /*Utils.getVideoDefinitionLevelString(
+                            mMainActivity, info.getVideoDefinitionLevel())*/);
+            if (!mMainActivity.getCurrentChannel().isPassthrough()) {
+                String audiotext;
+                if (mMainActivity.mQuickKeyInfo.isAtvSource()) {
+                    updateText(mAtvColorSysTextView, getCurrentColorOrSound(ATV_SYS_COLOR_FLAG));
+                    updateText(mAtvSoundSysTextView, getCurrentColorOrSound(ATV_SYS_SOUND_FLAG));
+                    audiotext = mMainActivity.mQuickKeyInfo.getAtvAudioStreamOutmodestring();
+                } else {
+                    audiotext = TvSettings.getMultiAudioLanguage(getContext());
+                }
+                updateText(mAudioChannelTextView, audiotext
+                    /*Utils.getAudioChannelString(mMainActivity, info.getAudioChannelCount())*/);
+            }
+            updateText(mVideoFormatTextView, mMainActivity.mQuickKeyInfo.getVideoFormat());
+            if (mMainActivity.mQuickKeyInfo.isAudioFormatAC3()) {
+                updateText(mAudioFormatTextView,  mMainActivity.getResources().getDrawable(R.drawable.certifi_dobly_white));
+            } else {
+                updateText(mAudioFormatTextView,  mMainActivity.mQuickKeyInfo.getAudioFormat());
+            }
+            updateText(mTimeTextView, mCurrentChannel != null ? mMainActivity.mQuickKeyInfo.getDtvTime(!mCurrentChannel.isAnalogChannel()) : null);
         } else {
             // Channel change has been requested. But, StreamInfo hasn't been updated yet.
             mClosedCaptionTextView.setVisibility(View.GONE);
             mAspectRatioTextView.setVisibility(View.GONE);
             mResolutionTextView.setVisibility(View.GONE);
+            mAtvColorSysTextView.setVisibility(View.GONE);
+            mAtvSoundSysTextView.setVisibility(View.GONE);
             mAudioChannelTextView.setVisibility(View.GONE);
+            mTimeTextView.setVisibility(View.GONE);
+            mVideoFormatTextView.setVisibility(View.GONE);
+            mAudioFormatTextView.setVisibility(View.GONE);
         }
+    }
+
+    private String getCurrentColorOrSound(String flag) {
+        String colorOrSoundType = "";
+        TvDataBaseManager mTvDataBaseManager = new TvDataBaseManager(mMainActivity);
+        Uri channelUri = TvContract.buildChannelUri(mMainActivity.getCurrentChannel().getId());
+        ChannelInfo channelInfo = mTvDataBaseManager.getChannelInfo(channelUri);
+        if (channelInfo == null) {
+            Log.e(TAG,"Can't get current channel info when get current Color or Sound!");
+            return colorOrSoundType;
+        }
+        if (flag.equals(ATV_SYS_COLOR_FLAG)) {
+            int videoStd = channelInfo.getVideoStd();
+            switch (videoStd) {
+                case TvControlManager.ATV_VIDEO_STD_PAL:
+                    colorOrSoundType = mMainActivity.getResources().getString(R.string.channel_video_pal);
+                    break;
+                case TvControlManager.ATV_VIDEO_STD_NTSC:
+                    colorOrSoundType = mMainActivity.getResources().getString(R.string.channel_video_ntsc);
+                    break;
+                case TvControlManager.ATV_VIDEO_STD_SECAM:
+                    colorOrSoundType = mMainActivity.getResources().getString(R.string.channel_video_secam);
+                    break;
+            }
+        } else if (flag.equals(ATV_SYS_SOUND_FLAG)) {
+            int audioStd = channelInfo.getAudioStd();
+            switch (audioStd) {
+                case TvControlManager.ATV_AUDIO_STD_DK:
+                    colorOrSoundType = mMainActivity.getResources().getString(R.string.channel_audio_dk);
+                    break;
+                case TvControlManager.ATV_AUDIO_STD_I:
+                    colorOrSoundType = mMainActivity.getResources().getString(R.string.channel_audio_i);
+                    break;
+                case TvControlManager.ATV_AUDIO_STD_BG:
+                    colorOrSoundType = mMainActivity.getResources().getString(R.string.channel_audio_bg);
+                    break;
+                case TvControlManager.ATV_AUDIO_STD_M:
+                    colorOrSoundType = mMainActivity.getResources().getString(R.string.channel_audio_m);
+                    break;
+                case TvControlManager.ATV_AUDIO_STD_L:
+                    colorOrSoundType = mMainActivity.getResources().getString(R.string.channel_audio_l);
+                    break;
+            }
+        }
+        return colorOrSoundType;
     }
 
     private void updateChannelInfo() {
@@ -467,8 +580,20 @@ public class ChannelBannerView extends FrameLayout
         if (TextUtils.isEmpty(text)) {
             view.setVisibility(View.GONE);
         } else {
-            view.setVisibility(View.VISIBLE);
+            view.setBackgroundColor(mMainActivity.getResources().getColor(R.color.channel_banner_program_track_meta_back));
             view.setText(text);
+            view.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void updateText(TextView view, Drawable draw) {
+        if (draw == null) {
+            view.setBackground(null);
+            view.setVisibility(View.GONE);
+        } else {
+            view.setBackground(draw);
+            view.setText("");
+            view.setVisibility(View.VISIBLE);
         }
     }
 
@@ -651,7 +776,7 @@ public class ChannelBannerView extends FrameLayout
                 mContentRatingsTextViews[i].setVisibility(View.GONE);
             }
         } else {
-            TvContentRating[] ratings = (program == null) ? null : program.getContentRatings();
+            TvContentRating[] ratings = mMainActivity.mQuickKeyInfo.getContentRatingsOfCurrentProgram();/*(program == null) ? null : program.getContentRatings();*/
             for (int i = 0; i < DISPLAYED_CONTENT_RATINGS_COUNT; i++) {
                 if (ratings == null || ratings.length <= i) {
                     mContentRatingsTextViews[i].setVisibility(View.GONE);
@@ -660,6 +785,10 @@ public class ChannelBannerView extends FrameLayout
                             mContentRatingsManager.getDisplayNameForRating(ratings[i]));
                     mContentRatingsTextViews[i].setVisibility(View.VISIBLE);
                 }
+            }
+            if (ratings == null || (ratings != null && ratings.length == 0)) {
+                mContentRatingsTextViews[0].setText(ContentRatingsManager.RATING_NO);
+                mContentRatingsTextViews[0].setVisibility(View.VISIBLE);
             }
         }
     }
@@ -829,5 +958,26 @@ public class ChannelBannerView extends FrameLayout
     @Override
     public void onAccessibilityStateChanged(boolean enabled) {
         mAutoHideScheduler.onAccessibilityStateChanged(enabled);
+    }
+
+    //new add function ot others
+    private String parseReslutionFromVideoFormat(String videoformat) {
+        String resolution = null;
+        if (videoformat != null && videoformat.split("_") != null && videoformat.split("_").length == 3 &&
+                !mMainActivity.mQuickKeyInfo.isAtvSource()) {
+            resolution = (videoformat.split("_"))[2];
+        } else if (mMainActivity.mQuickKeyInfo.isAtvSource()) {
+            String type = mMainActivity.mQuickKeyInfo.getChannelTuner().getCurrentChannel().getType();
+            if (type.equals(TvContract.Channels.TYPE_PAL)) {
+                resolution = ATVRESOLUTION_PAL;
+            } else if (type.equals(TvContract.Channels.TYPE_NTSC)) {
+                resolution = ATVRESOLUTION_NTSC;
+            } else if (type.equals(TvContract.Channels.TYPE_SECAM)) {
+                resolution = ATVRESOLUTION_SECAM;
+            }
+        } else {
+            resolution = EMPTY_STRING;
+        }
+        return resolution;
     }
 }

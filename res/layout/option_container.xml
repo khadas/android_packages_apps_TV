@@ -31,7 +31,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/side_panel_header_height"
         android:elevation="@dimen/side_panel_header_elevation"
-        android:background="@color/side_panel_header_background" />
+        android:background="@color/side_panel_header_droid_background" />
 
     <!-- This fragment container needs to have at least the same elevation as the above FrameLayout
          for the header background. Otherwise, header text in the fragment won't be drawn, as it's

@@ -48,6 +48,9 @@ import com.android.tv.common.CommonConstants;
 import com.android.tv.common.WeakHandler;
 import com.android.tv.data.Program;
 import com.android.tv.data.api.Channel;
+import com.android.tv.util.images.BitmapUtils;
+import com.android.tv.util.images.ImageLoader;
+import com.android.tv.util.TvClock;
 import com.android.tv.util.TvInputManagerHelper;
 import com.android.tv.util.Utils;
 import com.android.tv.util.images.BitmapUtils;
@@ -116,6 +119,9 @@ public class NotificationService extends Service
     private int mLogoPaddingStart;
     private int mLogoPaddingBottom;
 
+    //for TvClock
+    private TvClock mClock;
+
     public NotificationService() {
         mRecommendationType = TYPE_ROUTINE_WATCH_AND_FAVORITE_CHANNEL_RECOMMENDATION;
     }
@@ -158,6 +164,8 @@ public class NotificationService extends Service
         tvSingletons.getChannelDataManager();
         tvSingletons.getProgramDataManager();
         tvSingletons.getMainActivityWrapper().addOnCurrentChannelChangeListener(this);
+
+        mClock = new TvClock(this);
     }
 
     @UiThread
@@ -379,7 +387,7 @@ public class NotificationService extends Service
         }
         final long programDurationMs =
                 program.getEndTimeUtcMillis() - program.getStartTimeUtcMillis();
-        long programLeftTimsMs = program.getEndTimeUtcMillis() - System.currentTimeMillis();
+        long programLeftTimsMs = program.getEndTimeUtcMillis() - mClock.currentTimeMillis();
         final int programProgress =
                 (programDurationMs <= 0)
                         ? -1

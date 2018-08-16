@@ -94,4 +94,9 @@
     <!-- DVR library -->
     <integer name="dvr_details_full_text_animation_duration">500</integer>
     <integer name="dvr_card_title_max_lines_folded">1</integer>
+
+    <!-- Channel Search UI -->
+    <integer name="ut_scan_title_max_lines">2</integer>
+    <integer name="ut_entry_anim_duration">300</integer>
+    <integer name="ut_exit_anim_duration">300</integer>
 </resources>

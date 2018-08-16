@@ -747,4 +747,8 @@ public class TvInputManagerHelper {
             return info.getType();
         }
     }
+
+    public List<TvInputInfo> getTvInputList() {
+        return mTvInputManager.getTvInputList();
+    }
 }

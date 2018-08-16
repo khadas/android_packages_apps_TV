@@ -1005,4 +1005,36 @@ public final class Program extends BaseProgram implements Comparable<Program>, P
             out.writeString(logoUrl);
         }
     }
+
+    public static TvContentRating[] stringToContentRatings(String commaSeparatedRatings) {
+        if (TextUtils.isEmpty(commaSeparatedRatings)) {
+            return null;
+        }
+        String[] ratings = commaSeparatedRatings.split("\\s*,\\s*");
+        TvContentRating[] contentRatings = new TvContentRating[ratings.length];
+        for (int i = 0; i < contentRatings.length; ++i) {
+            contentRatings[i] = TvContentRating.unflattenFromString(ratings[i]);
+        }
+        return contentRatings;
+    }
+
+    public static String contentRatingsToString(TvContentRating[] contentRatings) {
+        if (contentRatings == null || contentRatings.length == 0) {
+            return null;
+        }
+        final String DELIMITER = ",";
+        StringBuilder buildratings = null;
+        for (TvContentRating rating : contentRatings) {
+            if (rating != null) {//prevent null pointer
+               if (buildratings == null) {
+                   buildratings =  new StringBuilder(rating.flattenToString());
+                } else {
+                    buildratings.append(DELIMITER);
+                    buildratings.append(rating.flattenToString());
+                }
+            }
+        }
+
+        return buildratings != null ? buildratings.toString() : null;
+    }
 }

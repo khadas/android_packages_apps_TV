@@ -354,4 +354,46 @@
     <string name="dvr_date_tomorrow_time" msgid="8364654556105292594">"明天<xliff:g id="TIME_RANGE">%1$s</xliff:g>"</string>
     <string name="program_guide_critic_score" msgid="340530743913585150">"分數"</string>
     <string name="recorded_programs_preview_channel" msgid="890404366427245812">"已錄影的節目"</string>
+
+    <!--add for channel info-->
+    <string name="channel_source_setting">頻道</string>
+    <string name="channel_dtv_type">數字電視類型</string>
+    <string name="channel_info">頻道信息</string>
+    <string name="channel_audio_ad_list">聲音AD列表</string>
+    <string name="channel_sound_channel">聲道</string>
+    <string name="channel_volume_compensate">音量補償</string>
+    <string name="channel_manual_search">手動搜台</string>
+    <string name="channel_auto_search">自動搜台</string>
+    <string name="channel_channel_edit">頻道編輯</string>
+    <string name="channel_search_channel">搜台</string>
+    <string name="channel_audio_ad_switch">聲音AD開關</string>
+    <string name="channel_audio_ad_mix_level">聲音AD混響度</string>
+    <string name="channel_switch_channel">切台</string>
+    <string name="channel_info_channel">頻道</string>
+    <string name="channel_info_frequency">頻率</string>
+    <string name="channel_info_strength">信號強度</string>
+    <string name="channel_info_type">類型</string>
+    <string name="channel_info_service_id">服務ID</string>
+    <string name="channel_sound_channel_stereo">立體聲</string>
+    <string name="channel_sound_channel_left">左聲道</string>
+    <string name="channel_sound_channel_right">右聲道</string>
+    <string name="channel_edit_tv">電視</string>
+    <string name="channel_edit_radio">廣播</string>
+    <string name="channel_edit_edit">編輯</string>
+    <string name="channel_edit_skip">跳過</string>
+    <string name="channel_edit_delete">刪除</string>
+    <string name="channel_edit_favourite">常用</string>
+    <string name="channel_switch_channel_static">靜幀</string>
+    <string name="channel_switch_channel_black">黑屏</string>
+    <string name="channel_edit_ok">確定</string>
+    <string name="channel_mts">立體聲</string>
+    <string name="channel_fine_tune">微調</string>
+    <string name="search_channel_first">請先搜台</string>
+
+    <!-- fav & list-->
+    <string name="tv">電視</string>
+    <string name="radio">廣播</string>
+    <string name="favourite_list">喜愛列表</string>
+    <string name="channel_list">頻道列表</string>
+    <string name="tvview_source_has_no_channel">無頻道</string>
 </resources>

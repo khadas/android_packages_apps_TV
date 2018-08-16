@@ -51,4 +51,31 @@
         android:singleLine="true"
         android:ellipsize="end"
         android:textSize="18sp" />
+
+    <TextView android:id="@+id/resolution"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@string/condensed_font"
+        android:textColor="@color/select_input_text_color_primary"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textSize="18sp" />
+
+    <TextView android:id="@+id/av_caption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@string/condensed_font"
+        android:textColor="@color/select_input_text_color_primary"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textSize="18sp" />
+
+    <TextView android:id="@+id/av_vchip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@string/condensed_font"
+        android:textColor="@color/select_input_text_color_primary"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textSize="18sp" />
 </com.android.tv.ui.InputBannerView>

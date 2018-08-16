@@ -42,7 +42,10 @@ import com.android.tv.common.util.Clock;
 import com.android.tv.data.api.Channel;
 import com.android.tv.util.AsyncDbTask;
 import com.android.tv.util.MultiLongSparseArray;
+import com.android.tv.util.TvClock;
 import com.android.tv.util.Utils;
+import com.droidlogic.app.SystemControlManager;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,6 +63,7 @@ import java.util.concurrent.TimeUnit;
 public class ProgramDataManager implements MemoryManageable {
     private static final String TAG = "ProgramDataManager";
     private static final boolean DEBUG = false;
+    private static final String PROP_SET_UPDATE_IMMEDIATE_ENABLED = "persist.sys.update.immediate";
 
     // To prevent from too many program update operations at the same time, we give random interval
     // between PERIODIC_PROGRAM_UPDATE_MIN_MS and PERIODIC_PROGRAM_UPDATE_MAX_MS.
@@ -90,7 +94,6 @@ public class ProgramDataManager implements MemoryManageable {
     private static final int MSG_UPDATE_ONE_CURRENT_PROGRAM = 1001;
     private static final int MSG_UPDATE_PREFETCH_PROGRAM = 1002;
 
-    private final Clock mClock;
     private final ContentResolver mContentResolver;
     private final Executor mDbExecutor;
     private final RemoteConfig mRemoteConfig;
@@ -122,21 +125,26 @@ public class ProgramDataManager implements MemoryManageable {
     private boolean mPauseProgramUpdate = false;
     private final LruCache<Long, Program> mZeroLengthProgramCache = new LruCache<>(10);
 
+    // [DroidLogic]
+    private Context mContext = null;
+    private TvClock mClock;
+
     @MainThread
     public ProgramDataManager(Context context) {
         this(
                 TvSingletons.getSingletons(context).getDbExecutor(),
                 context.getContentResolver(),
-                Clock.SYSTEM,
+                new TvClock(context),
                 Looper.myLooper(),
                 TvSingletons.getSingletons(context).getRemoteConfig());
+        mContext = context;
     }
 
     @VisibleForTesting
     ProgramDataManager(
             Executor executor,
             ContentResolver contentResolver,
-            Clock time,
+            TvClock time,
             Looper looper,
             RemoteConfig remoteConfig) {
         mDbExecutor = executor;
@@ -166,6 +174,10 @@ public class ProgramDataManager implements MemoryManageable {
                     }
                 };
         mProgramPrefetchUpdateWaitMs = PROGRAM_PREFETCH_UPDATE_WAIT_MS;
+    }
+
+    public boolean getSystemProperty(String prop){
+        return (new SystemControlManager(mContext)).getPropertyBoolean(prop, false);
     }
 
     @VisibleForTesting

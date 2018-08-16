@@ -356,4 +356,57 @@
     <string name="dvr_date_tomorrow_time" msgid="8364654556105292594">"내일 <xliff:g id="TIME_RANGE">%1$s</xliff:g>"</string>
     <string name="program_guide_critic_score" msgid="340530743913585150">"점수"</string>
     <string name="recorded_programs_preview_channel" msgid="890404366427245812">"녹화된 프로그램"</string>
+
+    <!--add for channel info-->
+    <string name="channel_source_setting">채널</string>
+    <string name="channel_dtv_type">D디지털 tv 유형</string>
+    <string name="channel_info">채널 정보</string>
+    <string name="channel_audio_ad_list">음향 제어 표</string>
+    <string name="channel_sound_channel">채널</string>
+    <string name="channel_volume_compensate">음량으로 보상하다.</string>
+    <string name="channel_manual_search">수동 수색 대</string>
+    <string name="channel_auto_search">자동 수색 대</string>
+    <string name="channel_channel_edit">채널 편집</string>
+    <string name="channel_switch_channel">체 대</string>
+    <string name="channel_dtv_type_dtmb">DTMB</string>
+    <string name="channel_dtv_type_dvbc">DVB-C</string>
+    <string name="channel_dtv_type_dvbt">DVB-T</string>
+    <string name="channel_dtv_type_dvbs">DVB-S</string>
+    <string name="channel_dtv_type_dvbc2">DVB-C2</string>
+    <string name="channel_dtv_type_dvbt2">DVB-T2</string>
+    <string name="channel_dtv_type_dvbs2">DVB-S2</string>
+    <string name="channel_dtv_type_atsc_t">ATSC-T</string>
+    <string name="channel_dtv_type_atsc_c">ATSC-C</string>
+    <string name="channel_dtv_type_isdb_t">ISDB-T</string>
+    <string name="channel_info_channel">채널</string>
+    <string name="channel_info_frequency">주파수</string>
+    <string name="channel_info_strength">강도</string>
+    <string name="channel_info_type">유형</string>
+    <string name="channel_info_service_id">서비스 ID</string>
+    <string name="channel_info_pcr_id">Pcr ID</string>
+    <string name="channel_sound_channel_stereo">스테레오</string>
+    <string name="channel_sound_channel_left">왼쪽 소리</string>
+    <string name="channel_sound_channel_right">우측 소리</string>
+    <string name="channel_edit_tv">tv</string>
+    <string name="channel_edit_radio">방송</string>
+    <string name="channel_edit_edit">편집</string>
+    <string name="channel_edit_skip">넘</string>
+    <string name="channel_edit_delete">삭제</string>
+    <string name="channel_edit_favourite">사랑</string>
+    <string name="channel_switch_channel_static">마치 무 라 노 부 타 카 프레임</string>
+    <string name="channel_switch_channel_black">흑죽이다</string>
+    <string name="channel_edit_ok">확정</string>
+    <string name="channel_audio_mts">MTS</string>
+    <string name="channel_audio_outmode_mono">일방 주의</string>
+    <string name="channel_audio_outmode_stereo">스테레오</string>
+    <string name="channel_audio_outmode_sap">SAP</string>
+    <string name="channel_search_channel">검색 대</string>
+    <string name="channel_audio_ad_switch">소리 AD 스위치</string>
+    <string name="channel_audio_ad_switch_off">문 을 닫다</string>
+    <string name="channel_audio_ad_switch_on">열</string>
+    <string name="channel_audio_ad_mix_level">소리 AD 하 이브</string>
+    <string name="channel_fine_tune">미세 조정</string>
+    <string name="channel_fine_mhz">MHz</string>
+    <string name="shortcutactivity_not_found">설치 절차를 찾지 못 했다!</string>
+    <string name="tvview_source_has_no_channel">채널이 없다</string>
 </resources>

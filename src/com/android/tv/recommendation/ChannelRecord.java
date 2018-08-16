@@ -23,6 +23,9 @@ import com.android.tv.TvSingletons;
 import com.android.tv.data.Program;
 import com.android.tv.data.ProgramDataManager;
 import com.android.tv.data.api.Channel;
+import com.android.tv.util.TvClock;
+import com.android.tv.util.Utils;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -39,11 +42,15 @@ public class ChannelRecord {
     private long mTotalWatchDurationMs;
     private boolean mInputRemoved;
 
+    //for TvClock
+    private TvClock mClock;
+
     public ChannelRecord(Context context, Channel channel, boolean inputRemoved) {
         mContext = context;
         mChannel = channel;
         mWatchHistory = new ArrayDeque<>();
         mInputRemoved = inputRemoved;
+         mClock = new TvClock(context);
     }
 
     public Channel getChannel() {
@@ -69,7 +76,7 @@ public class ChannelRecord {
     }
 
     public Program getCurrentProgram() {
-        long time = System.currentTimeMillis();
+        long time = mClock.currentTimeMillis();
         if (mCurrentProgram == null || mCurrentProgram.getEndTimeUtcMillis() < time) {
             ProgramDataManager manager =
                     TvSingletons.getSingletons(mContext).getProgramDataManager();

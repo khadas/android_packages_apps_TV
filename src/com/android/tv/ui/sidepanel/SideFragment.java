@@ -28,6 +28,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.SeekBar;
+import android.util.Log;
+
 import com.android.tv.MainActivity;
 import com.android.tv.R;
 import com.android.tv.TvSingletons;
@@ -38,6 +41,10 @@ import com.android.tv.common.util.SystemProperties;
 import com.android.tv.data.ChannelDataManager;
 import com.android.tv.data.ProgramDataManager;
 import com.android.tv.util.ViewCache;
+
+import com.android.tv.droidlogic.channelui.SeekBarItem;
+import com.android.tv.droidlogic.channelui.SingleStepSeekBarItem;
+
 import java.util.List;
 
 public abstract class SideFragment<T extends Item> extends Fragment implements HasTrackerLabel {
@@ -49,7 +56,9 @@ public abstract class SideFragment<T extends Item> extends Fragment implements H
         R.layout.option_item_channel_lock,
         R.layout.option_item_check_box,
         R.layout.option_item_channel_check,
-        R.layout.option_item_action
+        R.layout.option_item_action,
+        R.layout.option_item_seekbar,
+        R.layout.option_item_normal_seekbar,
     };
 
     private static RecyclerView.RecycledViewPool sRecycledViewPool =
@@ -315,6 +324,25 @@ public abstract class SideFragment<T extends Item> extends Fragment implements H
             implements View.OnClickListener, View.OnFocusChangeListener {
         private ItemAdapter mAdapter;
         public Item mItem;
+        private SeekBar mSeekBar;
+            //add seekbarchangelistener to listen its change
+            private SeekBar.OnSeekBarChangeListener mOnSeekBarChangeListener = new SeekBar.OnSeekBarChangeListener(){
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    //mSeekBar.setProgress(progress);
+                    mItem.onProgressChanged(seekBar, progress);
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+
+                }
+            };
 
         private ViewHolder(View view) {
             super(view);
@@ -325,12 +353,24 @@ public abstract class SideFragment<T extends Item> extends Fragment implements H
         public void onBind(ItemAdapter adapter, Item item) {
             mAdapter = adapter;
             mItem = item;
+            if (item instanceof SeekBarItem || item instanceof SingleStepSeekBarItem) {//register listener when binded
+                    mSeekBar = (SeekBar) itemView.findViewById(R.id.seekbar);
+                    if (mSeekBar != null) {
+                         Log.d("SideFragment", "[onBind] mSeekBar != null");
+                         mSeekBar.setOnSeekBarChangeListener(mOnSeekBarChangeListener);
+                         mSeekBar.requestFocus();
+                    }
+                }
             mItem.onBind(itemView);
             mItem.onUpdate();
         }
 
         public void onUnbind() {
             mItem.onUnbind();
+            if (mItem instanceof SeekBarItem || mItem instanceof SingleStepSeekBarItem) {//unregister listener when unbinded
+                mSeekBar.setOnSeekBarChangeListener(null);
+                mSeekBar = null;
+            }
             mItem = null;
             mAdapter = null;
         }

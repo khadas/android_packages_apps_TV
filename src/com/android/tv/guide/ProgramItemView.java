@@ -47,6 +47,7 @@ import com.android.tv.dvr.DvrManager;
 import com.android.tv.dvr.data.ScheduledRecording;
 import com.android.tv.dvr.ui.DvrUiHelper;
 import com.android.tv.guide.ProgramManager.TableEntry;
+import com.android.tv.util.TvClock;
 import com.android.tv.util.ToastUtils;
 import com.android.tv.util.Utils;
 import java.lang.reflect.InvocationTargetException;
@@ -73,7 +74,6 @@ public class ProgramItemView extends TextView {
     private static TextAppearanceSpan sGrayedOutEpisodeTitleStyle;
 
     private final DvrManager mDvrManager;
-    private final Clock mClock;
     private final ChannelDataManager mChannelDataManager;
     private ProgramGuide mProgramGuide;
     private TableEntry mTableEntry;
@@ -85,12 +85,16 @@ public class ProgramItemView extends TextView {
     // as a result of the re-layout (see b/21378855).
     private boolean mPreventParentRelayout;
 
+    //for TvClock
+    private static Context mContext;
+    private static TvClock mClock;
+
     private static final View.OnClickListener ON_CLICKED =
             new View.OnClickListener() {
                 @Override
                 public void onClick(final View view) {
                     TableEntry entry = ((ProgramItemView) view).mTableEntry;
-                    Clock clock = ((ProgramItemView) view).mClock;
+                    TvClock clock = ((ProgramItemView) view).mClock;
                     if (entry == null) {
                         // do nothing
                         return;
@@ -101,7 +105,7 @@ public class ProgramItemView extends TextView {
                     final MainActivity tvActivity = (MainActivity) view.getContext();
                     final Channel channel =
                             tvActivity.getChannelDataManager().getChannel(entry.channelId);
-                    if (entry.isCurrentProgram()) {
+                    if (entry.isCurrentProgram(mClock.currentTimeMillis())) {
                         view.postDelayed(
                                 new Runnable() {
                                     @Override
@@ -119,7 +123,7 @@ public class ProgramItemView extends TextView {
                     } else if (entry.program != null
                             && CommonFeatures.DVR.isEnabled(view.getContext())) {
                         DvrManager dvrManager = singletons.getDvrManager();
-                        if (entry.entryStartUtcMillis > clock.currentTimeMillis()
+                        if (entry.entryStartUtcMillis > mClock.currentTimeMillis()
                                 && dvrManager.isProgramRecordable(entry.program)) {
                             if (entry.scheduledRecording == null) {
                                 DvrUiHelper.checkStorageStatusAndShowErrorMessage(
@@ -177,7 +181,7 @@ public class ProgramItemView extends TextView {
                         // do nothing
                         return;
                     }
-                    if (entry.isCurrentProgram()) {
+                    if (entry.isCurrentProgram(mClock.currentTimeMillis())) {
                         Drawable background = getBackground();
                         if (!mProgramGuide.isActive() || mProgramGuide.isRunningAnimation()) {
                             // If program guide is not active or is during showing/hiding,
@@ -214,7 +218,10 @@ public class ProgramItemView extends TextView {
         TvSingletons singletons = TvSingletons.getSingletons(getContext());
         mDvrManager = singletons.getDvrManager();
         mChannelDataManager = singletons.getChannelDataManager();
-        mClock = singletons.getClock();
+
+        mContext = context;
+        mClock = new TvClock(context);
+
     }
 
     private void initIfNeeded() {
@@ -277,7 +284,7 @@ public class ProgramItemView extends TextView {
             int[] states =
                     super.onCreateDrawableState(
                             extraSpace + STATE_CURRENT_PROGRAM.length + STATE_TOO_WIDE.length);
-            if (mTableEntry.isCurrentProgram()) {
+            if (mTableEntry.isCurrentProgram(mClock.currentTimeMillis())) {
                 mergeDrawableStates(states, STATE_CURRENT_PROGRAM);
             }
             if (mTableEntry.getWidth() > mMaxWidthForRipple) {
@@ -507,8 +514,8 @@ public class ProgramItemView extends TextView {
         mTableEntry = null;
     }
 
-    private static int getProgress(Clock clock, long start, long end) {
-        long currentTime = clock.currentTimeMillis();
+    private static int getProgress(TvClock clock, long start, long end) {
+        long currentTime = mClock.currentTimeMillis();
         if (currentTime <= start) {
             return 0;
         } else if (currentTime >= end) {

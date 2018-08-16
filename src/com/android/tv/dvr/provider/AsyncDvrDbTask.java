@@ -126,7 +126,7 @@ public abstract class AsyncDvrDbTask<Params, Progress, Result>
             }
             List<ScheduledRecording> scheduledRecordings = new ArrayList<>();
             try (Cursor c = sDbHelper.query(Schedules.TABLE_NAME, ScheduledRecording.PROJECTION)) {
-                while (c.moveToNext() && !isCancelled()) {
+                while (c != null && c.moveToNext() && !isCancelled()) {
                     scheduledRecordings.add(ScheduledRecording.fromCursor(c));
                 }
             }
@@ -192,7 +192,7 @@ public abstract class AsyncDvrDbTask<Params, Progress, Result>
             List<SeriesRecording> scheduledRecordings = new ArrayList<>();
             try (Cursor c =
                     sDbHelper.query(SeriesRecordings.TABLE_NAME, SeriesRecording.PROJECTION)) {
-                while (c.moveToNext() && !isCancelled()) {
+                while (c != null && c.moveToNext() && !isCancelled()) {
                     scheduledRecordings.add(SeriesRecording.fromCursor(c));
                 }
             }

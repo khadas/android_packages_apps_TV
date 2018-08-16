@@ -40,6 +40,12 @@ public final class SystemProperties {
     public static final BooleanSystemProperty USE_TRACKER =
             new BooleanSystemProperty("tv_use_tracker", true);
 
+    public static final BooleanSystemProperty USE_CUSTOMIZATION =
+            new BooleanSystemProperty("ro.platform.customize_tvsetting", false);
+
+    public static final BooleanSystemProperty USE_KEY =
+            new BooleanSystemProperty("sys.platform.customize_key", false);
+
     static {
         updateSystemProperties();
     }

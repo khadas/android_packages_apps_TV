@@ -354,4 +354,41 @@
     <string name="dvr_date_tomorrow_time" msgid="8364654556105292594">"明日（<xliff:g id="TIME_RANGE">%1$s</xliff:g>）"</string>
     <string name="program_guide_critic_score" msgid="340530743913585150">"スコア"</string>
     <string name="recorded_programs_preview_channel" msgid="890404366427245812">"録画した番組"</string>
+
+    <!--add for channel info-->
+    <string name="channel_source_setting">チャンネル</string>
+    <string name="channel_dtv_type">デジタルテレビタイプ</string>
+    <string name="channel_info">チャンネル情報</string>
+    <string name="channel_audio_ad_list">声ADリスト</string>
+    <string name="channel_sound_channel">チャネル</string>
+    <string name="channel_volume_compensate">音量補償</string>
+    <string name="channel_manual_search">手動検索台</string>
+    <string name="channel_auto_search">自動検索台</string>
+    <string name="channel_channel_edit">チャンネル編集</string>
+    <string name="channel_search_channel">押収台</string>
+    <string name="channel_audio_ad_switch">声ADスイッチ</string>
+    <string name="channel_audio_ad_mix_level">声AD混合度</string>
+    <string name="channel_switch_channel">切台</string>
+    <string name="channel_info_channel">チャンネル</string>
+    <string name="channel_info_frequency">周波数</string>
+    <string name="channel_info_strength">信号強度</string>
+    <string name="channel_info_type">タイプ</string>
+    <string name="channel_info_service_id">サービスID</string>
+    <string name="channel_sound_channel_stereo">ステレオ</string>
+    <string name="channel_sound_channel_left">左のチャネル</string>
+    <string name="channel_sound_channel_right">右のチャネル</string>
+    <string name="channel_edit_tv">テレビ</string>
+    <string name="channel_edit_radio">放送</string>
+    <string name="channel_edit_edit">編集</string>
+    <string name="channel_edit_skip">飛び越し</string>
+    <string name="channel_edit_delete">削除</string>
+    <string name="channel_edit_favourite">常用</string>
+    <string name="channel_switch_channel_static">静フレーム</string>
+    <string name="channel_switch_channel_black">アクセス</string>
+    <string name="channel_edit_ok">確定</string>
+    <string name="channel_mts">ステレオ</string>
+    <string name="channel_fine_tune">へ</string>
+    <string name="search_channel_first">先に捜し出してください</string>
+    <string name="shortcutactivity_not_found">設置手続きが見つからない!</string>
+    <string name="tvview_source_has_no_channel">チャンネルがない</string>
 </resources>

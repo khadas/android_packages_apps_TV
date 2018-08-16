@@ -21,6 +21,8 @@ import android.net.Uri;
 import android.support.annotation.Nullable;
 import com.android.tv.util.images.ImageLoader.ImageLoaderCallback;
 
+import java.util.Map;
+
 /**
  * Interface for {@link com.android.tv.data.ChannelImpl}.
  *
@@ -127,4 +129,24 @@ public interface Channel {
             int loadImageTypeChannelLogo,
             int mPosterArtWidth,
             int mPosterArtHeight);
+
+    boolean isAnalogChannel();
+
+    boolean isDigitalChannel();
+
+    boolean isRadioChannel();
+
+    boolean isVideoChannel();
+
+    boolean isFavourite();
+
+    String getContentRatings();
+
+    int getFrequency();
+
+    String getServiceType();
+
+    Map<String, String> getChannelInternalProviderDataMap();
+
+    boolean hasSameReadWriteInfo(Channel other);
 }

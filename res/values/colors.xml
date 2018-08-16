@@ -24,6 +24,8 @@
     <!-- TvActivity -->
     <color name="tvactivity_background">#000000</color>
     <color name="tvactivity_background_on_shrunken_tvview">#111111</color>
+    <color name="tvactivity_edit_text_background">#FFFFFF</color>
+    <color name="tvactivity_edit_text_color">#000000</color>
 
     <!-- Main menu -->
     <color name="menu_row_title">#FFEEEEEE</color>
@@ -67,6 +69,7 @@
     <!-- Side panel -->
     <color name="side_panel_background">#263238</color>
     <color name="side_panel_header_background">#0277BD</color>
+    <color name="side_panel_header_droid_background">#37474F</color>
 
     <!-- More options -->
     <color name="option_item_divider_color">#20EEEEEE</color>
@@ -115,6 +118,7 @@
     <color name="channel_banner_text_color">#FFEEEEEE</color>
     <color name="channel_banner_episode_text_color">#B3EEEEEE</color>
     <color name="channel_banner_dim_text_color">#80EEEEEE</color>
+    <color name="channel_banner_program_track_meta_back">#FFFFFFFF</color>
 
     <!-- Keypad channel switch -->
     <color name="keypad_channel_switch_text_color">@color/channel_banner_text_color</color>
@@ -158,4 +162,27 @@
     <color name="dvr_guided_step_action_text_color_selected">#111111</color>
     <color name="dvr_detail_default_background">#FF01579B</color>
     <color name="dvr_detail_default_background_scrim">#CC000000</color>
+
+    <!-- Channel Search UI -->
+    <color name="transparent">#00000000</color>
+    <color name="selected">#FF019587</color>
+    <color name="save_selected">#55019587</color>
+    <color name="divider_1">#44FFFFFF</color>
+    <color name="color_text_title">#FF37373C</color>
+    <color name="color_text_item">#FF65686F</color>
+    <color name="color_text_focused">#FFFFFFFF</color>
+    <color name="color_text_prompt">#FF808080</color>
+    <color name="color_text_edit">#FFCC0000</color>
+    <color name="color_text_hint">#FFBFBFBF</color>
+    <color name="color_text_blue_0">#FF39A8D5</color>
+    <color name="color_text_blue_1">#FF92D4EA</color>
+    <color name="ut_scan_title_text">#EEEEEE</color>
+    <color name="ut_scan_description_text">#B3EEEEEE</color>
+    <color name="ut_scan_progress">#EEEEEE</color>
+    <color name="ut_scan_progress_background">#26EEEEEE</color>
+    <color name="ut_scan_button_text">#EEEEEE</color>
+    <color name="ut_scan_channellist_background">#26EEEEEE</color>
+    <color name="common_tv_background">#37474F</color>
+    <!--<color name="common_tv_background">#2F4F4F</color>-->
+    <color name="black_background">#000000</color>
 </resources>

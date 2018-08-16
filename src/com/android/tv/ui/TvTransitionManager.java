@@ -30,6 +30,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
+import android.util.Log;
+
 import com.android.tv.MainActivity;
 import com.android.tv.R;
 import com.android.tv.data.api.Channel;
@@ -74,6 +76,8 @@ public class TvTransitionManager extends TransitionManager {
 
     private Listener mListener;
 
+    private final String TAG = "TvTransitionManager";
+
     public TvTransitionManager(
             MainActivity mainActivity,
             ViewGroup sceneContainer,
@@ -100,14 +104,13 @@ public class TvTransitionManager extends TransitionManager {
             return;
         }
         initIfNeeded();
+        //force disable Animation as may cause display problem
+        withAnimation = false;
         if (withAnimation) {
             mEmptyView.setAlpha(1.0f);
             transitionTo(mEmptyScene);
         } else {
-            TransitionManager.go(mEmptyScene, null);
-            // When transition is null, transition got stuck without calling endTransitions.
-            TransitionManager.endTransitions(mEmptyScene.getSceneRoot());
-            // Since Fade.OUT transition doesn't run, we need to set alpha manually.
+            switchSceneWithoutAnimation(mEmptyScene);
             mEmptyView.setAlpha(0);
         }
     }
@@ -126,16 +129,35 @@ public class TvTransitionManager extends TransitionManager {
                 mInputBannerView.setLayoutParams(lp);
                 mInputBannerView.updateLabel();
                 transitionTo(mInputBannerScene);
+                switchSceneWithoutAnimation(mInputBannerScene);
             }
         } else if (mCurrentScene != mChannelBannerScene) {
-            transitionTo(mChannelBannerScene);
+            switchSceneWithoutAnimation(mChannelBannerScene);
         }
+    }
+
+    private void switchSceneWithoutAnimation(final Scene des) {
+        if (des == null) {
+            Log.e(TAG, "empty scene");
+            return;
+        }
+        TransitionManager.go(des, null);
+        // When transition is null, transition got stuck without calling endTransitions.
+        TransitionManager.endTransitions(des.getSceneRoot());
+    }
+
+    public boolean isChannelBannerActive() {
+        return mCurrentScene != null && mCurrentScene == mChannelBannerScene;
+    }
+
+    public boolean isInputBannerActive() {
+        return mCurrentScene != null && mCurrentScene == mInputBannerScene;
     }
 
     public void goToKeypadChannelSwitchScene() {
         initIfNeeded();
         if (mCurrentScene != mKeypadChannelSwitchScene) {
-            transitionTo(mKeypadChannelSwitchScene);
+            switchSceneWithoutAnimation(mKeypadChannelSwitchScene);
         }
     }
 
@@ -143,7 +165,7 @@ public class TvTransitionManager extends TransitionManager {
         initIfNeeded();
         if (mCurrentScene != mSelectInputScene) {
             mSelectInputView.setCurrentChannel(mMainActivity.getCurrentChannel());
-            transitionTo(mSelectInputScene);
+            switchSceneWithoutAnimation(mSelectInputScene);
         }
     }
 
@@ -157,6 +179,22 @@ public class TvTransitionManager extends TransitionManager {
 
     public boolean isSelectInputActive() {
         return mCurrentScene != null && mCurrentScene == mSelectInputScene;
+    }
+
+    public boolean isChannelBannerViewActive() {
+        return mCurrentScene != null && mCurrentScene == mChannelBannerScene;
+    }
+
+    public void updateInputBannerViewLabel() {
+        mInputBannerView.updateLabel();
+    }
+
+    public void updateChannelBannerView() {
+        mChannelBannerView.updateViews(mMainActivity.getTvView());
+    }
+
+    public void updateStreamInfo() {
+        mChannelBannerView.updateStreamInfo(mMainActivity.getTvView());
     }
 
     public void setListener(Listener listener) {
@@ -203,6 +241,7 @@ public class TvTransitionManager extends TransitionManager {
         mSelectInputScene = buildScene(mSceneContainer, mSelectInputView);
         mCurrentScene = mEmptyScene;
 
+        /*disable Animation as may cause display problem
         // Enter transitions
         TransitionSet enter =
                 new TransitionSet()
@@ -233,6 +272,7 @@ public class TvTransitionManager extends TransitionManager {
         setTransition(mKeypadChannelSwitchScene, mSelectInputScene, transition);
         setTransition(mSelectInputScene, mChannelBannerScene, transition);
         setTransition(mSelectInputScene, mInputBannerScene, transition);
+        */
 
         mInitialized = true;
     }

@@ -23,6 +23,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
+import android.database.sqlite.SQLiteException;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
 import android.util.Log;
@@ -273,7 +274,13 @@ public class DvrDatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getReadableDatabase();
         SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
         builder.setTables(tableName);
-        return builder.query(db, projections, null, null, null, null, null);
+        try {
+            return builder.query(db, projections, null, null, null, null, null);
+        } catch (SQLiteException e) {
+            Log.d(TAG,"query SQLiteException = " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /** Inserts schedules. */

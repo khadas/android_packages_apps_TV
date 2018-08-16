@@ -33,6 +33,7 @@ import com.android.tv.data.ProgramDataManager;
 import com.android.tv.data.api.Channel;
 import com.android.tv.search.LocalSearchProvider.SearchResult;
 import com.android.tv.util.MainThreadExecutor;
+import com.android.tv.util.TvClock;
 import com.android.tv.util.Utils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,12 +57,16 @@ public class DataManagerSearch implements SearchInterface {
     private final ChannelDataManager mChannelDataManager;
     private final ProgramDataManager mProgramDataManager;
 
+    //for TvClock
+    private TvClock mClock;
+
     DataManagerSearch(Context context) {
         mContext = context;
         mTvInputManager = (TvInputManager) context.getSystemService(Context.TV_INPUT_SERVICE);
         TvSingletons tvSingletons = TvSingletons.getSingletons(context);
         mChannelDataManager = tvSingletons.getChannelDataManager();
         mProgramDataManager = tvSingletons.getProgramDataManager();
+        mClock = new TvClock(context);
     }
 
     @Override
@@ -297,7 +302,7 @@ public class DataManagerSearch implements SearchInterface {
     }
 
     private int getProgressPercentage(long startUtcMillis, long endUtcMillis) {
-        long current = System.currentTimeMillis();
+        long current = mClock.currentTimeMillis();
         if (startUtcMillis > current || endUtcMillis <= current) {
             return LocalSearchProvider.PROGRESS_PERCENTAGE_HIDE;
         }

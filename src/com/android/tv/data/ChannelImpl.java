@@ -31,6 +31,9 @@ import android.util.Log;
 import com.android.tv.common.CommonConstants;
 import com.android.tv.common.util.CommonUtils;
 import com.android.tv.data.api.Channel;
+import android.media.tv.TvContentRating;
+
+import com.android.tv.util.images.ImageLoader;
 import com.android.tv.util.TvInputManagerHelper;
 import com.android.tv.util.Utils;
 import com.android.tv.util.images.ImageLoader;
@@ -39,6 +42,12 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Map;
+import java.util.Iterator;
+
+import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 /** A convenience class to create and insert channel entries into the database. */
 public final class ChannelImpl implements Channel {
@@ -75,6 +84,10 @@ public final class ChannelImpl implements Channel {
         TvContract.Channels.COLUMN_APP_LINK_POSTER_ART_URI,
         TvContract.Channels.COLUMN_APP_LINK_INTENT_URI,
         TvContract.Channels.COLUMN_INTERNAL_PROVIDER_FLAG2, // Only used in bundled input
+
+        //add extend projection
+        TvContract.Channels.COLUMN_SERVICE_TYPE, // add to sync with droidlogic channelinfo
+        TvContract.Channels.COLUMN_INTERNAL_PROVIDER_DATA,//add to get extra data
     };
 
     /**
@@ -105,6 +118,28 @@ public final class ChannelImpl implements Channel {
         if (CommonUtils.isBundledInput(channel.mInputId)) {
             channel.mRecordingProhibited = cursor.getInt(index++) != 0;
         }
+
+        //init parameters to sync with droidlogic channelinfo
+        index = cursor.getColumnIndex(TvContract.Channels.COLUMN_SERVICE_TYPE);
+        if (index >= 0)
+            channel.mServiceType = Utils.intern(cursor.getString(index));
+        index = cursor.getColumnIndex(TvContract.Channels.COLUMN_INTERNAL_PROVIDER_DATA);
+        String value = null;
+        if (index >= 0) {
+            try {
+                value = cursor.getString(index);
+            } catch (RuntimeException e) {//google channel data may be blob, but droidlogic is string
+                Log.e(TAG, "get internal provider data erro: " + e.getMessage());
+            }
+        }
+        //init from internal provider data
+        channel.mChannelInternalProviderDataMap = jsonToMap(value);
+        if (channel.mChannelInternalProviderDataMap != null) {
+            channel.mFrequency = Integer.parseInt(channel.mChannelInternalProviderDataMap.get(KEY_FREQUENCY));
+            channel.mContentRatings = channel.mChannelInternalProviderDataMap.get(KEY_CONTENT_RATINGS);
+            channel.mIsFavourite = TextUtils.equals(channel.mChannelInternalProviderDataMap.get(KEY_IS_FAVOURITE), "1");
+        }
+
         return channel;
     }
 
@@ -151,6 +186,10 @@ public final class ChannelImpl implements Channel {
     private boolean mRecordingProhibited;
 
     private boolean mChannelLogoExist;
+
+    //add new variable
+    private String mServiceType;
+    private boolean mIsFavourite;
 
     private ChannelImpl() {
         // Do nothing.
@@ -254,6 +293,10 @@ public final class ChannelImpl implements Channel {
     }
 
     @Override
+    public String getServiceType() {
+        return mServiceType;
+    }
+
     public boolean isRecordingProhibited() {
         return mRecordingProhibited;
     }
@@ -333,7 +376,9 @@ public final class ChannelImpl implements Channel {
                 && Objects.equals(mAppLinkIconUri, other.getAppLinkIconUri())
                 && Objects.equals(mAppLinkPosterArtUri, other.getAppLinkPosterArtUri())
                 && Objects.equals(mAppLinkIntentUri, other.getAppLinkIntentUri())
-                && Objects.equals(mRecordingProhibited, other.isRecordingProhibited());
+                && Objects.equals(mRecordingProhibited, other.isRecordingProhibited())
+                //add extend
+                && mFrequency == other.getFrequency();
     }
 
     @Override
@@ -408,6 +453,7 @@ public final class ChannelImpl implements Channel {
         mPackageName = other.mPackageName;
         mInputId = other.mInputId;
         mType = other.mType;
+        mServiceType = other.mServiceType;
         mDisplayNumber = other.mDisplayNumber;
         mDisplayName = other.mDisplayName;
         mDescription = other.mDescription;
@@ -425,6 +471,11 @@ public final class ChannelImpl implements Channel {
         mAppLinkType = other.mAppLinkType;
         mRecordingProhibited = other.mRecordingProhibited;
         mChannelLogoExist = other.mChannelLogoExist;
+        //add extend
+        mChannelInternalProviderDataMap = other.mChannelInternalProviderDataMap;
+        mFrequency = other.mFrequency;
+        mContentRatings = other.mContentRatings;
+        mIsFavourite = other.mIsFavourite;
     }
 
     /** Creates a channel for a passthrough TV input. */
@@ -460,6 +511,7 @@ public final class ChannelImpl implements Channel {
             mChannel.mPackageName = INVALID_PACKAGE_NAME;
             mChannel.mInputId = "inputId";
             mChannel.mType = "type";
+            mChannel.mServiceType= "";
             mChannel.mDisplayNumber = "0";
             mChannel.mDisplayName = "name";
             mChannel.mDescription = "description";
@@ -491,6 +543,11 @@ public final class ChannelImpl implements Channel {
 
         public Builder setType(String type) {
             mChannel.mType = type;
+            return this;
+        }
+
+        public Builder setServiceType(String type) {
+            mChannel.mServiceType = type;
             return this;
         }
 
@@ -566,6 +623,26 @@ public final class ChannelImpl implements Channel {
 
         public Builder setRecordingProhibited(boolean recordingProhibited) {
             mChannel.mRecordingProhibited = recordingProhibited;
+            return this;
+        }
+
+        public Builder setChannelInternalProviderDataMap(Map<String, String> map) {
+            mChannel.mChannelInternalProviderDataMap = map;
+            return this;
+        }
+
+        public Builder setFrequency(int frequency) {
+            mChannel.mFrequency = frequency;
+            return this;
+        }
+
+        public Builder setContentRatings(String contentrating) {
+            mChannel.mContentRatings = contentrating;
+            return this;
+        }
+
+        public Builder setFavourite(boolean value) {
+            mChannel.mIsFavourite = value;
             return this;
         }
 
@@ -725,7 +802,7 @@ public final class ChannelImpl implements Channel {
                 return 0;
             }
             // Put channels from OEM/SOC inputs first.
-            boolean lhsIsPartner = mInputManager.isPartnerInput(lhs.getInputId());
+            /*boolean lhsIsPartner = mInputManager.isPartnerInput(lhs.getInputId());
             boolean rhsIsPartner = mInputManager.isPartnerInput(rhs.getInputId());
             if (lhsIsPartner != rhsIsPartner) {
                 return lhsIsPartner ? -1 : 1;
@@ -744,9 +821,9 @@ public final class ChannelImpl implements Channel {
             result = lhs.getInputId().compareTo(rhs.getInputId());
             if (result != 0) {
                 return result;
-            }
+            }*/
             // Compare the channel numbers if both channels belong to the same input.
-            result = ChannelNumber.compare(lhs.getDisplayNumber(), rhs.getDisplayNumber());
+            int result = ChannelNumber.compare(lhs.getDisplayNumber(), rhs.getDisplayNumber());
             if (mDetectDuplicatesEnabled && result == 0) {
                 Log.w(
                         TAG,
@@ -774,4 +851,108 @@ public final class ChannelImpl implements Channel {
             return label;
         }
     }
+
+    /********start: extend channel information ********/
+    private Map<String, String> mChannelInternalProviderDataMap = new HashMap<String, String>();
+    private int mFrequency;
+    private String mContentRatings;
+
+    //sync with droidlogic channelinfo
+    public static final String KEY_FREQUENCY = "frequency";
+    public static final String KEY_CONTENT_RATINGS = "content_ratings";
+    public static final String KEY_IS_FAVOURITE = "is_favourite";
+
+    public Map<String, String> getChannelInternalProviderDataMap() {
+        return mChannelInternalProviderDataMap;
+    }
+
+    public void setChannelInternalProviderDataMap(Map<String, String> map) {
+        mChannelInternalProviderDataMap = map;
+    }
+
+    public int getFrequency() {
+        return mFrequency;
+    }
+
+    public void setContentRatings(String contentRatings) {
+        mContentRatings = contentRatings;
+    }
+
+    public String getContentRatings() {
+        return mContentRatings;
+    }
+
+    public boolean hasSameReadWriteInfo(Channel other) {
+        return other != null
+                && Objects.equals(mChannelInternalProviderDataMap, other.getChannelInternalProviderDataMap())
+                && Objects.equals(mContentRatings, other.getContentRatings());
+    }
+
+    public String getChannelInternalProviderDataByKey(String key) {
+        if (mChannelInternalProviderDataMap != null && mChannelInternalProviderDataMap.size() > 0) {
+            return mChannelInternalProviderDataMap.get(key);
+        } else {
+            Log.w(TAG, "key " + key + " cannot match data!");
+            return null;
+        }
+    }
+
+    public static Map<String, String> jsonToMap(String jsonString) {
+        if (jsonString == null || jsonString.length() == 0)
+            return null;
+        Map<String, String> map = new HashMap<String, String>();
+
+        JSONObject jsonObject;
+        try {
+            jsonObject = new JSONObject(jsonString);
+        } catch (JSONException e) {
+            Log.e(TAG, "Json parse fail: ["+jsonString+"]" + e.getMessage());
+            return null;
+        }
+
+        Iterator it = jsonObject.keys();
+        while (it.hasNext()) {
+            String k = (String)it.next();
+            String v;
+            try {
+                map.put(k, jsonObject.get(k).toString());
+            } catch (JSONException e) {
+                Log.e(TAG, "jsonObject get fail: ["+k+"]" + e.getMessage());
+                return map;
+            }
+        }
+        return map;
+    }
+
+    public boolean isAnalogChannel() {
+        return (mType.equals(TvContract.Channels.TYPE_PAL)
+            || mType.equals(TvContract.Channels.TYPE_NTSC)
+            || mType.equals(TvContract.Channels.TYPE_SECAM));
+    }
+
+    public boolean isDigitalChannel() {
+        return (mType.equals(TvContract.Channels.TYPE_DTMB)
+            || mType.equals(TvContract.Channels.TYPE_DVB_T)
+            || mType.equals(TvContract.Channels.TYPE_DVB_C)
+            || mType.equals(TvContract.Channels.TYPE_DVB_S)
+            || mType.equals(TvContract.Channels.TYPE_ATSC_T)
+            || mType.equals(TvContract.Channels.TYPE_ATSC_C));
+    }
+
+    public boolean isRadioChannel() {
+        return TextUtils.equals(getServiceType(), TvContract.Channels.SERVICE_TYPE_AUDIO);
+    }
+
+    public boolean isVideoChannel() {
+        return TextUtils.equals(getServiceType(), TvContract.Channels.SERVICE_TYPE_AUDIO_VIDEO);
+    }
+
+    public boolean isFavourite() {
+        return mIsFavourite;
+    }
+
+    public void setFavourite(boolean value) {
+        mIsFavourite = value;
+    }
+    /********end: extend channel information ********/
 }

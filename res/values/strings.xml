@@ -952,4 +952,223 @@
     <eat-comment/>
     <!-- Name for recorded programs preview channel -->
     <string name="recorded_programs_preview_channel">Recorded Programs</string>
+
+    <!-- add new string -->
+    <string name="droidsettings_not_found">Can not find Droid Settings !</string>
+    <string name="shortcutactivity_not_found">Can not find Shortcut Activity !</string>
+    <string name="options_item_not_found">Can not find Tv Settings !</string>
+
+    <!--add for channel info-->
+    <string name="channel_source_setting">Channel</string>
+    <string name="channel_dtv_type">DTV Type</string>
+    <string name="channel_info">Channel Info</string>
+    <string name="channel_audio_ad_list">Audio AD List</string>
+    <string name="channel_sound_channel">Sound Channel</string>
+    <string name="channel_volume_compensate">Volume Compensate</string>
+    <string name="channel_manual_search">Manual Search</string>
+    <string name="channel_auto_search">Auto Search</string>
+    <string name="channel_channel_edit">Channel Edit</string>
+    <string name="channel_video">Color System</string>
+    <string name="channel_video_pal">PAL</string>
+    <string name="channel_video_ntsc">NTSC</string>
+    <string name="channel_video_secam">SECAM</string>
+    <string name="channel_audio">Sound System</string>
+    <string name="channel_audio_dk">DK</string>
+    <string name="channel_audio_bg">BG</string>
+    <string name="channel_audio_i">I</string>
+    <string name="channel_audio_m">M</string>
+    <string name="channel_audio_l">L</string>
+    <string name="channel_switch_channel">Switch Channel</string>
+    <string name="channel_dtv_type_dtmb">DTMB</string>
+    <string name="channel_dtv_type_dvbc">DVB-C</string>
+    <string name="channel_dtv_type_dvbt">DVB-T</string>
+    <string name="channel_dtv_type_dvbs">DVB-S</string>
+    <string name="channel_dtv_type_dvbc2">DVB-C2</string>
+    <string name="channel_dtv_type_dvbt2">DVB-T2</string>
+    <string name="channel_dtv_type_dvbs2">DVB-S2</string>
+    <string name="channel_dtv_type_atsc_t">ATSC-T</string>
+    <string name="channel_dtv_type_atsc_c">ATSC-C</string>
+    <string name="channel_dtv_type_isdb_t">ISDB-T</string>
+    <string name="channel_info_channel">channel</string>
+    <string name="channel_info_frequency">frequency</string>
+    <string name="channel_info_strength">strength</string>
+    <string name="channel_info_type">type</string>
+    <string name="channel_info_service_id">service ID</string>
+    <string name="channel_info_pcr_id">Pcr ID</string>
+    <string name="channel_sound_channel_stereo">stereo</string>
+    <string name="channel_sound_channel_left">left channel</string>
+    <string name="channel_sound_channel_right">right channel</string>
+    <string name="channel_edit_tv">TV</string>
+    <string name="channel_edit_radio">Radio</string>
+    <string name="channel_edit_edit">edit</string>
+    <string name="channel_edit_skip">skip</string>
+    <string name="channel_edit_delete">delete</string>
+    <string name="channel_edit_favourite">favourite</string>
+    <string name="channel_move_up">move up</string>
+    <string name="channel_move_down">move down</string>
+    <string name="channel_switch_channel_static">static-frame</string>
+    <string name="channel_switch_channel_black">black-frame</string>
+    <string name="channel_edit_ok">OK</string>
+    <string name="channel_audio_mts">MTS</string>
+    <string name="channel_audio_outmode_mono">Mono</string>
+    <string name="channel_audio_outmode_stereo">Stereo</string>
+    <string name="channel_audio_outmode_sap">SAP</string>
+    <string name="channel_audio_outmode_nicam_mono">Nicam_Mono</string>
+    <string name="channel_audio_outmode_dualI">Dual I</string>
+    <string name="channel_audio_outmode_dualII">Dual II</string>
+    <string name="channel_audio_outmode_dualI_II">Dual I+II</string>
+    <string name="channel_search_channel">Search Channel</string>
+    <string name="channel_audio_ad_switch">Audio AD Switch</string>
+    <string name="channel_audio_ad_switch_off">off</string>
+    <string name="channel_audio_ad_switch_on">on</string>
+    <string name="channel_audio_ad_mix_level">Audio AD Mix Level</string>
+    <string name="channel_fine_tune">Fine Tune</string>
+    <string name="channel_fine_mhz">MHz</string>
+
+    <!-- atv sound mode-->
+    <string name="audio_outmode_mono">Mono</string>
+    <string name="audio_outmode_stereo">Stereo</string>
+    <string name="audio_outmode_sap">SAP</string>
+    <string name="audio_outmode_stereo_sap">Stereo SAP</string>
+    <string name="audio_outmode_mono_sap">Mono SAP</string>
+
+    <!-- fav & list-->
+    <string name="tv">TV</string>
+    <string name="radio">Radio</string>
+    <string name="favourite_list">Favourite list</string>
+    <string name="channel_list">Channel list</string>
+
+    <!-- for scan ui -->
+    <string name="ut_channel_scan">TV channel tuner setup</string>
+    <string name="ut_channel_scan_time">This may take several minutes</string>
+    <string name="ut_stop_channel_scan">Pause Scan</string>
+    <string name="ut_manual_scan">Manual Scan</string>
+    <string name="ut_auto_scan">Auto Scan</string>
+    <string name="ut_set_frequency_start">Channel</string>
+    <string name="ut_set_frequency_end">to: </string>
+    <string name="ut_tune_dtv">DTV</string>
+    <string name="ut_tune_atv">ATV</string>
+    <string name="set_frquency_channel">Please set frequency and channel first !</string>
+    <string name="set_channel">Please set channel first !</string>
+    <string name="set_frequency">Please set frequency first !</string>
+    <string name="tv_mode_option">Mode Option:</string>
+    <string name="tv_country">Country</string>
+    <string name="tv_america">America</string>
+    <string name="tv_india">India</string>
+    <string name="tv_indonesia">Indonesia</string>
+    <string name="tv_mexico">Mexico</string>
+    <string name="tv_germany">Germany</string>
+    <string name="tv_china">China</string>
+    <string name="tv_search_mode">Mode</string>
+    <string name="tv_search_mode_manual">Manual</string>
+    <string name="tv_search_mode_auto">Auto</string>
+    <string name="tv_search_type">Type</string>
+    <string name="tv_search_type_atv">ATV</string>
+    <string name="tv_search_type_dtmb">DTMB</string>
+    <string name="tv_search_type_dvb_t">DVB-T</string>
+    <string name="tv_search_type_dvb_c">DVB-C</string>
+    <string name="tv_search_type_dvb_s">DVB-S</string>
+    <string name="tv_search_type_atsc_t">ATSC-T</string>
+    <string name="tv_search_type_atsc_c">ATSC-C</string>
+    <string name="tv_search_type_atsc_c_auto">ATSC-C(auto)</string>
+    <string name="tv_search_type_atsc_c_standard">ATSC-C(std)</string>
+    <string name="tv_search_type_atsc_c_lrc">ATSC-C(lrc)</string>
+    <string name="tv_search_type_atsc_c_hrc">ATSC-C(hrc)</string>
+    <string name="tv_search_option">Search Option:</string>
+    <string name="tv_search_order">Order</string>
+    <string name="tv_search_atv_clolor">ATV Color System</string>
+    <string name="tv_search_atv_clolor_auto">AUTO</string>
+    <string name="tv_search_atv_clolor_pal">PAL</string>
+    <string name="tv_search_atv_clolor_ntsc">NTSC</string>
+    <string name="tv_search_atv_clolor_secam">SECAM</string>
+    <string name="tv_search_atv_sound">ATV Sound System</string>
+    <string name="tv_search_atv_sound_bg">B/G</string>
+    <string name="tv_search_atv_sound_dk">D/K</string>
+    <string name="tv_search_atv_sound_i">I</string>
+    <string name="tv_search_atv_sound_l">L</string>
+    <string name="tv_search_atv_sound_m">M</string>
+    <string name="tv_search_atv_sound_auto">AUTO</string>
+    <string name="tv_search_order_high">High to Low</string>
+    <string name="tv_search_order_low">Low to High</string>
+    <string name="tv_search_channel">Channel</string>
+    <string name="tv_search">Search</string>
+    <string name="tv_auto_option">Auto Search Option:</string>
+    <string name="ut_tune_atsc_c_auto">AUTO</string>
+    <string name="ut_tune_atsc_c_standard">STD</string>
+    <string name="ut_tune_atsc_c_lrc">LRC</string>
+    <string name="ut_tune_atsc_c_hrc">HRC</string>
+
+    <!-- number search channel-->
+    <string name="number_search_title">Searching</string>
+    <string name="number_search_dtv">Searching channel, please wait...</string>
+    <string name="number_search_atv">Searching atv channel, please wait...</string>
+    <string name="tvview_source_has_no_channel">No Channel</string>
+
+    <string name="dtmb">DTMB</string>
+    <string name="dvbc">DVB-C</string>
+    <string name="dvbt">DVB-T</string>
+    <string name="dvbs">DVB-S</string>
+    <string name="dvbc2">DVB-C2</string>
+    <string name="dvbt2">DVB-T2</string>
+    <string name="dvbs2">DVB-S2</string>
+    <string name="atsc_t">ATSC-T</string>
+    <string name="atsc_c">ATSC-C</string>
+    <string name="isdb_t">ISDB-T</string>
+
+    <string name="dtv">DTV</string>
+    <string name="atv">ATV</string>
+    <string name="lrc">LRC</string>
+    <string name="hrc">HRC</string>
+
+    <string name="tv_search_sys_auto">AUTO</string>
+    <string name="tv_search_sys_pal">PAL</string>
+    <string name="tv_search_sys_ntsc">NTSC</string>
+    <string name="tv_search_sys_secam">SECAM</string>
+
+    <string name="frequency_l">frequency</string>
+    <string name="quality">quality</string>
+    <string name="strength">strength</string>
+    <string name="tv_channel">TV Channel</string>
+    <string name="radio_channel">radio channel</string>
+    <string name="khz">KHz</string>
+    <string name="mhz">MHz</string>
+    <string name="db">dB</string>
+    <string name="tv_search_channel_from">From:</string>
+    <string name="tv_search_channel_to">To:</string>
+
+    <!-- subtitle-->
+    <string name="side_panel_subtitle">Subtitle</string>
+    <string name="side_panel_title_teletext">TeleText</string>
+    <string name="subtitle_teletext_switch">Switch</string>
+    <string name="subtitle_teletext_switch_on">Switch On</string>
+    <string name="subtitle_teletext_switch_off">Switch Off</string>
+    <string name="subtitle_teletext_list">Teletext List</string>
+    <string name="subtitle_teletext_settings">Teletext Image Settings</string>
+    <string name="subtitle_teletext_open">Teletext Image Settings</string>
+    <string name="subtitle_teletext_page_turn">Page Turning Settings</string>
+    <string name="subtitle_teletext_page_up">Page Turning up</string>
+    <string name="subtitle_teletext_page_down">Page Turning down</string>
+    <string name="subtitle_teletext_page_setting">Page Number Setting</string>
+    <string name="subtitle_teletext_page_number">Select Page Number</string>
+    <string name="subtitle_teletext_page_cuntry">Select Page By Country</string>
+    <string name="subtitle_teletext_page_ok">Ok</string>
+    <string name="subtitle_teletext_page_reset">Reset</string>
+    <string name="subtitle_country_english">English</string>
+    <string name="subtitle_country_deutsch">Deutsch</string>
+    <string name="subtitle_country_svenska">Svenska/Suomi/Magyar</string>
+    <string name="subtitle_country_italiano">Italiano</string>
+    <string name="subtitle_country_france">Français</string>
+    <string name="subtitle_country_portugal">Português/Español</string>
+    <string name="subtitle_country_cesky">Cesky/Slovencina</string>
+    <string name="subtitle_country_turkey">Türkçe</string>
+    <string name="subtitle_country_ellinika">Ellinika</string>
+    <string name="subtitle_country_alarabia">Alarabia / English</string>
+    <string name="subtitle_country_russky">Russky / Balgarski</string>
+
+    <string name="tv_all_band_search_dialog_message1">Found </string>
+    <string name="tv_all_band_search_dialog_messages1">channels.</string>
+    <string name="tv_all_band_search_dialog_messages2">channel.</string>
+    <string name="tv_all_band_search_dialog_message2">Keep searching?</string>
+    <string name="dialog_btn_confirm_text">YES</string>
+    <string name="dialog_btn_cancel_text">NO</string>
 </resources>

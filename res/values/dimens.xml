@@ -117,6 +117,7 @@
     <dimen name="side_panel_header_padding_top">27dp</dimen>
     <dimen name="side_panel_header_elevation">4dp</dimen>
     <dimen name="side_panel_header_text_size">24sp</dimen>
+    <dimen name="side_panel_list_padding_top">0dp</dimen>
     <dimen name="side_panel_list_padding_bottom">48dp</dimen>
     <dimen name="side_panel_list_vertical_margin">0dp</dimen>
     <dimen name="side_panel_enter_offset_x">100dp</dimen>
@@ -250,6 +251,7 @@
 
     <!-- Channel banner -->
     <dimen name="channel_banner_width">696dp</dimen>
+    <dimen name="channel_banner_maxwidth">880dp</dimen>
     <dimen name="channel_banner_channel_number_large_text_size">54sp</dimen>
     <dimen name="channel_banner_channel_number_medium_text_size">44sp</dimen>
     <dimen name="channel_banner_channel_number_small_text_size">34sp</dimen>
@@ -261,6 +263,7 @@
     <dimen name="channel_banner_channel_logo_margin_start">8dp</dimen>
     <dimen name="channel_banner_input_logo_size">16dp</dimen>
     <dimen name="channel_banner_program_description_width">456dp</dimen>
+    <dimen name="channel_banner_program_description_maxwidth">600dp</dimen>
     <dimen name="channel_banner_program_large_text_size">28sp</dimen>
     <dimen name="channel_banner_program_medium_text_size">20sp</dimen>
     <dimen name="channel_banner_program_large_margin_top">-10sp</dimen>
@@ -394,4 +397,34 @@
     <!-- Preview channel logo size -->
     <dimen name="preview_channel_logo_width">80dp</dimen>
     <dimen name="preview_channel_logo_height">80dp</dimen>
+
+    <!-- Channel Search UI -->
+    <dimen name="ut_scan_icon_width">80dp</dimen>
+    <dimen name="ut_scan_icon_height">80dp</dimen>
+    <dimen name="ut_scan_icon_margin_right">24dp</dimen>
+    <dimen name="ut_scan_icon_margin_right_channel">80dp</dimen>
+
+    <dimen name="ut_scan_title_text_size">34sp</dimen>
+    <dimen name="ut_scan_title_margin_top">178dp</dimen>
+
+    <dimen name="ut_scan_progress_width">432dp</dimen>
+    <dimen name="ut_scan_progress_height">4dp</dimen>
+    <dimen name="ut_scan_progress_margin_top">16dp</dimen>
+
+    <dimen name="ut_scan_description_margin_top">19dp</dimen>
+    <dimen name="ut_scan_description_text_size">14sp</dimen>
+
+    <dimen name="ut_scan_button_height">51dp</dimen>
+    <dimen name="ut_scan_button_margin_top">15dp</dimen>
+    <dimen name="ut_scan_button_padding">24dp</dimen>
+    <dimen name="ut_scan_button_text_size">16sp</dimen>
+
+    <dimen name="ut_scan_channellist_width">312dp</dimen>
+    <dimen name="ut_scan_channellist_padding_top">202dp</dimen>
+    <dimen name="ut_scan_channellist_padding_start">40dp</dimen>
+    <dimen name="ut_scan_channellist_padding_bottom">12dp</dimen>
+
+    <dimen name="ut_scan_channel_num_width">48dp</dimen>
+    <dimen name="ut_scan_channel_name_width">96dp</dimen>
+    <dimen name="ut_scan_channel_edit_text_width">80dp</dimen>
 </resources>

@@ -202,8 +202,11 @@ public class SelectInputView extends VerticalGridView
                 mCurrentChannel != null && mCurrentChannel.isPassthrough()
                         ? mCurrentChannel.getInputId()
                         : null;
-        if (currentInputId != null
-                && !isInputEnabled(mTvInputManagerHelper.getTvInputInfo(currentInputId))) {
+        TvInputInfo temp = null;
+        if (currentInputId != null) {
+            temp = mTvInputManagerHelper.getTvInputInfo(currentInputId);
+        }
+        if (temp == null || !isInputEnabled(temp)) {
             // If current input is disabled, the tuner input will be focused.
             setSelectedPosition(TUNER_INPUT_POSITION);
         } else {
@@ -259,10 +262,10 @@ public class SelectInputView extends VerticalGridView
                 mInputList.add(input);
             }
         }
-        // Do not show HDMI ports if a CEC device is directly connected to the port.
+        //show HDMI ports even if a CEC device is directly connected to the port.
         for (TvInputInfo input : inputMap.values()) {
-            if (input.getParentId() != null && !input.isConnectedToHdmiSwitch()) {
-                mInputList.remove(inputMap.get(input.getParentId()));
+            if (input.getHdmiDeviceInfo() != null && input.getHdmiDeviceInfo().isCecDevice()) {
+                mInputList.remove(inputMap.get(input.getId()));
             }
         }
         Collections.sort(mInputList, mComparator);

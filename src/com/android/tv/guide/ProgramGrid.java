@@ -27,6 +27,8 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import com.android.tv.R;
 import com.android.tv.ui.OnRepeatedKeyInterceptListener;
+import com.android.tv.util.TvClock;
+
 import java.util.concurrent.TimeUnit;
 
 /** A {@link VerticalGridView} for the program table view. */
@@ -35,6 +37,9 @@ public class ProgramGrid extends VerticalGridView {
 
     private static final int INVALID_INDEX = -1;
     private static final long FOCUS_AREA_RIGHT_MARGIN_MILLIS = TimeUnit.MINUTES.toMillis(15);
+
+    //for TvClock
+    private TvClock mClock;
 
     private final ViewTreeObserver.OnGlobalFocusChangeListener mGlobalFocusChangeListener =
             new ViewTreeObserver.OnGlobalFocusChangeListener() {
@@ -119,12 +124,15 @@ public class ProgramGrid extends VerticalGridView {
         // view port even though they are not visible.
         setItemViewCacheSize(0);
 
+        setPruneChild(false);
+
         Resources res = context.getResources();
         mRowHeight = res.getDimensionPixelSize(R.dimen.program_guide_table_item_row_height);
         mDetailHeight = res.getDimensionPixelSize(R.dimen.program_guide_table_detail_height);
         mSelectionRow = res.getInteger(R.integer.program_guide_selection_row);
         mOnRepeatedKeyInterceptListener = new OnRepeatedKeyInterceptListener(this);
         setOnKeyInterceptListener(mOnRepeatedKeyInterceptListener);
+        mClock = new TvClock(context);
     }
 
     @Override
@@ -266,7 +274,7 @@ public class ProgramGrid extends VerticalGridView {
                         getChildAt(nextChildIndex),
                         mFocusRangeLeft,
                         mFocusRangeRight,
-                        mKeepCurrentProgramFocused);
+                        mKeepCurrentProgramFocused, mClock.currentTimeMillis());
         if (nextFocusedProgram != null) {
             nextFocusedProgram.getGlobalVisibleRect(mTempRect);
             mNextFocusByUpDown = nextFocusedProgram;
@@ -319,7 +327,7 @@ public class ProgramGrid extends VerticalGridView {
         // If focus is not a program item, drop focus to the current program when back to the grid
         mKeepCurrentProgramFocused =
                 !(focus instanceof ProgramItemView)
-                        || GuideUtils.isCurrentProgram((ProgramItemView) focus);
+                        || GuideUtils.isCurrentProgram((ProgramItemView) focus, mClock.currentTimeMillis());
     }
 
     private int getRightMostFocusablePosition() {

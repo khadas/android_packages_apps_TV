@@ -33,6 +33,7 @@ import android.media.tv.TvTrackInfo;
 import android.net.Uri;
 import android.os.Looper;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.support.annotation.WorkerThread;
@@ -40,6 +41,7 @@ import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
+import android.util.ArraySet;
 import com.android.tv.R;
 import com.android.tv.TvSingletons;
 import com.android.tv.common.SoftPreconditions;
@@ -48,6 +50,10 @@ import com.android.tv.data.GenreItems;
 import com.android.tv.data.Program;
 import com.android.tv.data.StreamInfo;
 import com.android.tv.data.api.Channel;
+import com.android.tv.common.experiments.Experiments;
+import com.android.tv.util.TvClock;
+
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,6 +68,7 @@ import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import com.droidlogic.app.tv.DroidLogicTvUtils;
 
 /** A class that includes convenience methods for accessing TvProvider database. */
 public class Utils {
@@ -89,6 +96,7 @@ public class Utils {
     private static final String PREF_KEY_RECORDING_FAILED_REASONS = "recording_failed_reasons";
     private static final String PREF_KEY_FAILED_SCHEDULED_RECORDING_INFO_SET =
             "failed_scheduled_recording_info_set";
+    private static final String PREF_KEY_RECENT_WATCHED_CHANNEL_ID = "recent_watched_channel_id";
 
     private static final int VIDEO_SD_WIDTH = 704;
     private static final int VIDEO_SD_HEIGHT = 480;
@@ -108,6 +116,18 @@ public class Utils {
     private static final long RECORDING_FAILED_REASON_NONE = 0;
     private static final long HALF_MINUTE_MS = TimeUnit.SECONDS.toMillis(30);
     private static final long ONE_DAY_MS = TimeUnit.DAYS.toMillis(1);
+
+    // Hardcoded list for known bundled inputs not written by OEM/SOCs.
+    // Bundled (system) inputs not in the list will get the high priority
+    // so they and their channels come first in the UI.
+    private static final Set<String> BUNDLED_PACKAGE_SET = new ArraySet<>();
+
+    //for TvClock
+    private static TvClock mClock;
+
+    static {
+        BUNDLED_PACKAGE_SET.add("com.android.tv");
+    }
 
     private enum AspectRatio {
         ASPECT_RATIO_4_3(4, 3),
@@ -157,6 +177,20 @@ public class Utils {
         return null;
     }
 
+    public static void setRecentWatchedChannelId(Context context, Channel channel) {
+        if (channel == null || channel.isPassthrough()) {
+            Log.e(TAG, "setRecentWatchedChannel: channel cannot be null or passthrough");
+            return;
+        }
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putLong(PREF_KEY_RECENT_WATCHED_CHANNEL_ID, channel.getId()).apply();
+    }
+
+    public static long getRecentWatchedChannelId(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getLong(PREF_KEY_RECENT_WATCHED_CHANNEL_ID, -1);
+    }
+
     public static void setLastWatchedChannel(Context context, Channel channel) {
         if (channel == null) {
             Log.e(TAG, "setLastWatchedChannel: channel cannot be null");
@@ -179,10 +213,27 @@ public class Utils {
                             channelId)
                     .putString(PREF_KEY_LAST_WATCHED_TUNER_INPUT_ID, channel.getInputId())
                     .apply();
+            Settings.System.putLong(context.getContentResolver(), DroidLogicTvUtils.TV_DTV_CHANNEL_INDEX, channelId);
+            Settings.System.putInt(context.getContentResolver(), DroidLogicTvUtils.TV_CURRENT_DEVICE_ID,
+                    DroidLogicTvUtils.DEVICE_ID_ADTV);
+        } else {
+            saveDeviceId(context, channel.getUri().toString());
         }
     }
 
     /** Sets recording failed reason. */
+    public static void setLastWatchedChannelUri(Context context, String uri) {
+        if (uri == null) {
+            Log.e(TAG, "setLastWatchedChannelUri: uri cannot be null");
+            return;
+        }
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putString(PREF_KEY_LAST_WATCHED_CHANNEL_URI, uri).apply();
+    }
+
+    /**
+     * Sets recording failed reason.
+     */
     public static void setRecordingFailedReason(Context context, int reason) {
         long reasons = getRecordingFailedReasons(context) | 0x1 << reason;
         PreferenceManager.getDefaultSharedPreferences(context)
@@ -337,7 +388,9 @@ public class Utils {
     /** Gets the info of the current program. */
     @WorkerThread
     public static Program getCurrentProgram(Context context, long channelId) {
-        return getProgramAt(context, channelId, System.currentTimeMillis());
+        if (mClock == null)
+            mClock = new TvClock(context);
+        return getProgramAt(context, channelId, mClock.currentTimeMillis());
     }
 
     /** Returns the round off minutes when convert milliseconds to minutes. */
@@ -358,6 +411,8 @@ public class Utils {
      */
     public static String getDurationString(
             Context context, long startUtcMillis, long endUtcMillis, boolean useShortFormat) {
+        if (mClock == null)
+            mClock = new TvClock(context);
         return getDurationString(
                 context,
                 System.currentTimeMillis(),
@@ -904,5 +959,28 @@ public class Utils {
                 Log.e(TAG, "failed to finish the execution", e);
             }
         }
+    }
+
+    private static void saveDeviceId(Context context, String channelUri) {
+        String parser = "%2FHW";
+        int index = channelUri.indexOf(parser);
+        int deviceId = Integer.parseInt(channelUri.substring(index + parser.length()));
+        Settings.System.putInt(context.getContentResolver(), DroidLogicTvUtils.TV_CURRENT_DEVICE_ID, deviceId);
+    }
+
+    //if you selected a new source, we will save deviceId right now
+    public static int getCurrentDeviceId(Context context) {
+        return Settings.System.getInt(context.getContentResolver(),
+                DroidLogicTvUtils.TV_CURRENT_DEVICE_ID, DroidLogicTvUtils.DEVICE_ID_ADTV);
+    }
+
+    /* this api is not same as ChannelTunner.isCurrentChannelPassthrough()
+    because if you channel list is empty, ChannelTunner's current channel will not changed if
+    you selected TV sources. But this api will always changed when you selected a new source*/
+    public static boolean isCurrentDeviceIdPassthrough(Context context) {
+        int device_id = getCurrentDeviceId(context);
+        return !(device_id == DroidLogicTvUtils.DEVICE_ID_ADTV
+                || device_id == DroidLogicTvUtils.DEVICE_ID_ATV
+                || device_id == DroidLogicTvUtils.DEVICE_ID_DTV);
     }
 }

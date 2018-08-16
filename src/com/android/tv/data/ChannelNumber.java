@@ -30,7 +30,9 @@ public final class ChannelNumber implements Comparable<ChannelNumber> {
         KeyEvent.KEYCODE_NUMPAD_SUBTRACT,
         KeyEvent.KEYCODE_PERIOD,
         KeyEvent.KEYCODE_NUMPAD_DOT,
-        KeyEvent.KEYCODE_SPACE
+        KeyEvent.KEYCODE_SPACE,
+        KeyEvent.KEYCODE_MINUS, KeyEvent.KEYCODE_NUMPAD_SUBTRACT, KeyEvent.KEYCODE_PERIOD,
+        KeyEvent.KEYCODE_NUMPAD_DOT, KeyEvent.KEYCODE_SPACE, KeyEvent.KEYCODE_NUM_LOCK
     };
 
     /** The major part of the channel number. */

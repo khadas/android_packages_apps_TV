@@ -59,6 +59,7 @@ import com.android.tv.dvr.DvrScheduleManager;
 import com.android.tv.ui.HardwareLayerAnimatorListenerAdapter;
 import com.android.tv.ui.ViewUtils;
 import com.android.tv.ui.hideable.AutoHideScheduler;
+import com.android.tv.util.TvClock;
 import com.android.tv.util.TvInputManagerHelper;
 import com.android.tv.util.Utils;
 import java.util.ArrayList;
@@ -145,6 +146,9 @@ public class ProgramGuide
     private boolean mActive;
 
     private final AutoHideScheduler mAutoHideScheduler;
+    //for TvClock
+    private TvClock mClock;
+
     private final long mShowDurationMillis;
     private ViewTreeObserver.OnGlobalLayoutListener mOnLayoutListenerForShow;
 
@@ -454,10 +458,11 @@ public class ProgramGuide
         }
         mVisibleDuration.start();
 
+        mClock = new TvClock((Context)mActivity);
         mProgramManager.programGuideVisibilityChanged(true);
         mStartUtcTime =
                 Utils.floorTime(
-                        System.currentTimeMillis() - MIN_DURATION_FROM_START_TIME_TO_CURRENT_TIME,
+                        mClock.currentTimeMillis() - MIN_DURATION_FROM_START_TIME_TO_CURRENT_TIME,
                         HALF_HOUR_IN_MILLIS);
         mProgramManager.updateInitialTimeRange(mStartUtcTime, mStartUtcTime + mViewPortMillis);
         mProgramManager.addListener(mProgramManagerListener);
@@ -493,12 +498,12 @@ public class ProgramGuide
                                     .getViewTreeObserver()
                                     .addOnDrawListener(
                                             new ViewTreeObserver.OnDrawListener() {
-                                                long time = System.currentTimeMillis();
+                                                long time = mClock.currentTimeMillis();
                                                 int count = 0;
 
                                                 @Override
                                                 public void onDraw() {
-                                                    long curtime = System.currentTimeMillis();
+                                                    long curtime = mClock.currentTimeMillis();
                                                     Log.d(
                                                             TAG,
                                                             "onDraw "
@@ -740,7 +745,7 @@ public class ProgramGuide
 
     private void positionCurrentTimeIndicator() {
         int offset =
-                GuideUtils.convertMillisToPixel(mStartUtcTime, System.currentTimeMillis())
+                GuideUtils.convertMillisToPixel(mStartUtcTime, mClock.currentTimeMillis())
                         - mTimelineRow.getScrollOffset();
         if (offset < 0) {
             mCurrentTimeIndicator.setVisibility(View.GONE);

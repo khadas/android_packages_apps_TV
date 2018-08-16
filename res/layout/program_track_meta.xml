@@ -31,6 +31,14 @@
         style="@style/track_meta_text.channel_banner"
         android:visibility="gone" />
 
+    <TextView android:id="@+id/atv_color_sytem"
+        style="@style/track_meta_text.channel_banner"
+        android:visibility="gone" />
+
+    <TextView android:id="@+id/atv_sound_sytem"
+        style="@style/track_meta_text.channel_banner"
+        android:visibility="gone" />
+
     <TextView android:id="@+id/audio_channel"
         style="@style/track_meta_text.channel_banner"
         android:visibility="gone" />
@@ -44,6 +52,18 @@
         android:visibility="gone" />
 
     <TextView android:id="@+id/content_ratings_2"
+        style="@style/track_meta_text.channel_banner"
+        android:visibility="gone" />
+
+    <TextView android:id="@+id/video_format"
+        style="@style/track_meta_text.channel_banner"
+        android:visibility="gone" />
+
+    <TextView android:id="@+id/audio_format"
+        style="@style/track_meta_text.channel_banner"
+        android:visibility="gone" />
+
+    <TextView android:id="@+id/time"
         style="@style/track_meta_text.channel_banner"
         android:visibility="gone" />
 

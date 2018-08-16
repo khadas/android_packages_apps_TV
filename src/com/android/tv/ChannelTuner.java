@@ -16,24 +16,36 @@
 
 package com.android.tv;
 
+import android.content.Intent;
 import android.media.tv.TvContract;
 import android.media.tv.TvInputInfo;
 import android.net.Uri;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
 import android.util.ArraySet;
 import android.util.Log;
+
+import android.content.Context;
+
 import com.android.tv.common.SoftPreconditions;
 import com.android.tv.data.ChannelDataManager;
 import com.android.tv.data.api.Channel;
 import com.android.tv.util.TvInputManagerHelper;
+import com.android.tv.util.Utils;
+import com.android.tv.data.ChannelNumber;
+import com.droidlogic.app.tv.DroidLogicTvUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Comparator;
+
+import android.provider.Settings;
 
 /**
  * It manages the current tuned channel among browsable channels. And it determines the next channel
@@ -42,11 +54,14 @@ import java.util.Set;
 @MainThread
 public class ChannelTuner {
     private static final String TAG = "ChannelTuner";
+    private static final String BROADCAST_SKIP_ALL_CHANNEL = "android.action.skip.all.channels";
 
     private boolean mStarted;
     private boolean mChannelDataManagerLoaded;
     private final List<Channel> mChannels = new ArrayList<>();
     private final List<Channel> mBrowsableChannels = new ArrayList<>();
+    private final List<Channel> mVideoChannels = new ArrayList<>();
+    private final List<Channel> mRadioChannels = new ArrayList<>();
     private final Map<Long, Channel> mChannelMap = new HashMap<>();
     // TODO: need to check that mChannelIndexMap can be removed, once mCurrentChannelIndex
     // is changed to mCurrentChannel(Id).
@@ -58,6 +73,8 @@ public class ChannelTuner {
     @Nullable private Channel mCurrentChannel;
     private final TvInputManagerHelper mInputManager;
     @Nullable private TvInputInfo mCurrentChannelInputInfo;
+
+    private Context mContext;
 
     private final ChannelDataManager.Listener mChannelDataManagerListener =
             new ChannelDataManager.Listener() {
@@ -120,6 +137,8 @@ public class ChannelTuner {
         mBrowsableChannels.clear();
         mChannelMap.clear();
         mChannelIndexMap.clear();
+        mVideoChannels.clear();
+        mRadioChannels.clear();
         mChannelDataManagerLoaded = false;
     }
 
@@ -142,6 +161,52 @@ public class ChannelTuner {
     @Nullable
     public Channel getCurrentChannel() {
         return mCurrentChannel;
+    }
+
+    /**
+     * Returns the current channel index.
+     */
+    public int getCurrentChannelIndex() {
+        int currentChannelIndex = 0;
+        if (mCurrentChannel != null) {
+            Integer integer = mChannelIndexMap.get(mCurrentChannel.getId());
+            if (integer != null) {
+                currentChannelIndex = integer.intValue();
+            }
+        }
+        return currentChannelIndex;
+    }
+
+    /**
+     * Returns the channel index by given channel.
+     */
+    public int getChannelIndex(Channel channel) {
+        return mChannelIndexMap.get(channel.getId());
+    }
+
+    /**
+     * Returns the channel by index.
+     */
+    public Channel getChannelByIndex(int channelIndex) {
+        Channel mChannel = null;
+        if (channelIndex >= 0 && channelIndex < mChannels.size()) {
+            mChannel = mChannels.get(channelIndex);
+         }
+        return mChannel;
+    }
+
+    /**
+     * Returns the channel index which will be deleted by channelId.
+     */
+    public int getChannelIndexById(long channelId) {
+        int mChannelIndex = 0;
+        for (int i = 0; i < mChannels.size(); i++) {
+            if (mChannels.get(i).getId() == channelId) {
+                mChannelIndex = i;
+                break;
+            }
+        }
+        return mChannelIndex;
     }
 
     /**
@@ -316,6 +381,9 @@ public class ChannelTuner {
             return;
         }
         Channel previousChannel = mCurrentChannel;
+        if (previousChannel != null) {
+            setRecentChannelId(previousChannel);
+        }
         mCurrentChannel = channel;
         if (mCurrentChannel != null) {
             mCurrentChannelInputInfo = mInputManager.getTvInputInfo(mCurrentChannel.getInputId());
@@ -326,16 +394,29 @@ public class ChannelTuner {
     }
 
     private void updateChannelData(List<Channel> channels) {
+        if (mContext != null) {
+            //[DroidLogic]
+            //when updateChannelData,save the channel counts in Settings.
+            Settings.System.putInt(mContext.getContentResolver(), DroidLogicTvUtils.ALL_CHANNELS_NUMBER, channels.size());
+        }
         mChannels.clear();
         mChannels.addAll(channels);
+        Collections.sort(mChannels, new TypeComparator());
 
         mChannelMap.clear();
         mChannelIndexMap.clear();
-        for (int i = 0; i < channels.size(); ++i) {
-            Channel channel = channels.get(i);
+        mVideoChannels.clear();
+        mRadioChannels.clear();
+        for (int i = 0; i < mChannels.size(); ++i) {
+            Channel channel = mChannels.get(i);
             long channelId = channel.getId();
             mChannelMap.put(channelId, channel);
             mChannelIndexMap.put(channelId, i);
+            if (channel.isVideoChannel()) {
+                mVideoChannels.add(channel);
+            } else if (channel.isRadioChannel()) {
+                mRadioChannels.add(channel);
+            }
         }
         updateBrowsableChannels();
 
@@ -361,6 +442,60 @@ public class ChannelTuner {
             if (channel.isBrowsable()) {
                 mBrowsableChannels.add(channel);
             }
+        }
+
+        if (!Utils.isCurrentDeviceIdPassthrough(mContext)) {
+            if (mBrowsableChannels.size() == 0 ) {
+                Intent intent = new Intent();
+                intent.setAction(BROADCAST_SKIP_ALL_CHANNEL);
+                mContext.sendBroadcast(intent);
+            } else {
+                Log.d(TAG, "mBrowsableChannels.size(): " + mBrowsableChannels.size());
+            }
+        }
+    }
+
+    public void setContext(Context context) {
+        mContext = context;
+    }
+
+    public void setRecentChannelId(Channel channel) {
+        if (mContext != null && channel != null) {
+            long recentChannelIndex = Utils.getRecentWatchedChannelId(mContext);
+            if (recentChannelIndex != channel.getId()) {
+                Utils.setRecentWatchedChannelId(mContext, channel);
+            }
+        }
+    }
+
+    public Channel getChannelById(long id) {
+        Channel channelbyid = null;
+        if (mChannelMap != null) {
+            channelbyid = mChannelMap.get(id);
+        }
+        return channelbyid;
+    }
+
+    public List<Channel> getVideoChannelList() {
+        return mVideoChannels;
+    }
+
+    public List<Channel> getRadioChannelList() {
+        return mRadioChannels;
+    }
+
+    private class TypeComparator implements Comparator<Channel> {
+        public int compare(Channel object1, Channel object2) {
+            boolean b1 = object1.isVideoChannel() ;
+            boolean b2 = object2.isVideoChannel();
+            if (b1 && !b2) {
+                return -1;
+            } else if (!b1 && b2) {
+                return 1;
+            }
+            String p1 = object1.getDisplayNumber();
+            String p2 = object2.getDisplayNumber();
+            return ChannelNumber.compare(p1, p2);
         }
     }
 }

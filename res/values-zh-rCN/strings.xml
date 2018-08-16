@@ -354,4 +354,105 @@
     <string name="dvr_date_tomorrow_time" msgid="8364654556105292594">"明天<xliff:g id="TIME_RANGE">%1$s</xliff:g>"</string>
     <string name="program_guide_critic_score" msgid="340530743913585150">"评分"</string>
     <string name="recorded_programs_preview_channel" msgid="890404366427245812">"已录制的节目"</string>
+
+    <!--add for channel info-->
+    <string name="channel_source_setting">频道</string>
+    <string name="channel_dtv_type">数字电视类型</string>
+    <string name="channel_info">频道信息</string>
+    <string name="channel_audio_ad_list">声音AD列表</string>
+    <string name="channel_sound_channel">声道</string>
+    <string name="channel_video">色彩制式</string>
+    <string name="channel_audio">伴音制式</string>
+    <string name="channel_volume_compensate">音量补偿</string>
+    <string name="channel_manual_search">手动搜台</string>
+    <string name="channel_auto_search">自动搜台</string>
+    <string name="channel_channel_edit">频道编辑</string>
+    <string name="channel_search_channel">搜台</string>
+    <string name="channel_audio_ad_switch">声音AD开关</string>
+    <string name="channel_audio_ad_mix_level">声音AD混合度</string>
+    <string name="channel_switch_channel">切台效果</string>
+    <string name="channel_info_channel">频道</string>
+    <string name="channel_info_frequency">频率</string>
+    <string name="channel_info_strength">信号强度</string>
+    <string name="channel_info_type">类型</string>
+    <string name="channel_info_service_id">服务ID</string>
+    <string name="channel_sound_channel_stereo">立体声</string>
+    <string name="channel_sound_channel_left">左声道</string>
+    <string name="channel_sound_channel_right">右声道</string>
+    <string name="channel_edit_tv">电视</string>
+    <string name="channel_edit_radio">广播</string>
+    <string name="channel_edit_edit">编辑</string>
+    <string name="channel_edit_skip">跳过</string>
+    <string name="channel_edit_delete">删除</string>
+    <string name="channel_edit_favourite">常用</string>
+    <string name="channel_move_up">上移</string>
+    <string name="channel_move_down">下移</string>
+    <string name="channel_switch_channel_static">静帧</string>
+    <string name="channel_switch_channel_black">黑屏</string>
+    <string name="channel_edit_ok">确定</string>
+    <string name="channel_mts">立体声</string>
+    <string name="channel_fine_tune">微调</string>
+    <string name="search_channel_first">请先搜台</string>
+
+    <!-- fav & list-->
+    <string name="tv">电视</string>
+    <string name="radio">广播</string>
+    <string name="favourite_list">喜爱列表</string>
+    <string name="channel_list">频道列表</string>
+
+    <!-- for scan ui -->
+    <string name="ut_channel_scan">电视节目搜台设置</string>
+    <string name="ut_channel_scan_time">该过程将需要一段时间</string>
+    <string name="ut_stop_channel_scan">暂停搜索</string>
+    <string name="ut_manual_scan">手动搜索</string>
+    <string name="ut_auto_scan">自动搜索</string>
+    <string name="ut_set_frequency_start">频道</string>
+    <string name="ut_set_frequency_end">终止: </string>
+    <string name="set_frquency_channel">请先设置频率和频道!</string>
+    <string name="set_channel">请设置频道!</string>
+    <string name="set_frequency">请设置频率!</string>
+    <string name="tv_mode_option">模式选择:</string>
+    <string name="tv_country">国家</string>
+    <string name="tv_america">美国</string>
+    <string name="tv_india">印度</string>
+    <string name="tv_indonesia">印度尼西亚</string>
+    <string name="tv_mexico">墨西哥</string>
+    <string name="tv_germany">德国</string>
+    <string name="tv_china">中国</string>
+    <string name="tv_search_mode">模式</string>
+    <string name="tv_search_mode_manual">手动</string>
+    <string name="tv_search_mode_auto">自动</string>
+    <string name="tv_search_type">搜台制式</string>
+    <string name="tv_search_option">搜台选项:</string>
+    <string name="tv_search_order">频率顺序</string>
+    <string name="tv_search_atv_clolor">色彩制式</string>
+    <string name="tv_search_atv_sound">伴音制式</string>
+    <string name="tv_search_atv_sound_auto">自动</string>
+    <string name="tv_search_order_high">由高到低</string>
+    <string name="tv_search_order_low">由低到高</string>
+    <string name="tv_search_channel">频道</string>
+    <string name="tv_search">搜索</string>
+    <string name="tv_auto_option">自动搜台选项</string>
+
+    <!-- number search channel-->
+    <string name="number_search_title">"搜台中"</string>
+    <string name="number_search_dtv">"正在搜台，请稍等"</string>
+    <string name="number_search_atv">"正在搜索atv节目，请稍等"</string>
+    <string name="tvview_source_has_no_channel">无频道</string>
+
+    <string name="frequency_l">频率</string>
+    <string name="quality">质量</string>
+    <string name="strength">强度</string>
+    <string name="tv_channel">电视频道</string>
+    <string name="radio_channel">广播频道</string>
+    <string name="tv_search_channel_from">起始:</string>
+    <string name="tv_search_channel_to">终止:</string>
+    <string name="shortcutactivity_not_found">找不到设置程序！</string>
+
+    <string name="tv_all_band_search_dialog_message1">搜索到 </string>
+    <string name="tv_all_band_search_dialog_messages1">个节目。</string>
+    <string name="tv_all_band_search_dialog_messages2">个节目。</string>
+    <string name="tv_all_band_search_dialog_message2">继续搜台吗？</string>
+    <string name="dialog_btn_confirm_text">是</string>
+    <string name="dialog_btn_cancel_text">否</string>
 </resources>

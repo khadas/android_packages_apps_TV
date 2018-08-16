@@ -25,8 +25,15 @@ import android.app.FragmentTransaction;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
+import android.provider.Settings;
+import android.os.Handler;
+
+import com.android.tv.common.util.SystemProperties;
+import com.android.tv.MainActivity;
 import com.android.tv.R;
 import com.android.tv.ui.hideable.AutoHideScheduler;
+
+import com.droidlogic.app.tv.DroidLogicTvUtils;
 
 /** Manages {@link SideFragment}s. */
 public class SideFragmentManager implements AccessibilityStateChangeListener {
@@ -47,7 +54,18 @@ public class SideFragmentManager implements AccessibilityStateChangeListener {
     private final Animator mHideAnimator;
 
     private final AutoHideScheduler mAutoHideScheduler;
-    private final long mShowDurationMillis;
+    private long mShowDurationMillis;
+    private final Handler mHandler = new Handler();
+    private final Runnable mHideAllRunnable = new Runnable() {
+        @Override
+        public void run() {
+            sartedByDroid = false;
+            hideAll(true);
+        }
+    };
+
+    private static final String KEY_MENU_TIME = DroidLogicTvUtils.KEY_MENU_TIME;
+    private static final int DEFUALT_MENU_TIME = DroidLogicTvUtils.DEFUALT_MENU_TIME;
 
     public SideFragmentManager(
             Activity activity, Runnable preShowRunnable, Runnable postHideRunnable) {
@@ -93,6 +111,17 @@ public class SideFragmentManager implements AccessibilityStateChangeListener {
     }
 
     /** Shows the given {@link SideFragment}. */
+    //add flag if started by droidsetting
+    private boolean sartedByDroid = false;
+
+    public void showByDroid(SideFragment sideFragment, boolean showEnterAnimation) {
+        sartedByDroid = true;
+        show(sideFragment, showEnterAnimation);
+    }
+
+    /**
+     * Shows the given {@link SideFragment}.
+     */
     public void show(SideFragment sideFragment, boolean showEnterAnimation) {
         if (isHiding()) {
             mHideAnimator.end();
@@ -139,6 +168,10 @@ public class SideFragmentManager implements AccessibilityStateChangeListener {
         } else if (mFragmentCount == 1) {
             // Show closing animation with the last fragment.
             hideAll(true);
+            if (SystemProperties.USE_CUSTOMIZATION.getValue() && sartedByDroid) {
+                sartedByDroid = false;
+                ((MainActivity)mActivity).mQuickKeyInfo.startDroidSettings();
+            }
             return;
         }
         mFragmentManager.popBackStack();
@@ -235,6 +268,27 @@ public class SideFragmentManager implements AccessibilityStateChangeListener {
     /** Resets the timer for hiding side fragment. */
     public void scheduleHideAll() {
         mAutoHideScheduler.schedule(mShowDurationMillis);
+        mHandler.removeCallbacks(mHideAllRunnable);
+        int seconds = Settings.System.getInt(mActivity.getContentResolver(), KEY_MENU_TIME, DEFUALT_MENU_TIME);
+        if (seconds == 0) {
+            seconds = 15;
+        } else if (seconds == 1) {
+            seconds = 30;
+        } else if (seconds == 2) {
+            seconds = 60;
+        } else if (seconds == 3) {
+            seconds = 120;
+        } else if (seconds == 4) {
+            seconds = 240;
+        } else {
+            seconds = 0;
+        }
+        mShowDurationMillis = seconds * 1000;
+        if (mShowDurationMillis > 0) {
+            mHandler.postDelayed(mHideAllRunnable, mShowDurationMillis);
+        } else {
+            mHandler.removeCallbacks(mHideAllRunnable);
+        }
     }
 
     /** Should {@code keyCode} hide the current panel. */

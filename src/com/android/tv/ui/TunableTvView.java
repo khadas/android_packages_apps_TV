@@ -57,6 +57,8 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.provider.Settings;
+
 import com.android.tv.InputSessionManager;
 import com.android.tv.InputSessionManager.TvViewSession;
 import com.android.tv.R;
@@ -82,13 +84,18 @@ import com.android.tv.util.NetworkUtils;
 import com.android.tv.util.TvInputManagerHelper;
 import com.android.tv.util.Utils;
 import com.android.tv.util.images.ImageLoader;
+import com.android.tv.MainActivity;
+import com.android.tv.data.Program;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
+import com.droidlogic.app.tv.DroidLogicTvUtils;
+
 /** Includes the real {@link AppLayerTvView} handling tuning, block and other display events. */
 public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvViewPlayingApi {
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     private static final String TAG = "TunableTvView";
 
     public static final int VIDEO_UNAVAILABLE_REASON_NOT_TUNED = -1;
@@ -244,16 +251,17 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
 
                 @Override
                 public void onTracksChanged(String inputId, List<TvTrackInfo> tracks) {
-                    mHasClosedCaption = false;
+                    //mHasClosedCaption = false;
                     for (TvTrackInfo track : tracks) {
                         if (track.getType() == TvTrackInfo.TYPE_SUBTITLE) {
-                            mHasClosedCaption = true;
+                            //mHasClosedCaption = true;
                             break;
                         }
                     }
                     if (mOnTuneListener != null) {
                         mOnTuneListener.onStreamInfoChanged(TunableTvView.this);
                     }
+                    applyAudioADSwitch(-1);//apply audio ad swicth settings
                 }
 
                 @Override
@@ -327,6 +335,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                     if (mOnTuneListener != null) {
                         mOnTuneListener.onStreamInfoChanged(TunableTvView.this);
                     }
+                    mMainActivity.mQuickKeyInfo.cancelNoSingalTimeout();
                 }
 
                 private void showAlertDialogForLongStartUp() {
@@ -372,6 +381,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
 
                 @Override
                 public void onVideoUnavailable(String inputId, int reason) {
+                    if (DEBUG) Log.d(TAG, "onVideoUnavailable: {inputId=" + inputId + "}" + "{reason=" + reason + "}");
                     if (reason != TvInputManager.VIDEO_UNAVAILABLE_REASON_TUNING
                             && reason != TvInputManager.VIDEO_UNAVAILABLE_REASON_BUFFERING) {
                         Debug.getTimer(Debug.TAG_START_UP_TIMER)
@@ -400,6 +410,11 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                             break;
                         default:
                             // do nothing
+                    }
+                    if (reason == TvInputManager.VIDEO_UNAVAILABLE_REASON_AUDIO_ONLY) {
+                        mMainActivity.mQuickKeyInfo.cancelNoSingalTimeout();
+                    } else {
+                        mMainActivity.mQuickKeyInfo.setNoSingalTimeout();
                     }
                 }
 
@@ -441,6 +456,35 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                     boolean available = status == TvInputManager.TIME_SHIFT_STATUS_AVAILABLE;
                     setTimeShiftAvailable(available);
                 }
+
+                @Override
+                public void onEvent(String inputId, String eventType, Bundle eventArgs) {
+                    Log.d(TAG,"onEvent: id = " + inputId + ", eventType = "+eventType);
+                    if (eventType.equals(DroidLogicTvUtils.SIG_INFO_AV_VCHIP)) {
+                        String avvchip = null;
+                        if (eventArgs != null) {
+                            avvchip = (String)eventArgs.getString(DroidLogicTvUtils.SIG_INFO_AV_VCHIP_KEY);
+                        }
+                        mAVContentRatings = Program.stringToContentRatings(avvchip);
+                        if (mMainActivity.getOverlayManager().isInputBannerActive()) {
+                            mMainActivity.getOverlayManager().updateInputBannerViewLabel();
+                        }
+                    } else if (eventType.equals(DroidLogicTvUtils.SIG_INFO_CC_DATA_INFO)) {
+                        if (eventArgs != null) {
+                            int mask = eventArgs.getInt(DroidLogicTvUtils.SIG_INFO_CC_DATA_INFO_KEY, -1);
+                            if (mask != -1 && ((mask & ((1<<15)-1)) > 0)) {//judge cc data
+                                mHasClosedCaption = true;
+                            } else {
+                                mHasClosedCaption = false;
+                            }
+                            if (mMainActivity.getOverlayManager().isChannelBannerViewActive()) {
+                                mMainActivity.getOverlayManager().updateStreamInfo();
+                            } else if (mMainActivity.getOverlayManager().isInputBannerActive()) {
+                                mMainActivity.getOverlayManager().updateInputBannerViewLabel();
+                            }
+                        }
+                    }
+                }
             };
 
     public TunableTvView(Context context) {
@@ -460,6 +504,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
         inflate(getContext(), R.layout.tunable_tv_view, this);
 
         TvSingletons tvSingletons = TvSingletons.getSingletons(context);
+        mMainActivity = (MainActivity) context;
         if (CommonFeatures.DVR.isEnabled(context)) {
             mInputSessionManager = tvSingletons.getInputSessionManager();
         } else {
@@ -502,7 +547,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                                 }
                             }
                         });
-        View placeholder = findViewById(R.id.placeholder);
+        /*View placeholder = findViewById(R.id.placeholder);
         placeholder.requestFocus();
         findViewById(R.id.channel_up)
                 .setOnFocusChangeListener(
@@ -525,7 +570,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                                             KeyEvent.KEYCODE_DPAD_DOWN);
                                 }
                             }
-                        });
+                        });*/
     }
 
     public void initialize(
@@ -716,6 +761,8 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
         if (mOnTuneListener != null) {
             mOnTuneListener.onStreamInfoChanged(this);
         }
+        //clear av vchip info when tune
+        mAVContentRatings = null;
         return true;
     }
 
@@ -1022,11 +1069,19 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                 mBlockScreenView.setIconVisibility(false);
                 if (blockReason == TvInputManager.VIDEO_UNAVAILABLE_REASON_TUNING) {
                     showImageForTuningIfNeeded();
+                    //show nothing when tuning
+                    mBufferingSpinnerView.setVisibility(GONE);
+                    mBlockScreenView.setVisibility(GONE);
                 } else if (blockReason == TvInputManager.VIDEO_UNAVAILABLE_REASON_UNKNOWN
                         && mCurrentChannel != null
                         && !mCurrentChannel.isPhysicalTunerChannel()) {
                     mInternetCheckTask = new InternetCheckTask();
                     mInternetCheckTask.execute();
+                } else if ((blockReason == TvInputManager.VIDEO_UNAVAILABLE_REASON_UNKNOWN || blockReason == TvInputManager.VIDEO_UNAVAILABLE_REASON_AUDIO_ONLY)
+                        && mCurrentChannel != null && mCurrentChannel.isPhysicalTunerChannel()) {
+                    //show nothing if no signal
+                    mBufferingSpinnerView.setVisibility(GONE);
+                    mBlockScreenView.setVisibility(GONE);
                 }
             }
             mBlockScreenView.onBlockStatusChanged(mBlockScreenType, animation);
@@ -1477,5 +1532,41 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                 mBlockScreenView.setInfoText(R.string.tvview_msg_no_internet_connection);
             }
         }
+    }
+    public int getEasStatus() {
+        //Need to merge if eas is needed.
+        return 0;
+    }
+
+     //add new variable
+    private TvContentRating[] mAVContentRatings = null;
+    private MainActivity mMainActivity;
+
+    public TvContentRating[] getCurrentTvContentRating() {
+        return mAVContentRatings;
+    }
+
+    //send private data to service
+    public void sendAppPrivateCommand(String action, Bundle bundle) {
+        mTvView.sendAppPrivateCommand(action, bundle);
+    }
+
+    public void applyAudioADSwitch(int index) {
+        Bundle data = new Bundle();
+        int switchVal = Settings.System.getInt(mMainActivity.getContentResolver(), DroidLogicTvUtils.TV_KEY_AD_SWITCH, 0);
+        data.putInt(DroidLogicTvUtils.PARA_ENABLE, switchVal);
+        data.putInt(DroidLogicTvUtils.PARA_VALUE1, index);
+        sendAppPrivateCommand(DroidLogicTvUtils.ACTION_DTV_ENABLE_AUDIO_AD, data);
+    }
+
+    //show no channel hint
+    public void showNoDataBaseHint() {
+        mBlockScreenView.setVisibility(VISIBLE);
+        mBlockScreenView.setNoChannelHint();
+    }
+
+    public void hideNoDataBaseHint() {
+        mBlockScreenView.setVisibility(INVISIBLE);
+        mBlockScreenView.hideNoChannelTint();
     }
 }

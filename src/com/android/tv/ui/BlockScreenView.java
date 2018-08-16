@@ -44,6 +44,9 @@ public class BlockScreenView extends FrameLayout {
     private final int mSpacingNormal;
     private final int mSpacingShrunken;
 
+    private ImageView mNoDataBaseImageView;
+    private TextView mNoDataBaseTextView;
+
     // Animator used to fade out the whole block screen.
     private Animator mFadeOut;
 
@@ -81,6 +84,10 @@ public class BlockScreenView extends FrameLayout {
         mFadeOut =
                 AnimatorInflater.loadAnimator(
                         getContext(), R.animator.tvview_block_screen_fade_out);
+        //add view to show nodatabase begain
+        mNoDataBaseImageView = (ImageView) findViewById(R.id.msg_image);
+        mNoDataBaseTextView = (TextView) findViewById(R.id.msg_text);
+        //add view to show nodatabase end
         mFadeOut.setTarget(this);
         mFadeOut.addListener(
                 new AnimatorListenerAdapter() {
@@ -144,6 +151,20 @@ public class BlockScreenView extends FrameLayout {
     public void setBackgroundImage(Drawable backgroundImage) {
         mBackgroundImageView.setVisibility(backgroundImage == null ? GONE : VISIBLE);
         mBackgroundImageView.setImageDrawable(backgroundImage);
+    }
+
+    public void setNoChannelHint() {
+        mNoDataBaseImageView.setVisibility(VISIBLE);
+        mNoDataBaseTextView.setVisibility(VISIBLE);
+        mContainerView.setVisibility(GONE);
+        mNoDataBaseImageView.setImageResource(R.drawable.bg_no_signal);
+        mNoDataBaseTextView.setText(R.string.tvview_source_has_no_channel);
+    }
+
+    public void hideNoChannelTint() {
+        mNoDataBaseTextView.setVisibility(GONE);
+        mNoDataBaseImageView.setVisibility(GONE);
+        mContainerView.setVisibility(INVISIBLE);
     }
 
     private void updateSpaceVisibility() {

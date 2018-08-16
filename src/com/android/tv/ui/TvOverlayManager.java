@@ -636,6 +636,30 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
         mTransitionManager.goToChannelBannerScene();
     }
 
+    public boolean isInputBannerActive() {
+        return mTransitionManager.isInputBannerActive();
+    }
+
+    public boolean isChannelBannerViewActive() {
+        return mTransitionManager.isChannelBannerViewActive();
+    }
+
+    public void updateInputBannerViewLabel() {
+        mTransitionManager.updateInputBannerViewLabel();
+    }
+
+    public void updateChannelBannerView() {
+        mTransitionManager.updateChannelBannerView();
+    }
+
+    public void updateStreamInfo() {
+        mTransitionManager.updateStreamInfo();
+    }
+
+    public void goToEmptyBanner() {
+        mTransitionManager.goToEmptyScene(true);
+    }
+
     /**
      * Pops up the KeypadChannelSwitchView with the given key input event.
      *
@@ -643,11 +667,7 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
      */
     public void showKeypadChannelSwitch(int keyCode) {
         if (mChannelTuner.areAllChannelsLoaded()) {
-            hideOverlays(
-                    TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_SCENE
-                            | TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_SIDE_PANELS
-                            | TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_DIALOG
-                            | TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_FRAGMENT);
+            hideOverlays(TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_SCENE);
             mTransitionManager.goToKeypadChannelSwitchScene();
             mKeypadChannelSwitchView.onNumberKeyUp(keyCode - KeyEvent.KEYCODE_0);
         }
@@ -711,6 +731,10 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
 
     public boolean isOverlayOpened() {
         return mOpenedOverlays != OVERLAY_TYPE_NONE;
+    }
+
+    public boolean isFragmentOpened() {
+        return mOpenedOverlays != OVERLAY_TYPE_FRAGMENT;
     }
 
     /** Hides all the opened overlays according to the flags. */
@@ -847,18 +871,29 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
                     && reason == UPDATE_CHANNEL_BANNER_REASON_LOCK_OR_UNLOCK) {
                 return;
             } else if (reason == UPDATE_CHANNEL_BANNER_REASON_UPDATE_STREAM_INFO) {
-                mChannelBannerView.updateStreamInfo(mTvView);
                 // If parental control is enabled, we shows program description when the video is
                 // available, instead of tuning. Therefore we need to check it here if the program
                 // description is previously hidden by parental control.
                 if (previousLockType == ChannelBannerView.LOCK_PROGRAM_DETAIL
                         && lockType != ChannelBannerView.LOCK_PROGRAM_DETAIL) {
                     mChannelBannerView.updateViews(false);
+                } else if (lockType == ChannelBannerView.LOCK_NONE) {
+                    Log.d(TAG, "tuner stream info change");
+                    if (isChannelBannerViewActive()) {
+                        mChannelBannerView.updateViews(mMainActivity.getTvView());
+                    } else {
+                        showBanner();
+                    }
                 }
             } else {
                 mChannelBannerView.updateViews(
                         reason == UPDATE_CHANNEL_BANNER_REASON_TUNE
                                 || reason == UPDATE_CHANNEL_BANNER_REASON_TUNE_FAST);
+            }
+        } else if (reason == UPDATE_CHANNEL_BANNER_REASON_UPDATE_STREAM_INFO) {
+            Log.d(TAG, "passthrough stream info change");
+            if (isInputBannerActive()) {
+                mTransitionManager.updateInputBannerViewLabel();
             }
         }
         boolean needToShowBanner =
@@ -1123,7 +1158,7 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
         }
         if (mTransitionManager.isKeypadChannelSwitchActive()) {
             if (keyCode == KeyEvent.KEYCODE_BACK) {
-                mTransitionManager.goToEmptyScene(true);
+                hideOverlays(TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_SCENE);
                 return MainActivity.KEY_EVENT_HANDLER_RESULT_HANDLED;
             }
             return mKeypadChannelSwitchView.onKeyUp(keyCode, event)

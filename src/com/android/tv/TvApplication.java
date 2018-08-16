@@ -62,6 +62,11 @@ import com.android.tv.tuner.util.TunerInputInfoUtils;
 import com.android.tv.util.SetupUtils;
 import com.android.tv.util.TvInputManagerHelper;
 import com.android.tv.util.Utils;
+
+import com.droidlogic.app.SystemControlManager;
+import com.droidlogic.app.tv.TvTime;
+import com.droidlogic.app.tv.TvControlDataManager;
+
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -116,6 +121,10 @@ public abstract class TvApplication extends BaseApplication implements TvSinglet
     private EpgFetcher mEpgFetcher;
     private TunerInputController mTunerInputController;
 
+    private SystemControlManager mSystemControlManager;
+    private TvTime mTvTime;
+    private TvControlDataManager mTvControlDataManager;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -144,6 +153,8 @@ public abstract class TvApplication extends BaseApplication implements TvSinglet
         mEpgFetcher = EpgFetcherImpl.create(this);
         SetupAnimationHelper.initialize(this);
         getTvInputManagerHelper();
+
+        handleInputCountChanged();//check inputlist in case that livetv can't receive callback
 
         Log.i(TAG, "Started Live TV " + mVersionName);
         Debug.getTimer(Debug.TAG_START_UP_TIMER).log("finish TvApplication.onCreate");
@@ -243,6 +254,42 @@ public abstract class TvApplication extends BaseApplication implements TvSinglet
     }
 
     /** Returns the {@link DvrWatchedPositionManager}. */
+    /**
+     * Returns the {@link SystemControlManager}.
+     */
+    @Override
+    public SystemControlManager getSystemControlManager() {
+        if (mSystemControlManager == null) {
+            mSystemControlManager = new SystemControlManager(getApplicationContext());
+        }
+        return mSystemControlManager;
+    }
+
+    /**
+     * Returns the {@link TvTime}.
+     */
+    @Override
+    public TvTime getTvTime() {
+        if (mTvTime == null) {
+            mTvTime = new TvTime(getApplicationContext());
+        }
+        return mTvTime;
+    }
+
+    /**
+     * Returns the {@link TvControlDataManager}.
+     */
+    @Override
+    public TvControlDataManager getTvControlDataManager() {
+        if (mTvControlDataManager == null) {
+            mTvControlDataManager = TvControlDataManager.getInstance(getApplicationContext());
+        }
+        return mTvControlDataManager;
+    }
+
+    /**
+     * Returns the {@link DvrWatchedPositionManager}.
+     */
     @Override
     public DvrWatchedPositionManager getDvrWatchedPositionManager() {
         if (mDvrWatchedPositionManager == null) {

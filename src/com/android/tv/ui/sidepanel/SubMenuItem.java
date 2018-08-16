@@ -16,9 +16,11 @@
 
 package com.android.tv.ui.sidepanel;
 
+import android.os.Bundle;
+
 public abstract class SubMenuItem extends ActionItem {
     private final SideFragmentManager mSideFragmentManager;
-
+    private Bundle mBundle = null;
     public SubMenuItem(String title, SideFragmentManager fragmentManager) {
         this(title, null, fragmentManager);
     }
@@ -33,8 +35,14 @@ public abstract class SubMenuItem extends ActionItem {
         launchFragment();
     }
 
+    public void setparameters(Bundle bundle) {
+        mBundle = bundle;
+    }
+
     protected void launchFragment() {
-        mSideFragmentManager.show(getFragment());
+        SideFragment sidefragment = getFragment();
+        sidefragment.setArguments(mBundle);
+        mSideFragmentManager.show(sidefragment);
     }
 
     protected abstract SideFragment getFragment();

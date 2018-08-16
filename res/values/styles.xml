@@ -33,6 +33,7 @@
 
     <style name="track_meta_text.channel_banner">
         <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:background">@color/channel_banner_program_track_meta_back</item>
     </style>
 
     <style name="pin_dialog_animation" parent="@android:style/Animation.Activity">
@@ -192,5 +193,18 @@
         <item name="resizedTextSize">@dimen/dvr_details_description_title_resized_text_size</item>
         <item name="resizedPaddingAdjustmentTop">@dimen/dvr_details_description_title_padding_adjust_top</item>
         <item name="resizedPaddingAdjustmentBottom">@dimen/dvr_details_description_title_padding_adjust_bottom</item>
+    </style>
+
+    <style name="Settings_style">
+        <item name="android:windowBackground">@color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowShowWallpaper">false</item>
+        <item name="android:windowAnimationStyle">@style/anim_setting</item>
+    </style>
+
+    <style name="anim_setting">
+        <item name="android:windowEnterAnimation">@anim/push_left_in</item>
+        <item name="android:windowExitAnimation">@anim/push_left_out</item>
     </style>
 </resources>

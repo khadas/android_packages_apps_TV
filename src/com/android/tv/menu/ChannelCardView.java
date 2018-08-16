@@ -32,6 +32,9 @@ import com.android.tv.data.Program;
 import com.android.tv.data.api.Channel;
 import com.android.tv.parental.ParentalControlSettings;
 import com.android.tv.util.images.ImageLoader;
+import com.android.tv.util.images.ImageLoader;
+import com.android.tv.util.TvClock;
+
 import java.util.Objects;
 
 /** A view to render channel card. */
@@ -50,6 +53,9 @@ public class ChannelCardView extends BaseCardView<ChannelsRowItem> {
     private String mPosterArtUri;
     private final MainActivity mMainActivity;
 
+    //for TvClock
+    private TvClock mClock;
+
     public ChannelCardView(Context context) {
         this(context, null);
     }
@@ -63,6 +69,7 @@ public class ChannelCardView extends BaseCardView<ChannelsRowItem> {
         mCardImageWidth = getResources().getDimensionPixelSize(R.dimen.card_image_layout_width);
         mCardImageHeight = getResources().getDimensionPixelSize(R.dimen.card_image_layout_height);
         mMainActivity = (MainActivity) context;
+        mClock = new TvClock(context);
     }
 
     @Override
@@ -125,7 +132,7 @@ public class ChannelCardView extends BaseCardView<ChannelsRowItem> {
             mProgressBar.setVisibility(View.VISIBLE);
             long startTime = mProgram.getStartTimeUtcMillis();
             long endTime = mProgram.getEndTimeUtcMillis();
-            long currTime = System.currentTimeMillis();
+            long currTime = mClock.currentTimeMillis();
             if (currTime <= startTime) {
                 mProgressBar.setProgress(0);
             } else if (currTime >= endTime) {
