@@ -662,8 +662,9 @@ public class Utils {
             return TextUtils.equals(
                     new Locale(lang1).getISO3Language(), new Locale(lang2).getISO3Language());
         } catch (Exception ignored) {
+            Log.d(TAG, "lang1=" + lang1 + "lang2=" + lang2 + ", Exception =" + ignored.getMessage());
         }
-        return false;
+        return TextUtils.equals(lang1, lang2);
     }
 
     public static boolean isIntentAvailable(Context context, Intent intent) {
