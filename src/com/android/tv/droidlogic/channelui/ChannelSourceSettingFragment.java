@@ -83,7 +83,8 @@ public class ChannelSourceSettingFragment extends SideFragment {
                 //get tuner tvinputinfo and then search channel
                 TvInputInfo tunerinputinfo = getMainActivity().mQuickKeyInfo.getTunerInput();
                 if (tunerinputinfo != null) {
-                    getMainActivity().startSetupActivity(tunerinputinfo, true);
+                    //getMainActivity().startSetupActivity(tunerinputinfo, true);
+                    getMainActivity().getOverlayManager().showSetupFragment();
                 }
              }
         });
