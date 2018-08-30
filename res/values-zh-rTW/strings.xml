@@ -396,4 +396,13 @@
     <string name="favourite_list">喜愛列表</string>
     <string name="channel_list">頻道列表</string>
     <string name="shortcutactivity_not_found">找不到設置程序！</string>
+
+    <!-- rrt5 -->
+    <string name="option_rrt5">下載的等級</string>
+    <string name="option_rrt5_description">從碼流獲取的等級資訊</string>
+    <string name="option_rrt5_clear">清除下載的碼流錶</string>
+    <string name="rrt5_update_title">更新等級錶</string>
+    <string name="rrt5_update_title_description">下載等級資訊並更新</string>
+    <string name="msg_update_rating_start">開始更新RRT5等級錶!</string>
+    <string name="msg_update_rating_end">RRT5登記表更新完畢，請進入選單確認</string>
 </resources>

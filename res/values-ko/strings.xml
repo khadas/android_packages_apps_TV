@@ -409,4 +409,13 @@
     <string name="channel_fine_mhz">MHz</string>
     <string name="shortcutactivity_not_found">설치 절차를 찾지 못 했다!</string>
     <string name="tvview_source_has_no_channel">채널이 없다</string>
+
+    <!-- rrt5 -->
+    <string name="option_rrt5">다운로드한 등급</string>
+    <string name="option_rrt5_description">다운로드 평가 흐름</string>
+    <string name="option_rrt5_clear">잘 다운로드 데이터</string>
+    <string name="rrt5_update_title">업데이트 다운로드 등급</string>
+    <string name="rrt5_update_title_description">다운로드 등급 정보, 신선한</string>
+    <string name="msg_update_rating_start">부터 업데이트 RRT5 등급표!</string>
+    <string name="msg_update_rating_end">RRT5 등기표 업데이트 완료 진입 메뉴 확인해 주십시오.</string>
 </resources>

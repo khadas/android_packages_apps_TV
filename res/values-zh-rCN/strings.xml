@@ -455,4 +455,13 @@
     <string name="tv_all_band_search_dialog_message2">继续搜台吗？</string>
     <string name="dialog_btn_confirm_text">是</string>
     <string name="dialog_btn_cancel_text">否</string>
+
+    <!-- rrt5 -->
+    <string name="option_rrt5">下载的等级</string>
+    <string name="option_rrt5_description">从码流获取的等级信息</string>
+    <string name="option_rrt5_clear">清除下载的码流表</string>
+    <string name="rrt5_update_title">更新等级表</string>
+    <string name="rrt5_update_title_description">下载等级信息并更新</string>
+    <string name="msg_update_rating_start">开始更新RRT5等级表!</string>
+    <string name="msg_update_rating_end">RRT5登记表更新完毕，请进入菜单确认</string>
 </resources>

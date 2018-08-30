@@ -36,6 +36,10 @@ LOCAL_SHARED_ANDROID_LIBRARIES := \
     android-support-tv-provider \
     tv-common \
 
+ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 28 && echo OK),OK)
+LOCAL_PROPRIETARY_MODULE := true
+endif
+
 include $(LOCAL_PATH)/buildconfig.mk
 
 include $(BUILD_STATIC_JAVA_LIBRARY)

@@ -21,6 +21,8 @@ import com.android.tv.R;
 import com.android.tv.ui.sidepanel.Item;
 import com.android.tv.ui.sidepanel.SideFragment;
 import com.android.tv.ui.sidepanel.SubMenuItem;
+import com.android.tv.droidlogic.rrt5.DroidRatingsFragment;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,6 +86,21 @@ public class ProgramRestrictionsFragment extends SideFragment {
             ratingsItem.setEnabled(false);
         }
         items.add(ratingsItem);
+
+        String rrt5RatingsDescription = DroidRatingsFragment.getDescription(getMainActivity());
+        SubMenuItem rtt5RatingsItem = new SubMenuItem(getString(R.string.option_rrt5),
+                rrt5RatingsDescription,
+                getMainActivity().getOverlayManager().getSideFragmentManager()) {
+                    @Override
+                    protected SideFragment getFragment() {
+                        SideFragment fragment = new DroidRatingsFragment();
+                        fragment.setListener(mSideFragmentListener);
+                        return fragment;
+                    }
+        };
+
+        items.add(rtt5RatingsItem);
+
         return items;
     }
 }

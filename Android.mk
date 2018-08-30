@@ -29,7 +29,8 @@ LOCAL_JAVA_LIBRARIES := droidlogic droidlogic-tv
 LOCAL_PACKAGE_NAME := LiveTv
 
 # It is required for com.android.providers.tv.permission.ALL_EPG_DATA
-LOCAL_PRIVILEGED_MODULE := true
+//LOCAL_PRIVILEGED_MODULE := true
+LOCAL_CERTIFICATE := platform
 
 LOCAL_PRIVATE_PLATFORM_APIS := true
 
@@ -72,6 +73,10 @@ LOCAL_AAPT_FLAGS += \
 
 LOCAL_JNI_SHARED_LIBRARIES := libtunertvinput_jni
 LOCAL_AAPT_FLAGS += --extra-packages com.android.tv.tuner
+
+ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 28 && echo OK),OK)
+LOCAL_PROPRIETARY_MODULE := true
+endif
 
 include $(BUILD_PACKAGE)
 

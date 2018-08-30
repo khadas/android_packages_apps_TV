@@ -81,7 +81,7 @@ import com.droidlogic.app.tv.TvControlDataManager;
 
 import com.droidlogic.app.DroidLogicKeyEvent;
 
-public class QuickKeyInfo {
+public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
     private final static String TAG = "QuickKeyInfo";
     private final boolean DEBUG = false;
     private TvInputManagerHelper mTvInputManagerHelper;
@@ -225,11 +225,13 @@ public class QuickKeyInfo {
         intentFilter.addAction(DroidLogicTvUtils.ACTION_SWITCH_CHANNEL);
         intentFilter.addAction(DroidLogicTvUtils.ACTION_PROGRAM_APPOINTED);
         mActivity.registerReceiver(mUiCommandReceiver, intentFilter);
+        mTvControlManager.SetRRT5SourceUpdateListener(this);
     }
 
     public void unregisterCommandReceiver() {
         mActivity.unregisterReceiver(mUiCommandReceiver);
         cancelAllTimeout();
+        mTvControlManager.SetRRT5SourceUpdateListener(null);
     }
 
     public void setStartTvFragment(boolean value) {
@@ -1166,4 +1168,32 @@ public class QuickKeyInfo {
         return Uri.withAppendedPath(uri, key);
     }
     /********end:save setting data for quick key********/
+
+
+    /********start: add for rrt5********/
+    private static final int UPDATE_MANUAL = 1;
+
+    public int updateRRT5XmlResource() {
+        int freq;
+        int module;
+        int result= -1;
+        TvControlManager.FEParas fe = null;
+        ChannelInfo info = getCurrentChannelInfo();;
+        if (mActivity.getContentRatingsManager().isRRT5UpdateFinish()) {
+            if (info != null && !info.isPassthrough()) {
+                Log.d(TAG, "[updateRRT5XmlResource] getFEParas" + info.getFEParas());
+                fe = new TvControlManager.FEParas(info.getFEParas());
+                result = mTvControlManager.updateRRTRes(fe.getFrequency(), fe.getModulation(), UPDATE_MANUAL);
+            }
+            Log.d(TAG,"result:"+result);
+        }
+        return result;
+    }
+
+    @Override
+    public void onRRT5InfoUpdated(int result) {
+        Log.d(TAG,"onRRT5InfoUpdated:"+result);
+        mActivity.getContentRatingsManager().setRRT5updateResult(result);
+    }
+    /********end: add for rrt5********/
 }

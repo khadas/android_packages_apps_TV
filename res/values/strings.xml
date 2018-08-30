@@ -1171,4 +1171,13 @@
     <string name="tv_all_band_search_dialog_message2">Keep searching?</string>
     <string name="dialog_btn_confirm_text">YES</string>
     <string name="dialog_btn_cancel_text">NO</string>
+
+    <!-- rrt5 -->
+    <string name="option_rrt5">Downloaded Rating</string>
+    <string name="option_rrt5_description">Downloadable Rating from stream</string>
+    <string name="option_rrt5_clear">Clear Downloaded Data</string>
+    <string name="rrt5_update_title">Update Downloaded Rating</string>
+    <string name="rrt5_update_title_description">Download rating infos and fresh</string>
+    <string name="msg_update_rating_start">Start update Rating Information!</string>
+    <string name="msg_update_rating_end">Update RRT5 Finish! Please check the Menu.</string>
 </resources>

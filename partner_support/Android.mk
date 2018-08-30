@@ -15,6 +15,10 @@ LOCAL_RESOURCE_DIR := $(LOCAL_PATH)/res
 
 LOCAL_STATIC_JAVA_LIBRARIES := android-support-annotations
 
+ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 28 && echo OK),OK)
+LOCAL_PROPRIETARY_MODULE := true
+endif
+
 include $(LOCAL_PATH)/buildconfig.mk
 
 include $(BUILD_STATIC_JAVA_LIBRARY)

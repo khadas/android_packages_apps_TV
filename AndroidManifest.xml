@@ -15,8 +15,8 @@
   ~ limitations under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.android.tv" >
-
+    package="com.android.tv"
+    android:sharedUserId="android.uid.system">
     <uses-sdk
         android:minSdkVersion="23"
         android:targetSdkVersion="26" />
