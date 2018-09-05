@@ -82,6 +82,8 @@ public class DvrDatabaseHelper extends SQLiteOpenHelper {
                     + " TEXT NOT NULL,"
                     + Schedules.COLUMN_SERIES_RECORDING_ID
                     + " INTEGER,"
+                    + Schedules.COLUMN_FAILED_REASON
+                    + " TEXT,"
                     + "FOREIGN KEY("
                     + Schedules.COLUMN_SERIES_RECORDING_ID
                     + ") "
