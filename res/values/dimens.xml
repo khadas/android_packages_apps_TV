@@ -427,4 +427,7 @@
     <dimen name="ut_scan_channel_num_width">48dp</dimen>
     <dimen name="ut_scan_channel_name_width">96dp</dimen>
     <dimen name="ut_scan_channel_edit_text_width">80dp</dimen>
+
+    <!-- add new define -->
+    <item name="setup_guidedactions_width_weight" format="float" type="string">0.71428571428</item>
 </resources>
