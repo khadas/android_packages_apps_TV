@@ -24,9 +24,6 @@ LOCAL_SHARED_ANDROID_LIBRARIES := \
     android-support-v7-recyclerview \
     android-support-v17-leanback
 
-ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 28 && echo OK),OK)
-LOCAL_PROPRIETARY_MODULE := true
-endif
 
 include $(LOCAL_PATH)/buildconfig.mk
 

@@ -26,9 +26,6 @@ LOCAL_SDK_VERSION := 23
 LOCAL_NDK_STL_VARIANT := c++_static
 LOCAL_LDLIBS := -llog
 
-ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 28 && echo OK),OK)
-LOCAL_PROPRIETARY_MODULE := true
-endif
 
 include $(BUILD_SHARED_LIBRARY)
 include $(call all-makefiles-under,$(LOCAL_PATH))
