@@ -811,13 +811,23 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
             switch (msg.arg1) {
                 case MANUAL_START:
                     Log.d(TAG, "=====MANUAL_START");
-                    initparametres(MANUAL_SEARCH);
-                    mTvScanManager.startManualScan();
+                    if (mTvScanManager.isConnected()) {
+                        initparametres(MANUAL_SEARCH);
+                        mTvScanManager.startManualScan();
+                    } else {
+                        Log.d(TAG, "Service connecting, please wait a second!");
+                        sendMessageDelayeds(MANUAL_START, 0, null, 200);
+                    }
                     break;
                 case AUTO_START:
                     Log.d(TAG, "=====AUTO_START");
-                    initparametres(AUTO_SEARCH);
-                    mTvScanManager.startAutoScan();
+                    if (mTvScanManager.isConnected()) {
+                        initparametres(AUTO_SEARCH);
+                        mTvScanManager.startAutoScan();
+                    } else {
+                        Log.d(TAG, "Service connecting, please wait a second!");
+                        sendMessageDelayeds(AUTO_START, 0, null, 200);
+                    }
                     break;
                 case PROCCESS:
                     Log.d(TAG, "=====PROCCESS");
@@ -1045,6 +1055,14 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
         msg.what = message;
         msg.obj = information;
         mHandler.sendMessage(msg);
+    }
+
+    private void sendMessageDelayeds(int type, int message, String information, long delayMillis) {
+        Message msg = new Message();
+        msg.arg1 = type;
+        msg.what = message;
+        msg.obj = information;
+        mHandler.sendMessageDelayed(msg, delayMillis);
     }
 
     boolean isManualStarted = false;

@@ -2563,14 +2563,10 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         if (keyCode == KeyEvent.KEYCODE_MENU && SystemProperties.USE_CUSTOMIZATION.getValue()) {
             //response menu key to startDroidSettings
             //mQuickKeyInfo.startDroidSettings();
-            if (!mOverlayManager.isSetupFragmentActive()) {
-                mQuickKeyInfo.startDroidSettings();
-            }
+            mQuickKeyInfo.startDroidSettings();
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_TV_INPUT) {
-            if (!mOverlayManager.isSetupFragmentActive()) {
-                mQuickKeyInfo.startDroidlogicTvSource();
-            }
+            mQuickKeyInfo.startDroidlogicTvSource();
             return true;
         }
 
@@ -2989,8 +2985,10 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             if (!mTvView.isPlaying()) {
                 startTv(channel.getUri());
             } else if (channel.equals(mTvView.getCurrentChannel())) {
-                mOverlayManager.updateChannelBannerAndShowIfNeeded(
-                        TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE);
+                if (!mOverlayManager.isChannelBannerViewActive()) {
+                    mOverlayManager.updateChannelBannerAndShowIfNeeded(
+                            TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE);
+                }
             } else if (channel.equals(mChannelTuner.getCurrentChannel())) {
                 // Channel banner is already updated in moveToAdjacentChannel
                 tune(false);

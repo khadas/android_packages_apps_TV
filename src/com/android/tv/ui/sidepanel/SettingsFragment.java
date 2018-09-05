@@ -93,8 +93,8 @@ public class SettingsFragment extends SideFragment {
                                 : null) {
                     @Override
                     protected void onSelected() {
-                        closeFragment();
                         activity.getOverlayManager().showSetupFragment();
+                        closeFragment();
                     }
                 });
         if (PermissionUtils.hasModifyParentalControls(getMainActivity())) {

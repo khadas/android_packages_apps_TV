@@ -255,7 +255,7 @@ public class ChannelTuner {
      */
     public boolean moveToAdjacentBrowsableChannel(boolean up) {
         Channel channel = getAdjacentBrowsableChannel(up);
-        if (channel == null) {
+        if (channel == null || (mCurrentChannel != null && mCurrentChannel.equals(channel))) {
             return false;
         }
         setCurrentChannelAndNotify(mChannelMap.get(channel.getId()));

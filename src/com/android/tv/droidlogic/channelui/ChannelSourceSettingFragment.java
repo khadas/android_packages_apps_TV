@@ -19,6 +19,7 @@ package com.android.tv.droidlogic.channelui;
 import android.view.View;
 import android.widget.TextView;
 import android.media.tv.TvInputInfo;
+import android.media.tv.TvContract;
 
 import com.android.tv.MainActivity;
 import com.android.tv.R;
@@ -83,8 +84,7 @@ public class ChannelSourceSettingFragment extends SideFragment {
                 //get tuner tvinputinfo and then search channel
                 TvInputInfo tunerinputinfo = getMainActivity().mQuickKeyInfo.getTunerInput();
                 if (tunerinputinfo != null) {
-                    //getMainActivity().startSetupActivity(tunerinputinfo, true);
-                    getMainActivity().getOverlayManager().showSetupFragment();
+                    getMainActivity().startSetupActivity(tunerinputinfo, true);
                 }
              }
         });
@@ -97,23 +97,27 @@ public class ChannelSourceSettingFragment extends SideFragment {
                 return fragment;
             }
         });
+        Channel currentChannel = getMainActivity().getCurrentChannel();
         if (PermissionUtils.hasModifyParentalControls(getMainActivity())) {
-            mActionItems.add(new ActionItem(getString(R.string.settings_parental_controls),
-                    getString(getMainActivity().getParentalControlSettings().isParentalControlsEnabled()
-                            ? R.string.option_toggle_parental_controls_on
-                            : R.string.option_toggle_parental_controls_off)) {
-                @Override
-                protected void onSelected() {
-                    final MainActivity tvActivity = getMainActivity();
-                    final SideFragmentManager sideFragmentManager = tvActivity.getOverlayManager()
-                            .getSideFragmentManager();
-                    sideFragmentManager.hideSidePanel(true);
-                    PinDialogFragment fragment = PinDialogFragment
-                            .create(PinDialogFragment.PIN_DIALOG_TYPE_ENTER_PIN);
-                    getMainActivity().getOverlayManager()
-                            .showDialogFragment(PinDialogFragment.DIALOG_TAG, fragment, true);
-                }
-            });
+            if (currentChannel == null
+                || (currentChannel != null && !currentChannel.getType().equals(TvContract.Channels.TYPE_DTMB))) {
+                mActionItems.add(new ActionItem(getString(R.string.settings_parental_controls),
+                        getString(getMainActivity().getParentalControlSettings().isParentalControlsEnabled()
+                                ? R.string.option_toggle_parental_controls_on
+                                : R.string.option_toggle_parental_controls_off)) {
+                    @Override
+                    protected void onSelected() {
+                        final MainActivity tvActivity = getMainActivity();
+                        final SideFragmentManager sideFragmentManager = tvActivity.getOverlayManager()
+                                .getSideFragmentManager();
+                        sideFragmentManager.hideSidePanel(true);
+                        PinDialogFragment fragment = PinDialogFragment
+                                .create(PinDialogFragment.PIN_DIALOG_TYPE_ENTER_PIN);
+                        getMainActivity().getOverlayManager()
+                                .showDialogFragment(PinDialogFragment.DIALOG_TAG, fragment, true);
+                    }
+                });
+            }
         } else {
             // Note: parental control is turned off, when MODIFY_PARENTAL_CONTROLS is not granted.
             // But, we may be able to turn on channel lock feature regardless of the permission.
@@ -153,26 +157,27 @@ public class ChannelSourceSettingFragment extends SideFragment {
                 }
             });
         }
-
-        final int[] switchstatus = {R.string.channel_audio_ad_switch_off, R.string.channel_audio_ad_switch_on};
-        mActionItems.add(new SubMenuItem(getString(R.string.channel_audio_ad_switch),
-                getMainActivity().getResources().getString(switchstatus[mChannelSettingsManager.getADSwitchStatus()]), getMainActivity().getOverlayManager().getSideFragmentManager()) {
-            @Override
-            protected SideFragment getFragment() {
-                SideFragment fragment = new AudioAdSwitchFragment();
-                fragment.setListener(mSideFragmentListener);
-                return fragment;
-            }
-        });
-        mActionItems.add(new SubMenuItem(getString(R.string.channel_audio_ad_mix_level),
-                (mChannelSettingsManager.getADMixStatus() + "%"), getMainActivity().getOverlayManager().getSideFragmentManager()) {
-            @Override
-            protected SideFragment getFragment() {
-                SideFragment fragment = new AudioAdMixLevelFragment();
-                fragment.setListener(mSideFragmentListener);
-                return fragment;
-            }
-        });
+        if (currentChannel == null || (currentChannel != null && !currentChannel.getType().equals(TvContract.Channels.TYPE_DTMB))) {
+            final int[] switchstatus = {R.string.channel_audio_ad_switch_off, R.string.channel_audio_ad_switch_on};
+            mActionItems.add(new SubMenuItem(getString(R.string.channel_audio_ad_switch),
+                    getMainActivity().getResources().getString(switchstatus[mChannelSettingsManager.getADSwitchStatus()]), getMainActivity().getOverlayManager().getSideFragmentManager()) {
+                @Override
+                protected SideFragment getFragment() {
+                    SideFragment fragment = new AudioAdSwitchFragment();
+                    fragment.setListener(mSideFragmentListener);
+                    return fragment;
+                }
+            });
+            mActionItems.add(new SubMenuItem(getString(R.string.channel_audio_ad_mix_level),
+                    (mChannelSettingsManager.getADMixStatus() + "%"), getMainActivity().getOverlayManager().getSideFragmentManager()) {
+                @Override
+                protected SideFragment getFragment() {
+                    SideFragment fragment = new AudioAdMixLevelFragment();
+                    fragment.setListener(mSideFragmentListener);
+                    return fragment;
+                }
+            });
+        }
         mActionItems.add(new SubMenuItem(getString(R.string.channel_volume_compensate),
                 String.valueOf(mChannelSettingsManager.getVolumeCompensateStatus() * 5)  + "%", getMainActivity().getOverlayManager().getSideFragmentManager()) {
             @Override

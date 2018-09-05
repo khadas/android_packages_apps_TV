@@ -352,7 +352,6 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
                                             TvInputInfo input =
                                                     mInputManager.getTvInputInfo(inputId);
                                             mMainActivity.startSetupActivity(input, true);
-                                            closeSetupFragment(true);
                                             return true;
                                         }
                                 }
@@ -573,17 +572,17 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
     }
 
     // Set removeFragment to false only when the new fragment is going to be shown.
-    public void closeSetupFragment(boolean removeFragment) {
+    private void closeSetupFragment(boolean removeFragment) {
         if (DEBUG) Log.d(TAG, "closeSetupFragment");
         if (!mSetupFragmentActive) {
             return;
         }
         mSetupFragmentActive = false;
         closeFragment(removeFragment ? FRAGMENT_TAG_SETUP_SOURCES : null);
-        //if (mChannelDataManager.getChannelCount() == 0) {
-        //    if (DEBUG) Log.d(TAG, "Finishing MainActivity because there are no channels.");
-        //    mMainActivity.finish();
-        //}
+        if (mChannelDataManager.getChannelCount() == 0) {
+            if (DEBUG) Log.d(TAG, "Finishing MainActivity because there are no channels.");
+            mMainActivity.finish();
+        }
     }
 
     /** Shows new sources dialog. */
