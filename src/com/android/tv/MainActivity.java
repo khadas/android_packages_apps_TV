@@ -1365,6 +1365,11 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         // Even though other app can handle the intent, the setup launched by Live channels
         // should go through Live channels SetupPassthroughActivity.
         intent.setComponent(new ComponentName(this, SetupPassthroughActivity.class));
+        //send number search channel parameter
+        if (input != null && mQuickKeyInfo.isNumberSearch()) {
+            intent.putExtra(DroidLogicTvUtils.TV_NUMBER_SEARCH_MODE, true);
+            intent.putExtra(DroidLogicTvUtils.TV_NUMBER_SEARCH_NUMBER, mQuickKeyInfo.getSearchNumber());
+        }
         try {
             // Now we know that the user intends to set up this input. Grant permission for writing
             // EPG data.
@@ -2613,6 +2618,10 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     }
                     return true;
                 default: // fall out
+                    if (SystemProperties.USE_CUSTOMIZATION.getValue() && KeypadChannelSwitchView.isChannelNumberKey(keyCode)) {
+                        mOverlayManager.showKeypadChannelSwitch(keyCode);
+                        return true;
+                    }
             }
         } else {
             if (KeypadChannelSwitchView.isChannelNumberKey(keyCode)) {

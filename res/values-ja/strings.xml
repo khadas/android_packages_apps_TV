@@ -400,4 +400,9 @@
     <string name="rrt5_update_title_description">格付け情報とダウンロード</string>
     <string name="msg_update_rating_start">から更新しRRT5ランク表!</string>
     <string name="msg_update_rating_end">RRT5登記表更新済み、確認メニューに入ってください</string>
+
+    <!--number search channel-->
+    <string name="invalid_channel_number">チャンネル番号は無効です。1~135の範囲内のチャンネルを入力してください</string>
+    <string name="invalid_atsct_channel_number">atsc-tチャンネル番号が无効になっており、2~69范囲内のチャンネルを入力してください</string>
+    <string name="bad_channel_number">"完全なチャンネル番号は入力されていません"</string>
 </resources>

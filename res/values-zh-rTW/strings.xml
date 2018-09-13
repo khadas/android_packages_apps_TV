@@ -405,4 +405,9 @@
     <string name="rrt5_update_title_description">下載等級資訊並更新</string>
     <string name="msg_update_rating_start">開始更新RRT5等級錶!</string>
     <string name="msg_update_rating_end">RRT5登記表更新完畢，請進入選單確認</string>
+
+    <!--number search channel-->
+    <string name="invalid_channel_number">頻道號無效，請輸入1～135範圍內的頻道</string>
+    <string name="invalid_atsct_channel_number">atsc-t頻道號無效，請輸入2～69範圍內的頻道號</string>
+    <string name="bad_channel_number">"沒有輸入完整的頻道號"</string>
 </resources>

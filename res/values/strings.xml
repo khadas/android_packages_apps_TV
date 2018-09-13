@@ -1180,4 +1180,9 @@
     <string name="rrt5_update_title_description">Download rating infos and fresh</string>
     <string name="msg_update_rating_start">Start update Rating Information!</string>
     <string name="msg_update_rating_end">Update RRT5 Finish! Please check the Menu.</string>
+
+    <!--number search channel-->
+    <string name="invalid_channel_number">Invalid channel number, please type a number between 1 and 135</string>
+    <string name="invalid_atsct_channel_number">Invalid atsc-t channel number, please type a number between 2 and 69</string>
+    <string name="bad_channel_number">"Channel number hasn't typed compeltely"</string>
 </resources>

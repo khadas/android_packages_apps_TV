@@ -78,6 +78,7 @@ import com.droidlogic.app.tv.TvDataBaseManager;
 import com.droidlogic.app.tv.DroidLogicTvUtils;
 import com.droidlogic.app.tv.TvInSignalInfo;
 import com.droidlogic.app.tv.TvControlDataManager;
+import vendor.amlogic.hardware.tvserver.V1_0.FreqList;
 
 import com.droidlogic.app.DroidLogicKeyEvent;
 
@@ -880,6 +881,9 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         mSearchedAtvChannelNumber = 0;
         mSearchedRadioChannelNumber = 0;
         mFirstAutoSearchedFrequency = 0;
+        if (!value) {
+            resetNumberSearch();
+        }
     }
 
     public boolean hasSearchedChannel() {
@@ -1196,4 +1200,233 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         mActivity.getContentRatingsManager().setRRT5updateResult(result);
     }
     /********end: add for rrt5********/
+
+    /********start: add for number search********/
+    private static final int STD = 1;
+    private static final int LRC = 2;
+    private static final int HRC = 3;
+    private static final int AUTO = 4;
+    private static final int ATSC_T = 5;
+    private static final int ATSC_C_STD_SET = 0;
+    private static final int ATSC_C_LRC_SET = 1;
+    private static final int ATSC_C_HRC_SET = 2;
+    private static final int ATSC_C_AUTO_SET = 3;
+    private static final int DTV_TO_ATV = 5;
+    private static final int SET_TO_MODE = 1;
+    private static final int NOT_ADTV = 0;
+    public static final int CABLE_MODE_STANDARD = 0;
+    public static final int CABLE_MODE_LRC = 1;
+    public static final int CABLE_MODE_HRC = 2;
+    public static final int CABLE_MODE_AUTO = 3;
+
+    public void doNumberSearch(ChannelNumber typedone) {
+        CheckChannelByFrequency(typedone);
+    }
+
+    public int getDtvDvbFrequencyByPd(int pd_number) {
+        TvControlManager.TvMode mode = new TvControlManager.TvMode(getDtvType());
+        mode.setList(getDtvList());
+        Log.d(TAG, "[get dtv freq]type:"+mode.toType()+" use list:"+mode.getList());
+        return getDvbFrequencyByPd(mode.getMode(), pd_number);
+    }
+
+    private int getAtvFrequencyByPd(int pd_number) {
+        TvControlManager.TvMode mode = new TvControlManager.TvMode(getDtvType());
+        mode.setList(getDtvList() + DTV_TO_ATV);
+        Log.d(TAG, "[get atv freq]type: " +mode.toType() + " use list:" + mode.getList());
+        return getDvbFrequencyByPd(mode.getMode(), pd_number);
+    }
+
+    private int getDvbFrequencyByPd(int tvMode, int pdNumber) {
+        mTvControlManager.SetTvCountry(DroidLogicTvUtils.getCountry(mContext));
+        ArrayList<FreqList> m_fList = mTvControlManager.DTVGetScanFreqList(tvMode);
+        String type = TvControlManager.TvMode.fromMode(tvMode).toType();
+        int size = m_fList.size();
+        int the_freq = -1;
+
+        if (pdNumber < 1)
+            pdNumber = 1;
+
+        for (int i = 0; i < size; i++) {
+            if (pdNumber == m_fList.get(i).channelNum) {
+                the_freq = m_fList.get(i).freq;
+                break;
+            }
+        }
+        Log.d(TAG, "pdNumber: " + pdNumber + ", the_freq: " + the_freq);
+        return (the_freq < 0)? m_fList.get(0).freq : the_freq;
+    }
+
+    public String getDtvType() {
+        TvInputInfo tunerinputinfo = getTunerInput();
+        int deviceId = getDeviceIdFromInfo(tunerinputinfo);
+        String type = TvSingletons.getSingletons(mContext).getTvControlDataManager().getString(mContext.getContentResolver(), DroidLogicTvUtils.TV_KEY_DTV_TYPE);
+        if (type != null) {
+            return type;
+        } else {
+            if (deviceId == DroidLogicTvUtils.DEVICE_ID_ADTV ) {
+                return TvContract.Channels.TYPE_ATSC_T;
+            } else {
+                return TvContract.Channels.TYPE_DTMB;
+            }
+        }
+    }
+
+    private int getDtvList() {
+        String dtvtype = getDtvType();
+        if (DroidLogicTvUtils.parseTvSourceTypeFromDeviceId(getDeviceIdFromInfo(getTunerInput()))
+                == TvControlManager.SourceInput_Type.SOURCE_TYPE_ADTV) {
+            if (dtvtype.equals(TvContract.Channels.TYPE_ATSC_C)
+                || dtvtype.equals(TvContract.Channels.TYPE_ATSC_T)) {
+                boolean isCable = dtvtype.equals(TvContract.Channels.TYPE_ATSC_C);
+                int cableMode = getAtsccListMode();
+                if (isCable) {
+                    switch (cableMode) {
+                        case CABLE_MODE_STANDARD: return STD;
+                        case CABLE_MODE_LRC:      return LRC;
+                        case CABLE_MODE_HRC:      return HRC;
+                        case CABLE_MODE_AUTO:     return AUTO;
+                    }
+                    return STD;
+                } else {
+                    return ATSC_T;
+                }
+            }
+        }
+        return NOT_ADTV;
+    }
+
+    private int getAtsccListMode() {
+        if (DroidLogicTvUtils.isAtscCountry(mContext)) {
+            return Settings.System.getInt(mContext.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_ATSC_CLIST, CABLE_MODE_STANDARD);
+        } else {
+            return CABLE_MODE_STANDARD;
+        }
+    }
+
+    private void CheckChannelByFrequency(ChannelNumber chNumber) {
+        final String UNKOWN = "UNKNOWN_CHANNEL";
+        final String CHANNEL = "channel";
+        final int FIRSTCHANNELNUMBER = 1;
+        final int LASTCHANNELNUMBER = 135;
+        final int ATSCTFIRSTCHANNELNUMBER = 2;
+        final int ATSCTLASTCHANNELNUMBER = 69;
+
+        String convertatvfrequency = null;
+        String convertdtvfrequency = null;
+        if (chNumber == null || chNumber.majorNumber == null) {
+            Toast.makeText(mContext, mActivity.getString(R.string.bad_channel_number), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        List<Channel> channels = mChannelTuner.getBrowsableChannelList();
+        convertdtvfrequency = String.valueOf(getDtvDvbFrequencyByPd(Integer.parseInt(chNumber.majorNumber)));
+        convertatvfrequency = String.valueOf(getAtvFrequencyByPd(Integer.parseInt(chNumber.majorNumber)));
+        Log.d(TAG, "typed ChannelNumber = " + chNumber.majorNumber + (chNumber.hasDelimiter ? "-" : " ") + chNumber.minorNumber +
+            ", dtv frequency = " + convertdtvfrequency + ", atv frequency = " + convertatvfrequency);
+        Channel replacedchannel = null;
+        boolean isInDb = false;
+        boolean hasDtv = false;
+        boolean hasAtv = false;
+        Channel foundatv = null;
+        Channel founddtv = null;
+        Channel foundsamefrequency = null;
+        String dtvtype = getDtvType();
+        if (channels != null) {
+            for (Channel singlechannel : channels) {
+                String frequency = String.valueOf(singlechannel.getFrequency());
+                Log.d(TAG, "---singlechannel frequency = " + frequency);
+                ChannelNumber number = ChannelNumber.parseChannelNumber(singlechannel.getDisplayNumber());
+                if (TvContract.Channels.TYPE_ATSC_T.equals(dtvtype) &&
+                        ((Integer.parseInt(chNumber.majorNumber) < ATSCTFIRSTCHANNELNUMBER || Integer.parseInt(chNumber.majorNumber) > ATSCTLASTCHANNELNUMBER))) {
+                    if (DEBUG) Log.d(TAG, "atsc-t type channel number not in 2~69!");
+                    break;
+                } else if (Integer.parseInt(chNumber.majorNumber) < FIRSTCHANNELNUMBER || Integer.parseInt(chNumber.majorNumber) > LASTCHANNELNUMBER) {
+                    if (DEBUG) Log.d(TAG, "not atsc-t type channel number not in 1~135!");
+                    break;
+                } else if ((convertdtvfrequency != null && convertatvfrequency != null) &&
+                        (convertdtvfrequency.equals(frequency) || convertatvfrequency.equals(frequency))) {
+                    foundsamefrequency = singlechannel;
+                    Log.d(TAG, "find same frequency = " + singlechannel.getDisplayNumber());
+                    break;
+                }
+                if (!singlechannel.isAnalogChannel()) {
+                    if (!TvContract.Channels.TYPE_ATSC_C.equals(singlechannel.getType())) {
+                        hasDtv = number != null && ChannelNumber.compare(singlechannel.getDisplayNumber(), chNumber.toString()) == 0;
+                    } else {
+                        hasDtv = (number != null && ChannelNumber.compare(singlechannel.getDisplayNumber(), chNumber.toString()) == 0) ||
+                            number != null && chNumber != null && !number.hasDelimiter && number.majorNumber.equals(number.majorNumber + number.minorNumber);
+                    }
+                    if (hasDtv) {
+                        founddtv = singlechannel;
+                        Log.d(TAG, "find dtv = " + singlechannel.getDisplayNumber());
+                        break;
+                    }
+                } else {
+                    hasAtv = number != null && ChannelNumber.compare(singlechannel.getDisplayNumber(), chNumber.toString()) == 0;
+                    if (hasAtv) {
+                       foundatv =  singlechannel;
+                        Log.d(TAG, "find atv = " + singlechannel.getDisplayNumber());
+                    }
+                }
+            }
+        }
+        if (founddtv != null || foundatv != null || foundsamefrequency != null) {
+            isInDb = true;
+        }
+        Log.d(TAG, "getDtvType = " + dtvtype);
+        if (isInDb) {
+            if (hasDtv) {
+                replacedchannel = founddtv;
+            } else if (foundatv != null) {
+                replacedchannel = foundatv;
+            } else {
+                replacedchannel = foundsamefrequency;
+            }
+            if (mChannelTuner.getCurrentChannel() != null && replacedchannel.getFrequency() != mChannelTuner.getCurrentChannel().getFrequency()) {
+                mActivity.tuneToChannel(replacedchannel);
+            } else {
+                if (DEBUG) Log.d(TAG, "current channel has the same frequency, and keep playing it!");
+            }
+            return;
+        } else if (TvContract.Channels.TYPE_ATSC_T.equals(dtvtype) &&
+                ((Integer.parseInt(chNumber.majorNumber) < ATSCTFIRSTCHANNELNUMBER || Integer.parseInt(chNumber.majorNumber) > ATSCTLASTCHANNELNUMBER))) {
+            Toast.makeText(mContext, mActivity.getString(R.string.invalid_atsct_channel_number), Toast.LENGTH_SHORT).show();
+            return;
+        } else if (Integer.parseInt(chNumber.majorNumber) < FIRSTCHANNELNUMBER || Integer.parseInt(chNumber.majorNumber) > LASTCHANNELNUMBER) {
+            Toast.makeText(mContext, mActivity.getString(R.string.invalid_channel_number), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        StartNumberSearch(chNumber.toString());//search by search channel activity
+        /*
+        Bundle bundle = new Bundle();
+        bundle.putString(CHANNEL, chNumber.majorNumber);
+        mTvView.sendAppPrivateCommand(UNKOWN, bundle);*///search by tif
+    }
+
+    //search by number  key "numbersearch" true or false, "number" 1~135 or 2~69
+    private boolean mStartNubmberSearch = false;
+    private String mTypedNumber = null;
+
+    private void StartNumberSearch(String number) {
+        TvInputInfo tunerinfo = getTunerInput();
+        if (tunerinfo != null) {
+            mTypedNumber = number;
+            mStartNubmberSearch = true;
+            mActivity.startSetupActivity(tunerinfo, true);
+        }
+    }
+
+    private void resetNumberSearch() {
+        mStartNubmberSearch = false;
+        mTypedNumber = null;
+    }
+
+    public boolean isNumberSearch() {
+        return mStartNubmberSearch;
+    }
+
+    public String getSearchNumber() {
+        return mTypedNumber;
+    }
+    /********end: add for number search********/
 }

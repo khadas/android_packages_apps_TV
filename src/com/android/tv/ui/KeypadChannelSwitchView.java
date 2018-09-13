@@ -396,6 +396,8 @@ public class KeypadChannelSwitchView extends LinearLayout
         mMainActivity.getOverlayManager().hideOverlays(TvOverlayManager.FLAG_HIDE_OVERLAYS_WITHOUT_ANIMATION);
         if (mSelectedChannel != null) {
             mMainActivity.tuneToChannel(mSelectedChannel);
+        } else if (mTypedChannelNumber.majorNumber != null) {
+            mMainActivity.mQuickKeyInfo.doNumberSearch(mTypedChannelNumber);
         }
     }
 

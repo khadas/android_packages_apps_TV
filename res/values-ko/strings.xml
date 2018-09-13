@@ -418,4 +418,9 @@
     <string name="rrt5_update_title_description">다운로드 등급 정보, 신선한</string>
     <string name="msg_update_rating_start">부터 업데이트 RRT5 등급표!</string>
     <string name="msg_update_rating_end">RRT5 등기표 업데이트 완료 진입 메뉴 확인해 주십시오.</string>
+
+    <!--number search channel-->
+    <string name="invalid_channel_number">채널이 무효화 되면 1~135 범위 안의 채널을 입력 하세요</string>
+    <string name="invalid_atsct_channel_number">atsc-t 채널이 무효화 되면 2~69 범위 안의 채널을 입력 해 주세요</string>
+    <string name="bad_channel_number">"완전 한 채널을 입력 하지 않았다"</string>
 </resources>
