@@ -86,6 +86,7 @@ import com.android.tv.common.util.PermissionUtils;
 import com.android.tv.common.util.SystemProperties;
 import com.android.tv.data.ChannelDataManager;
 import com.android.tv.data.ChannelImpl;
+import com.android.tv.data.ChannelNumber;
 import com.android.tv.data.OnCurrentProgramUpdatedListener;
 import com.android.tv.data.Program;
 import com.android.tv.data.ProgramDataManager;
@@ -164,6 +165,7 @@ import android.hardware.hdmi.HdmiControlManager;
 /** The main activity for the Live TV app. */
 import com.droidlogic.app.tv.DroidLogicTvUtils;
 import com.droidlogic.app.tv.TvDataBaseManager;
+import com.droidlogic.app.tv.TvControlManager;
 import com.droidlogic.app.tv.ChannelInfo;
 /**
  * The main activity for the Live TV app.
@@ -274,6 +276,10 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     private ConflictChecker mDvrConflictChecker;
     private SetupUtils mSetupUtils;
 
+    private ChannelBannerView mChannelBannerView;
+    private InputBannerView mInputBannerView;
+    private KeypadChannelSwitchView mKeypadChannelSwitchView;
+
     private View mContentView;
     private TunableTvView mTvView;
     private Bundle mTuneParams;
@@ -308,8 +314,10 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     private boolean mIsInPIPMode;
     private boolean mIsFilmModeSet;
     private float mDefaultRefreshRate;
+    private int mSourceInputType;
 
     private TvOverlayManager mOverlayManager;
+    private TvControlManager mTvControlManager = null ;
 
     // mIsCurrentChannelUnblockedByUser and mWasChannelUnblockedBeforeShrunkenByUser are used for
     // keeping the channel unblocking status while TV view is shrunken.
@@ -668,6 +676,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         if (CommonFeatures.DVR.isEnabled(this)) {
             mDvrManager = tvApplication.getDvrManager();
         }
+        mTvControlManager = TvControlManager.getInstance();
         mTimeShiftManager =
                 new TimeShiftManager(
                         this,
@@ -718,14 +727,14 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
         mContentView = findViewById(android.R.id.content);
         ViewGroup sceneContainer = (ViewGroup) findViewById(R.id.scene_container);
-        ChannelBannerView channelBannerView =
+        mChannelBannerView =
                 (ChannelBannerView)
                         getLayoutInflater().inflate(R.layout.channel_banner, sceneContainer, false);
-        KeypadChannelSwitchView keypadChannelSwitchView =
+        mKeypadChannelSwitchView =
                 (KeypadChannelSwitchView)
                         getLayoutInflater()
                                 .inflate(R.layout.keypad_channel_switch, sceneContainer, false);
-        InputBannerView inputBannerView =
+        mInputBannerView =
                 (InputBannerView)
                         getLayoutInflater().inflate(R.layout.input_banner, sceneContainer, false);
         SelectInputView selectInputView =
@@ -775,9 +784,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                         mChannelTuner,
                         mTvView,
                         mTvOptionsManager,
-                        keypadChannelSwitchView,
-                        channelBannerView,
-                        inputBannerView,
+                        mKeypadChannelSwitchView,
+                        mChannelBannerView,
+                        mInputBannerView,
                         selectInputView,
                         sceneContainer,
                         mSearchFragment);
@@ -2378,6 +2387,18 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         mTvOptionsManager.onClosedCaptionsChanged(null, UNDEFINED_TRACK_INDEX);
     }
 
+    /**
+     * Pops up the KeypadChannelSwitchView with the given key input event.
+     *
+     * @param keyCode A key code of the key event.
+     */
+    public void showKeypadChannelSwitchView(int keyCode) {
+        if (mChannelTuner.areAllChannelsLoaded()) {
+            mOverlayManager.showKeypadChannelSwitch();
+            mKeypadChannelSwitchView.onNumberKeyUp(keyCode - KeyEvent.KEYCODE_0);
+        }
+    }
+
     public void showProgramGuideSearchFragment() {
         getFragmentManager()
                 .beginTransaction()
@@ -2624,8 +2645,23 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     }
             }
         } else {
-            if (KeypadChannelSwitchView.isChannelNumberKey(keyCode)) {
-                mOverlayManager.showKeypadChannelSwitch(keyCode);
+            if (KeypadChannelSwitchView.isChannelNumberKey(keyCode)
+                || (SystemProperties.USE_CUSTOMIZATION.getValue() && ChannelNumber.isChannelNumberDelimiterKey(keyCode))) {
+                if (!SystemProperties.USE_CUSTOMIZATION.getValue()) {
+                    showKeypadChannelSwitchView(keyCode);
+                } else {
+                    mSourceInputType = mTvControlManager.GetCurrentSourceInput();
+                    //deal DelimiterKey and number key
+                    if (mChannelTuner.areAllChannelsLoaded()) {
+                        if (mSourceInputType == -1
+                            || mSourceInputType == DroidLogicTvUtils.DEVICE_ID_ADTV
+                            || mSourceInputType == DroidLogicTvUtils.DEVICE_ID_ATV
+                            || mSourceInputType == DroidLogicTvUtils.DEVICE_ID_DTV) {
+                            mOverlayManager.showKeypadChannelSwitch();
+                            mKeypadChannelSwitchView.onKeyUp(keyCode, event);
+                        }
+                    }
+                }
                 return true;
             }
             switch (keyCode) {
