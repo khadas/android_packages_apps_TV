@@ -276,10 +276,6 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     private ConflictChecker mDvrConflictChecker;
     private SetupUtils mSetupUtils;
 
-    private ChannelBannerView mChannelBannerView;
-    private InputBannerView mInputBannerView;
-    private KeypadChannelSwitchView mKeypadChannelSwitchView;
-
     private View mContentView;
     private TunableTvView mTvView;
     private Bundle mTuneParams;
@@ -727,14 +723,14 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
         mContentView = findViewById(android.R.id.content);
         ViewGroup sceneContainer = (ViewGroup) findViewById(R.id.scene_container);
-        mChannelBannerView =
+        ChannelBannerView channelBannerView =
                 (ChannelBannerView)
                         getLayoutInflater().inflate(R.layout.channel_banner, sceneContainer, false);
-        mKeypadChannelSwitchView =
+        KeypadChannelSwitchView keypadChannelSwitchView =
                 (KeypadChannelSwitchView)
                         getLayoutInflater()
                                 .inflate(R.layout.keypad_channel_switch, sceneContainer, false);
-        mInputBannerView =
+        InputBannerView inputBannerView =
                 (InputBannerView)
                         getLayoutInflater().inflate(R.layout.input_banner, sceneContainer, false);
         SelectInputView selectInputView =
@@ -784,9 +780,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                         mChannelTuner,
                         mTvView,
                         mTvOptionsManager,
-                        mKeypadChannelSwitchView,
-                        mChannelBannerView,
-                        mInputBannerView,
+                        keypadChannelSwitchView,
+                        channelBannerView,
+                        inputBannerView,
                         selectInputView,
                         sceneContainer,
                         mSearchFragment);
@@ -1378,6 +1374,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         if (input != null && mQuickKeyInfo.isNumberSearch()) {
             intent.putExtra(DroidLogicTvUtils.TV_NUMBER_SEARCH_MODE, true);
             intent.putExtra(DroidLogicTvUtils.TV_NUMBER_SEARCH_NUMBER, mQuickKeyInfo.getSearchNumber());
+            mQuickKeyInfo.resetNumberSearch();
         }
         try {
             // Now we know that the user intends to set up this input. Grant permission for writing
@@ -2387,18 +2384,6 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         mTvOptionsManager.onClosedCaptionsChanged(null, UNDEFINED_TRACK_INDEX);
     }
 
-    /**
-     * Pops up the KeypadChannelSwitchView with the given key input event.
-     *
-     * @param keyCode A key code of the key event.
-     */
-    public void showKeypadChannelSwitchView(int keyCode) {
-        if (mChannelTuner.areAllChannelsLoaded()) {
-            mOverlayManager.showKeypadChannelSwitch();
-            mKeypadChannelSwitchView.onNumberKeyUp(keyCode - KeyEvent.KEYCODE_0);
-        }
-    }
-
     public void showProgramGuideSearchFragment() {
         getFragmentManager()
                 .beginTransaction()
@@ -2639,16 +2624,17 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     }
                     return true;
                 default: // fall out
-                    if (SystemProperties.USE_CUSTOMIZATION.getValue() && KeypadChannelSwitchView.isChannelNumberKey(keyCode)) {
+                    if (SystemProperties.USE_CUSTOMIZATION.getValue() && DroidLogicTvUtils.isAtscCountry(MainActivity.this) &&
+                            KeypadChannelSwitchView.isChannelNumberKey(keyCode)) {
                         mOverlayManager.showKeypadChannelSwitch(keyCode);
                         return true;
                     }
             }
         } else {
-            if (KeypadChannelSwitchView.isChannelNumberKey(keyCode)
-                || (SystemProperties.USE_CUSTOMIZATION.getValue() && ChannelNumber.isChannelNumberDelimiterKey(keyCode))) {
+
+            if (KeypadChannelSwitchView.isChannelNumberKey(keyCode) || (SystemProperties.USE_CUSTOMIZATION.getValue() && ChannelNumber.isChannelNumberDelimiterKey(keyCode))) {
                 if (!SystemProperties.USE_CUSTOMIZATION.getValue()) {
-                    showKeypadChannelSwitchView(keyCode);
+                    mOverlayManager.showKeypadChannelSwitch(keyCode);
                 } else {
                     mSourceInputType = mTvControlManager.GetCurrentSourceInput();
                     //deal DelimiterKey and number key
@@ -2657,8 +2643,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                             || mSourceInputType == DroidLogicTvUtils.DEVICE_ID_ADTV
                             || mSourceInputType == DroidLogicTvUtils.DEVICE_ID_ATV
                             || mSourceInputType == DroidLogicTvUtils.DEVICE_ID_DTV) {
-                            mOverlayManager.showKeypadChannelSwitch();
-                            mKeypadChannelSwitchView.onKeyUp(keyCode, event);
+                            mOverlayManager.showKeypadChannelSwitch(keyCode);
                         }
                     }
                 }

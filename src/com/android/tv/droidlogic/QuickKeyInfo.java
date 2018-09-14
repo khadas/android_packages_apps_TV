@@ -1220,6 +1220,10 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
     public static final int CABLE_MODE_AUTO = 3;
 
     public void doNumberSearch(ChannelNumber typedone) {
+        if (!DroidLogicTvUtils.isAtscCountry(mContext)) {
+            if (DEBUG) Log.d(TAG, "number search only server for atsc mode");
+            return;
+        }
         CheckChannelByFrequency(typedone);
     }
 
@@ -1416,7 +1420,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         }
     }
 
-    private void resetNumberSearch() {
+    public void resetNumberSearch() {
         mStartNubmberSearch = false;
         mTypedNumber = null;
     }

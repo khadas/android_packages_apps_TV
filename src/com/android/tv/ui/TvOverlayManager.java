@@ -660,12 +660,17 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
         mTransitionManager.goToEmptyScene(true);
     }
 
-    public void showKeypadChannelSwitch() {
-        hideOverlays(TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_SCENE
-                | TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_SIDE_PANELS
-                | TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_DIALOG
-                | TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_FRAGMENT);
-        mTransitionManager.goToKeypadChannelSwitchScene();
+    /**
+     * Pops up the KeypadChannelSwitchView with the given key input event.
+     *
+     * @param keyCode A key code of the key event.
+     */
+    public void showKeypadChannelSwitch(int keyCode) {
+        if (mChannelTuner.areAllChannelsLoaded()) {
+            hideOverlays(TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_SCENE);
+            mTransitionManager.goToKeypadChannelSwitchScene();
+            mKeypadChannelSwitchView.onKeyUp(keyCode, null);
+        }
     }
 
     /** Shows select input view. */
@@ -1145,7 +1150,7 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
             }
             if (mMenu.isActive()) {
                 if (KeypadChannelSwitchView.isChannelNumberKey(keyCode)) {
-                    mMainActivity.showKeypadChannelSwitchView(keyCode);
+                    showKeypadChannelSwitch(keyCode);
                     return MainActivity.KEY_EVENT_HANDLER_RESULT_HANDLED;
                 }
                 return MainActivity.KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY;
