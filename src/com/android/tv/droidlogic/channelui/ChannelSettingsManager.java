@@ -129,7 +129,7 @@ public class ChannelSettingsManager {
             item.put(STRING_STATUS, Integer.toString(mCurrentChannel.getFrequency() + mCurrentChannel.getFineTune()));
             list.add(item);
 
-            if (mCurrentChannel.isAtscChannel()) {
+            if (mCurrentChannel.isDigitalChannel()) {
                 if (mStrength > 0 && mStrength < 100) {
                     item = new HashMap<String, String>();
                     item.put(STRING_NAME, mResources.getString(R.string.channel_info_strength));
