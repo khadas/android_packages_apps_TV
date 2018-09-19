@@ -167,6 +167,7 @@ import com.droidlogic.app.tv.DroidLogicTvUtils;
 import com.droidlogic.app.tv.TvDataBaseManager;
 import com.droidlogic.app.tv.TvControlManager;
 import com.droidlogic.app.tv.ChannelInfo;
+import android.provider.Settings;
 /**
  * The main activity for the Live TV app.
  */
@@ -548,9 +549,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         boolean parentalControlEnabled =
                 mTvInputManagerHelper.getParentalControlSettings().isParentalControlsEnabled();
         mTvView.onParentalControlChanged(parentalControlEnabled);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ChannelPreviewUpdater.getInstance(this).updatePreviewDataForChannelsImmediately();
-        }
+        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        //    ChannelPreviewUpdater.getInstance(this).updatePreviewDataForChannelsImmediately();
+        //}
     }
 
     public void setChannelIndex(int deletedChannelIndex) {
@@ -973,8 +974,15 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         mPerformanceMonitor.stopTimer(timer, EventNames.MAIN_ACTIVITY_ONSTART);
     }
 
+    private void startRoutineService(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ChannelPreviewUpdater.getInstance(this).startRoutineService();
+        }
+    }
+
     @Override
     protected void onResume() {
+        startRoutineService();
         TimerEvent timer = mPerformanceMonitor.startTimer();
         Debug.getTimer(Debug.TAG_START_UP_TIMER).log("MainActivity.onResume start");
         if (DEBUG) Log.d(TAG, "onResume()");
@@ -1287,6 +1295,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     @Override
     protected void onStop() {
         if (DEBUG) Log.d(TAG, "onStop()");
+        stopRoutineService();
         if (mScreenOffIntentReceived) {
             mScreenOffIntentReceived = false;
         } else {
@@ -1304,6 +1313,14 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         unregisterReceiver(mBroadcastReceiver);
         mTracker.sendMainStop(mMainDurationTimer.reset());
         super.onStop();
+    }
+
+    // fix suspend hang up by JobScheduler WakeLocks by yubo.wu
+    private void stopRoutineService() {
+        int ret = Settings.System.getInt(getContentResolver(), "power_key_definition", 0);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && ret == 0) {
+            ChannelPreviewUpdater.getInstance(this).stopRoutineService();
+        }
     }
 
     /** Handles screen off to keep the current channel for next screen on. */
