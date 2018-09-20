@@ -103,6 +103,8 @@ public class ContentRatingsParser {
         // this app's package name.
         if (domain.equals(mContext.getPackageName())) {
             domain = DOMAIN_SYSTEM_RATINGS;
+        } else {
+            return null;
         }
 
         // Consume all START_DOCUMENT which can appear more than once.
