@@ -547,7 +547,7 @@ public class ChannelDataManager {
                 channelUri = TvContract.buildChannelUri(channel.getId());
             }
             ChannelInfo channelInfo = mTvDataBaseManager.getChannelInfo(channelUri);
-            if (channelInfo.getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(mContext))) {
+            if (channelInfo != null && channelInfo.getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(mContext))) {
                 addChannelByType(data, channel);
             }
         } else {
@@ -556,6 +556,10 @@ public class ChannelDataManager {
             } else if (DroidLogicTvUtils.isDTV(mContext) && channel.isDigitalChannel()) {
                 addChannelByType(data, channel);
             }
+        }
+        //add channel like google movie which is marked others
+        if (TvContract.Channels.TYPE_OTHER.equals(channel.getType())) {
+            addChannelByType(data, channel);
         }
     }
 
