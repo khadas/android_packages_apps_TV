@@ -2702,6 +2702,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 case KeyEvent.KEYCODE_E:
                 case KeyEvent.KEYCODE_DPAD_CENTER:
                 case KeyEvent.KEYCODE_MENU:
+                    mSourceInputType = mTvControlManager.GetCurrentSourceInput();
                     if (event.isCanceled()) {
                         // Ignore canceled key.
                         // Note that if there's a TIS granted RECEIVE_INPUT_EVENT,
@@ -2709,12 +2710,19 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                         // See dispatchKeyEvent() for detail.
                         return true;
                     }
-                    if (keyCode != KeyEvent.KEYCODE_MENU) {
+                    if (keyCode != KeyEvent.KEYCODE_MENU && keyCode != KeyEvent.KEYCODE_DPAD_CENTER) {
                         mOverlayManager.updateChannelBannerAndShowIfNeeded(
                                 TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_FORCE_SHOW);
                     }
                     if (keyCode != KeyEvent.KEYCODE_E) {
-                        mOverlayManager.showMenu(Menu.REASON_NONE);
+                        if (mSourceInputType != -1) {
+                            //if it is in TV channel
+                            if (mSourceInputType == DroidLogicTvUtils.DEVICE_ID_ADTV
+                                || mSourceInputType == DroidLogicTvUtils.DEVICE_ID_ATV
+                                || mSourceInputType == DroidLogicTvUtils.DEVICE_ID_DTV) {
+                                mOverlayManager.showMenu(Menu.REASON_NONE);
+                            }
+                        }
                     }
                     return true;
                 case KeyEvent.KEYCODE_CHANNEL_UP:
