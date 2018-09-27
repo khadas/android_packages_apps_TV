@@ -381,6 +381,7 @@ public class ChannelBannerView extends FrameLayout
     public void updateViews(StreamInfo info) {
          resetAnimationEffects();
          mChannelView.setVisibility(VISIBLE);
+         mCurrentChannel = mMainActivity.getCurrentChannel();
          updateStreamInfo(info);
          updateChannelInfo();
          updateProgramInfo(mMainActivity.getCurrentProgram());
@@ -411,11 +412,11 @@ public class ChannelBannerView extends FrameLayout
                     : EMPTY_STRING);
             updateText(mAspectRatioTextView, Utils.getAspectRatioString(info.getVideoDisplayAspectRatio()));
             //parse reslution from videoformat
-            String videoformat = mMainActivity.getCurrentChannel().getVideoFormat();
+            String videoformat = mCurrentChannel != null ? mCurrentChannel.getVideoFormat() : "";
             updateText(mResolutionTextView, parseReslutionFromVideoFormat(videoformat)
                     /*Utils.getVideoDefinitionLevelString(
                             mMainActivity, info.getVideoDefinitionLevel())*/);
-            if (!mMainActivity.getCurrentChannel().isPassthrough()) {
+            if (mCurrentChannel != null && !mCurrentChannel.isPassthrough()) {
                 String audiotext;
                 if (mMainActivity.mQuickKeyInfo.isAtvSource()) {
                     updateText(mAtvColorSysTextView, getCurrentColorOrSound(ATV_SYS_COLOR_FLAG));
@@ -451,7 +452,7 @@ public class ChannelBannerView extends FrameLayout
     private String getCurrentColorOrSound(String flag) {
         String colorOrSoundType = "";
         TvDataBaseManager mTvDataBaseManager = new TvDataBaseManager(mMainActivity);
-        Uri channelUri = TvContract.buildChannelUri(mMainActivity.getCurrentChannel().getId());
+        Uri channelUri = TvContract.buildChannelUri(mCurrentChannel != null ? mCurrentChannel.getId() : -1);
         ChannelInfo channelInfo = mTvDataBaseManager.getChannelInfo(channelUri);
         if (channelInfo == null) {
             Log.e(TAG,"Can't get current channel info when get current Color or Sound!");
@@ -553,8 +554,7 @@ public class ChannelBannerView extends FrameLayout
     }
 
     private String getCurrentInputId() {
-        Channel channel = mMainActivity.getCurrentChannel();
-        return channel != null ? channel.getInputId() : null;
+        return mCurrentChannel != null ? mCurrentChannel.getInputId() : null;
     }
 
     private void updateTvInputLogo(Bitmap bitmap) {
@@ -967,12 +967,12 @@ public class ChannelBannerView extends FrameLayout
                 !mMainActivity.mQuickKeyInfo.isAtvSource()) {
             resolution = (videoformat.split("_"))[2];
         } else if (mMainActivity.mQuickKeyInfo.isAtvSource()) {
-            String type = mMainActivity.mQuickKeyInfo.getChannelTuner().getCurrentChannel().getType();
-            if (type.equals(TvContract.Channels.TYPE_PAL)) {
+            String type = mCurrentChannel != null ? mCurrentChannel.getType() : null;
+            if (TvContract.Channels.TYPE_PAL.equals(type)) {
                 resolution = ATVRESOLUTION_PAL;
-            } else if (type.equals(TvContract.Channels.TYPE_NTSC)) {
+            } else if (TvContract.Channels.TYPE_NTSC.equals(type)) {
                 resolution = ATVRESOLUTION_NTSC;
-            } else if (type.equals(TvContract.Channels.TYPE_SECAM)) {
+            } else if (TvContract.Channels.TYPE_SECAM.equals(type)) {
                 resolution = ATVRESOLUTION_SECAM;
             }
         } else {
