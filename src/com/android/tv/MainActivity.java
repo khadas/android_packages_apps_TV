@@ -398,7 +398,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 case BROADCAST_SKIP_ALL_CHANNELS:
                     //[DroidLogic]
                     //when all channels are deleted or skipped, stopTv.
-                    stopTv();
+                    //stopTv();
                     mTvView.showNoDataBaseHint();
                     break;
             }
@@ -453,11 +453,13 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
                 @Override
                 public void onCurrentChannelUnavailable(Channel channel) {
-                    if (mChannelTuner.moveToAdjacentBrowsableChannel(true)) {
+                    //[Droidlogic Start]: PD#174133: don't do anything when channel deleted
+                    /*if (mChannelTuner.moveToAdjacentBrowsableChannel(true)) {
                         tune(true);
                     } else {
                         stopTv("onCurrentChannelUnavailable()", false);
-                    }
+                    }*/
+                    //[Droidlogic END]
                 }
 
                 @Override
