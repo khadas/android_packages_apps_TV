@@ -267,18 +267,18 @@ public class SideFragmentManager implements AccessibilityStateChangeListener {
 
     /** Resets the timer for hiding side fragment. */
     public void scheduleHideAll() {
-        mAutoHideScheduler.schedule(mShowDurationMillis);
+        mAutoHideScheduler.cancel();
         mHandler.removeCallbacks(mHideAllRunnable);
         int seconds = Settings.System.getInt(mActivity.getContentResolver(), KEY_MENU_TIME, DEFUALT_MENU_TIME);
-        if (seconds == 0) {
+        if (seconds == 1) {
             seconds = 15;
-        } else if (seconds == 1) {
-            seconds = 30;
         } else if (seconds == 2) {
-            seconds = 60;
+            seconds = 30;
         } else if (seconds == 3) {
-            seconds = 120;
+            seconds = 60;
         } else if (seconds == 4) {
+            seconds = 120;
+        } else if (seconds == 5) {
             seconds = 240;
         } else {
             seconds = 0;

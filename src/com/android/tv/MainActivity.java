@@ -351,6 +351,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     private TvClock mClock;
 
     private int channelIndex = 0;
+    private boolean isOKPressed = false;
 
     private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -2479,6 +2480,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         if (SystemProperties.LOG_KEYEVENT.getValue()) {
             Log.d(TAG, "onKeyDown(" + keyCode + ", " + event + ")");
         }
+        if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+            isOKPressed = true;
+        }
         switch (mOverlayManager.onKeyDown(keyCode, event)) {
             case KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY:
                 return super.onKeyDown(keyCode, event);
@@ -2716,7 +2720,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                         mOverlayManager.updateChannelBannerAndShowIfNeeded(
                                 TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_FORCE_SHOW);
                     }
-                    if (keyCode != KeyEvent.KEYCODE_E) {
+                    if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER && isOKPressed) {
                         if (mSourceInputType != -1) {
                             //if it is in TV channel
                             if (mSourceInputType == DroidLogicTvUtils.DEVICE_ID_ADTV
@@ -2725,6 +2729,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                                 mOverlayManager.showMenu(Menu.REASON_NONE);
                             }
                         }
+                        isOKPressed = false;
                     }
                     return true;
                 case KeyEvent.KEYCODE_CHANNEL_UP:
