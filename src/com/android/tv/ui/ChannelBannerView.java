@@ -969,7 +969,12 @@ public class ChannelBannerView extends FrameLayout
         } else if (mMainActivity.mQuickKeyInfo.isAtvSource()) {
             String type = mCurrentChannel != null ? mCurrentChannel.getType() : null;
             if (TvContract.Channels.TYPE_PAL.equals(type)) {
-                resolution = ATVRESOLUTION_PAL;
+                int vfmt = mMainActivity.mQuickKeyInfo.getCurrentChannelInfo().getVfmt();
+                if ((vfmt & 0x00ffffff) == TvControlManager.V4L2_STD_PAL_M) {
+                    resolution = ATVRESOLUTION_NTSC;
+                } else {
+                    resolution = ATVRESOLUTION_PAL;
+                }
             } else if (TvContract.Channels.TYPE_NTSC.equals(type)) {
                 resolution = ATVRESOLUTION_NTSC;
             } else if (TvContract.Channels.TYPE_SECAM.equals(type)) {
