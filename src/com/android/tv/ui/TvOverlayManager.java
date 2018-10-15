@@ -894,6 +894,8 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
             Log.d(TAG, "passthrough stream info change");
             if (isInputBannerActive()) {
                 mTransitionManager.updateInputBannerViewLabel();
+            } else {
+                showBanner();
             }
         }
         boolean needToShowBanner =
