@@ -2578,10 +2578,10 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         //check no signal timeout status when any key press
         if (SystemProperties.USE_CUSTOMIZATION.getValue()) {
             mQuickKeyInfo.cancelNoSingalTimeout();
-            if (!mTvView.isVideoOrAudioAvailable()) {
+            /*if (!mTvView.isVideoOrAudioAvailable()) {
                 //cancel it if set, then init it again
                 mQuickKeyInfo.setNoSingalTimeout();
-            }
+            }*/
             //check factory menu command
             if (mQuickKeyInfo.checkFactoryMenuStatus(keyCode)) {
                 return true;
