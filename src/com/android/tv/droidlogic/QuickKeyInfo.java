@@ -59,6 +59,9 @@ import com.android.tv.ChannelTuner;
 import com.android.tv.MainActivity;
 import com.android.tv.common.util.SystemProperties;
 import com.android.tv.util.TvClock;
+import com.android.tv.dialog.PinDialogFragment;
+import com.android.tv.ui.sidepanel.parentalcontrols.ParentalControlsFragment;
+import com.android.tv.ui.sidepanel.SideFragmentManager;
 import com.android.tv.ui.sidepanel.ClosedCaptionFragment;
 //import com.android.tv.data.Channel;
 import com.android.tv.data.api.Channel;
@@ -118,9 +121,6 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
             Intent intent = new Intent();
             intent.setClassName("com.droidlogic.tv.settings", "com.droidlogic.tv.settings.MainSettings");
             intent.putExtra("from_live_tv", 1);
-            intent.putExtra("current_channel_id", mChannelTuner.getCurrentChannelId());
-            intent.putExtra("current_tvinputinfo_id", mChannelTuner.getCurrentInputInfo() != null ? mChannelTuner.getCurrentInputInfo().getId() : null);
-            intent.putExtra("tv_current_device_id", getDeviceIdFromInfo(mChannelTuner.getCurrentInputInfo()));
             mActivity.startActivityForResult(intent, REQUEST_CODE_START_DROID_SETTINGS);
         } catch (ActivityNotFoundException e) {
             Toast.makeText(mContext, mActivity.getString(R.string.droidsettings_not_found), Toast.LENGTH_SHORT).show();
@@ -191,7 +191,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
     public static final String COMMAND_FROM_TV_SOURCE =  "from_tv_source";
     public static final String COMMAND_SEARCH_CHANNEL =  "tv_search_channel";
     public static final String COMMAND_PARENT_CONTROL =  "parental_controls";
-    public static final String COMMAND_PIP =  "pip";
+    public static final String COMMAND_PIP =  "tv_pip";
     public static final String COMMAND_CLOSED_CAPTION =  "tv_closed_captions";
     public static final String COMMAND_MENU_TIME =  "menu_time";
     public static final String COMMAND_CHANNEL =  "channel";
@@ -323,9 +323,25 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
             othersStartTvFragment = true;
             Log.d(TAG, "[handleUiCommand] " + COMMAND_CLOSED_CAPTION);
             return true;
+        } else if (intent.getBooleanExtra(COMMAND_PARENT_CONTROL, false)) {
+            currentcommand = COMMAND_PARENT_CONTROL;
+            startParentControl();
+            othersStartTvFragment = true;
+            Log.d(TAG, "[handleUiCommand] " + COMMAND_PARENT_CONTROL);
+            return true;
         }
 
         return false;
+    }
+
+    public void startParentControl() {
+        final SideFragmentManager sideFragmentManager = mActivity.getOverlayManager()
+                .getSideFragmentManager();
+        sideFragmentManager.hideSidePanel(true);
+        PinDialogFragment fragment = PinDialogFragment
+                .create(PinDialogFragment.PIN_DIALOG_TYPE_ENTER_PIN);
+        mActivity.getOverlayManager().showDialogFragment(PinDialogFragment.DIALOG_TAG,
+                fragment, true);
     }
 
     public TvInputInfo getTunerInput() {
