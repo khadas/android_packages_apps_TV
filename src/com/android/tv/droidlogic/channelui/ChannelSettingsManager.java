@@ -616,9 +616,12 @@ public class ChannelSettingsManager {
 
     public void setFineTuneStep(int step) {
         if (mCurrentChannel != null) {
-            int finetune = mCurrentChannel.getFineTune() + (step * FineTuneStepSize);
-            if ((finetune > FineTuneRange) || (finetune < -1 * FineTuneRange))
+            int oldtune = mCurrentChannel.getFineTune();
+            int finetune = oldtune + (step * FineTuneStepSize);
+
+            if ((oldtune == finetune) || (finetune > FineTuneRange) || (finetune < -1 * FineTuneRange))
                 return;
+
             setFineTune(finetune);
         }
     }
