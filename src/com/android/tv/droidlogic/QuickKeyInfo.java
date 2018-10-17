@@ -202,7 +202,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (DEBUG) Log.d(TAG, "intent = " + intent);
-            if (SystemProperties.USE_CUSTOMIZATION.getValue() && intent != null) {
+            if (MainActivity.USE_DROIDLOIC_CUSTOMIZATION && intent != null) {
                 if (COMMANDACTION.equals(intent.getAction()) || COMMAND_EPG_APPOINT.equals(intent.getAction())) {
                     handleUiCommand(intent);
                 } else if (COMMAND_EPG_SWITCH_CHANNEL.equals(intent.getAction())) {

@@ -168,7 +168,7 @@ public class SideFragmentManager implements AccessibilityStateChangeListener {
         } else if (mFragmentCount == 1) {
             // Show closing animation with the last fragment.
             hideAll(true);
-            if (SystemProperties.USE_CUSTOMIZATION.getValue() && sartedByDroid) {
+            if (MainActivity.USE_DROIDLOIC_CUSTOMIZATION && sartedByDroid) {
                 sartedByDroid = false;
                 ((MainActivity)mActivity).mQuickKeyInfo.startDroidSettings();
             }

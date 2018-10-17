@@ -189,6 +189,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     public static final int KEY_EVENT_HANDLER_RESULT_HANDLED = 2;
     public static final int KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY = 3;
 
+    public static final boolean USE_DROIDLOIC_CUSTOMIZATION = true;
     private static final String CC_OPTION = "CC_OPTION";
     private static final String CC_TRACKID = "CC_TRACKID";
     private static final String CC_LANGUAGE = "CC_LANGUAGE";
@@ -441,7 +442,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 public void onBrowsableChannelListChanged() {
                     mOverlayManager.onBrowsableChannelsUpdated();
                     //in case that channel cannot update on time
-                    if (SystemProperties.USE_CUSTOMIZATION.getValue() && mQuickKeyInfo.hasSearchedChannel()) {
+                    if (USE_DROIDLOIC_CUSTOMIZATION && mQuickKeyInfo.hasSearchedChannel()) {
                         Channel channel = mQuickKeyInfo.getFirstSearchedChannel();
                         List<Channel> channellist = mChannelTuner.getBrowsableChannelList();
                         if (channel != null && channellist != null && channellist.size() > 0) {
@@ -1657,7 +1658,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     }
 
                     //save first found channel to ensure tune to it
-                    if (SystemProperties.USE_CUSTOMIZATION.getValue() && mQuickKeyInfo.setSearchedChannelData(data)) {
+                    if (USE_DROIDLOIC_CUSTOMIZATION && mQuickKeyInfo.setSearchedChannelData(data)) {
                         Channel channel = mQuickKeyInfo.getFirstSearchedChannel();
                         Utils.setLastWatchedChannel(this, channel);
                     }
@@ -2058,7 +2059,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 }
                 if (mChannelDataManager.getChannelCount() > 0) {
                     mOverlayManager.showIntroDialog();
-                } else if (SystemProperties.USE_CUSTOMIZATION.getValue()) {
+                } else if (USE_DROIDLOIC_CUSTOMIZATION) {
                      //show nothing even not tuned
                     return;
                 }else {
@@ -2073,7 +2074,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 if (!mChannelTuner.areAllChannelsLoaded()) {
                     return;
                 }
-                if (SystemProperties.USE_CUSTOMIZATION.getValue()) {
+                if (USE_DROIDLOIC_CUSTOMIZATION) {
                     //show nothing if no channel
                     return;
                 }
@@ -2576,7 +2577,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         finishChannelChangeIfNeeded();
 
         //check no signal timeout status when any key press
-        if (SystemProperties.USE_CUSTOMIZATION.getValue()) {
+        if (USE_DROIDLOIC_CUSTOMIZATION) {
             mQuickKeyInfo.cancelNoSingalTimeout();
             /*if (!mTvView.isVideoOrAudioAvailable()) {
                 //cancel it if set, then init it again
@@ -2594,7 +2595,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             return false;
         }
 
-        if (keyCode == KeyEvent.KEYCODE_MENU && SystemProperties.USE_CUSTOMIZATION.getValue()) {
+        if (keyCode == KeyEvent.KEYCODE_MENU && USE_DROIDLOIC_CUSTOMIZATION) {
             //response menu key to startDroidSettings
             //mQuickKeyInfo.startDroidSettings();
             mQuickKeyInfo.startDroidSettings();
@@ -2631,8 +2632,8 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
         if (!mChannelTuner.areAllChannelsLoaded()) {
             // Now channel map is under loading.
-        } else if ((!SystemProperties.USE_CUSTOMIZATION.getValue() && mChannelTuner.getBrowsableChannelCount() == 0) ||
-                (SystemProperties.USE_CUSTOMIZATION.getValue() && mChannelTuner.getBrowsableChannelCount() == 0 && !mChannelTuner.isCurrentChannelPassthrough())) {
+        } else if ((!USE_DROIDLOIC_CUSTOMIZATION && mChannelTuner.getBrowsableChannelCount() == 0) ||
+                (USE_DROIDLOIC_CUSTOMIZATION && mChannelTuner.getBrowsableChannelCount() == 0 && !mChannelTuner.isCurrentChannelPassthrough())) {
             switch (keyCode) {
                 case KeyEvent.KEYCODE_CHANNEL_UP:
                 case KeyEvent.KEYCODE_DPAD_UP:
@@ -2642,12 +2643,12 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 case KeyEvent.KEYCODE_DPAD_CENTER:
                 case KeyEvent.KEYCODE_E:
                 case KeyEvent.KEYCODE_MENU:
-                    if (!SystemProperties.USE_CUSTOMIZATION.getValue()) {
+                    if (!USE_DROIDLOIC_CUSTOMIZATION) {
                         showSettingsFragment();
                     }
                     return true;
                 default: // fall out
-                    if (SystemProperties.USE_CUSTOMIZATION.getValue() && DroidLogicTvUtils.isAtscCountry(MainActivity.this) &&
+                    if (USE_DROIDLOIC_CUSTOMIZATION && DroidLogicTvUtils.isAtscCountry(MainActivity.this) &&
                             KeypadChannelSwitchView.isChannelNumberKey(keyCode)) {
                         mOverlayManager.showKeypadChannelSwitch(keyCode);
                         return true;
@@ -2655,8 +2656,8 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             }
         } else {
 
-            if (KeypadChannelSwitchView.isChannelNumberKey(keyCode) || (SystemProperties.USE_CUSTOMIZATION.getValue() && ChannelNumber.isChannelNumberDelimiterKey(keyCode))) {
-                if (!SystemProperties.USE_CUSTOMIZATION.getValue()) {
+            if (KeypadChannelSwitchView.isChannelNumberKey(keyCode) || (USE_DROIDLOIC_CUSTOMIZATION && ChannelNumber.isChannelNumberDelimiterKey(keyCode))) {
+                if (!USE_DROIDLOIC_CUSTOMIZATION) {
                     mOverlayManager.showKeypadChannelSwitch(keyCode);
                 } else {
                     mSourceInputType = mTvControlManager.GetCurrentSourceInput();
@@ -2956,7 +2957,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             }
             tuneToChannel(mChannelTuner.getCurrentChannel());
         } else {
-            if (!SystemProperties.USE_CUSTOMIZATION.getValue()) {
+            if (!USE_DROIDLOIC_CUSTOMIZATION) {
                 showSettingsFragment();
             }
         }
@@ -2967,7 +2968,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             Log.d(TAG, "dispatchKeyEventToSession(" + event + ")");
         }
 
-        if (SystemProperties.USE_CUSTOMIZATION.getValue() && isQuickKeyNoNeedDispatchedToTvview(event.getKeyCode())) {
+        if (USE_DROIDLOIC_CUSTOMIZATION && isQuickKeyNoNeedDispatchedToTvview(event.getKeyCode())) {
             if (SystemProperties.USE_KEY.getValue() || TvSingletons.getSingletons(this).getSystemControlManager().getPropertyBoolean("sys.platform.need_key", false)) {
                 if (event.getAction() == KeyEvent.ACTION_UP) {
                     if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
@@ -3000,7 +3001,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             }
             return true;
         }
-        if (handled && SystemProperties.USE_CUSTOMIZATION.getValue()) {
+        if (handled && USE_DROIDLOIC_CUSTOMIZATION) {
             return false;//deal these key in activity
         }
         return handled;
@@ -3058,7 +3059,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 // Channel banner would be updated inside of tune.
                 tune(true);
             } else {
-                if (!SystemProperties.USE_CUSTOMIZATION.getValue()) {
+                if (!USE_DROIDLOIC_CUSTOMIZATION) {
                     showSettingsFragment();
                 }
             }
