@@ -2128,12 +2128,14 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                                 this, mTvInputManagerHelper.getTvInputInfo(channel.getInputId()))
                         : channel.getDisplayText());
 
-        int ccOptions = Settings.System.getInt(this.getContentResolver(), CC_OPTION, 1);
+        /*int ccOptions = Settings.System.getInt(this.getContentResolver(), CC_OPTION, 1);
         if (ccOptions != 1) {
             String ccTrackId = Settings.System.getString(this.getContentResolver(), CC_TRACKID);
             String ccLanguage = Settings.System.getString(this.getContentResolver(), CC_LANGUAGE);
             selectSubtitleLanguage(ccOptions, ccLanguage, ccTrackId);
-        }
+        }*/
+        //sub index is saved in db of each channel
+        resetCaptionSettings();
 
         boolean success = mTvView.tuneTo(channel, mTuneParams, mOnTuneListener);
         if (DEBUG) Log.d(TAG, "tune status = " + success + ", channeluri = " + (channel != null ? (channel.getUri() + "  " + channel.getDisplayNumber()) : null));
@@ -2388,7 +2390,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 if (DEBUG) {
                     Log.d(
                             TAG,
-                            "Subtitle Track Selected {id="
+                            "Subtitle Track Selected alternativeTrack {id="
                                     + alternativeTrack.getId()
                                     + ", language="
                                     + alternativeTrack.getLanguage()
@@ -2398,8 +2400,13 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             }
         }
         if (selectedTrackId != null) {
-            selectTrack(TvTrackInfo.TYPE_SUBTITLE, null, UNDEFINED_TRACK_INDEX);
-            if (DEBUG) Log.d(TAG, "Subtitle Track Unselected");
+            /*selectTrack(TvTrackInfo.TYPE_SUBTITLE, null, UNDEFINED_TRACK_INDEX);
+            if (DEBUG) Log.d(TAG, "Subtitle Track Unselected");*/
+            if (!mCaptionSettings.isEnabled()) {
+                selectTrack(TvTrackInfo.TYPE_SUBTITLE, null, UNDEFINED_TRACK_INDEX);
+            } else {
+                if (DEBUG) Log.d(TAG, "Subtitle Track has selected by service");
+            }
             return;
         }
         mTvOptionsManager.onClosedCaptionsChanged(null, UNDEFINED_TRACK_INDEX);
@@ -3175,13 +3182,26 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     if (track.getId().equals(trackId)) {
                         mCaptionSettings.setLanguage(track.getLanguage());
                         mCaptionSettings.setTrackId(trackId);
-                        Settings.System.putString(this.getContentResolver(), CC_LANGUAGE, track.getLanguage());
-                        Settings.System.putString(this.getContentResolver(), CC_TRACKID, trackId);
+                        //sub index is saved in db of each channel
+                        /*Settings.System.putString(this.getContentResolver(), CC_LANGUAGE, track.getLanguage());
+                        Settings.System.putString(this.getContentResolver(), CC_TRACKID, trackId);*/
                         return;
                     }
                 }
             }
         }
+    }
+
+    public void updateCaptionSettings(String language, String trackId) {
+        mCaptionSettings.setEnableOption(CaptionSettings.OPTION_ON);
+        mCaptionSettings.setLanguage(language);
+        mCaptionSettings.setTrackId(trackId);
+    }
+
+    private void resetCaptionSettings() {
+        mCaptionSettings.setEnableOption(CaptionSettings.OPTION_SYSTEM);
+        mCaptionSettings.setLanguage(null);
+        mCaptionSettings.setTrackId(null);
     }
 
     private void updateAvailabilityToast() {

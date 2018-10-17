@@ -179,8 +179,9 @@ public class ClosedCaptionFragment extends SideFragment {
             super.onSelected();
             mSelectedItem = this;
             getMainActivity().selectSubtitleTrack(mOption, mTrackId);
-            Settings.System.putInt(getActivity().getContentResolver(), CC_OPTION, mOption);
-            Settings.System.putString(getActivity().getContentResolver(), CC_TRACKID, mTrackId);
+            //sub index is saved in db of each channel
+            /*Settings.System.putInt(getActivity().getContentResolver(), CC_OPTION, mOption);
+            Settings.System.putString(getActivity().getContentResolver(), CC_TRACKID, mTrackId);*/
             mResetClosedCaption = false;
             closeFragment();
         }
