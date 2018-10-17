@@ -18,7 +18,11 @@ package com.android.tv.util;
 
 import android.content.Context;
 import android.view.accessibility.CaptioningManager;
+import android.provider.Settings;
+
 import java.util.Locale;
+
+import com.droidlogic.app.tv.DroidLogicTvUtils;
 
 public class CaptionSettings {
     public static final int OPTION_SYSTEM = 0;
@@ -29,8 +33,10 @@ public class CaptionSettings {
     private int mOption = OPTION_SYSTEM;
     private String mLanguage;
     private String mTrackId;
+    private Context mContext;
 
     public CaptionSettings(Context context) {
+        mContext = context;
         mCaptioningManager =
                 (CaptioningManager) context.getSystemService(Context.CAPTIONING_SERVICE);
     }
@@ -91,5 +97,15 @@ public class CaptionSettings {
     /** Sets the track ID to be used as an alternative key. */
     public void setTrackId(String trackId) {
         mTrackId = trackId;
+    }
+
+    public boolean isCaptionsStyleEnabled() {
+        return Settings.Secure.getInt(mContext.getContentResolver(),
+            DroidLogicTvUtils.SYSTEM_CAPTION_STYLE_ENABLE/*"accessibility_captioning_style_enabled"*/, 0) != 0;
+    }
+
+    public void setCaptionsStyleEnabled(boolean enabled) {
+        Settings.Secure.putInt(mContext.getContentResolver(),
+                 DroidLogicTvUtils.SYSTEM_CAPTION_STYLE_ENABLE/*"accessibility_captioning_style_enabled"*/, enabled ? 1 : 0);
     }
 }

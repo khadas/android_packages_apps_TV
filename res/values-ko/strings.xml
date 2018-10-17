@@ -423,4 +423,8 @@
     <string name="invalid_channel_number">채널이 무효화 되면 1~135 범위 안의 채널을 입력 하세요</string>
     <string name="invalid_atsct_channel_number">atsc-t 채널이 무효화 되면 2~69 범위 안의 채널을 입력 해 주세요</string>
     <string name="bad_channel_number">"완전 한 채널을 입력 하지 않았다"</string>
+
+    <!--close caption-->
+    <string name="cc_enable_cc_style">자막을 켜다</string>
+    <string name="cc_disable_cc_style">자막을 폐쇄하다</string>
 </resources>

@@ -37,6 +37,7 @@ public class ClosedCaptionFragment extends SideFragment {
     private String mClosedCaptionLanguage;
     private String mClosedCaptionTrackId;
     private ClosedCaptionOptionItem mSelectedItem;
+    private Item mCaptionsSetting = null;
 
     private static final String CC_OPTION = "CC_OPTION";
     private static final String CC_TRACKID = "CC_TRACKID";
@@ -90,9 +91,27 @@ public class ClosedCaptionFragment extends SideFragment {
                 items.add(item);
             }
         }
+        items.add(new SwitchItem(getString(R.string.cc_enable_cc_style),
+                getString(R.string.cc_disable_cc_style)) {
+            @Override
+            protected void onUpdate() {
+                super.onUpdate();
+                setChecked(getMainActivity().getCaptionSettings().isCaptionsStyleEnabled());
+            }
+
+            @Override
+            protected void onSelected() {
+                super.onSelected();
+                boolean checked = isChecked();
+                getMainActivity().getCaptionSettings().setCaptionsStyleEnabled(checked);
+                if (mCaptionsSetting != null) {
+                    mCaptionsSetting.setEnabled(checked);
+                }
+            }
+        });
         if (getMainActivity().hasCaptioningSettingsActivity()) {
             items.add(
-                    new ActionItem(
+                    mCaptionsSetting = new ActionItem(
                             getString(R.string.closed_caption_system_settings),
                             getString(R.string.closed_caption_system_settings_description)) {
                         @Override
@@ -110,6 +129,7 @@ public class ClosedCaptionFragment extends SideFragment {
                             }
                         }
                     });
+            mCaptionsSetting.setEnabled(getMainActivity().getCaptionSettings().isCaptionsStyleEnabled());
         }
         return items;
     }

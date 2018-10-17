@@ -405,4 +405,8 @@
     <string name="invalid_channel_number">チャンネル番号は無効です。1~135の範囲内のチャンネルを入力してください</string>
     <string name="invalid_atsct_channel_number">atsc-tチャンネル番号が无効になっており、2~69范囲内のチャンネルを入力してください</string>
     <string name="bad_channel_number">"完全なチャンネル番号は入力されていません"</string>
+
+    <!--close caption-->
+    <string name="cc_enable_cc_style">打開字幕樣式</string>
+    <string name="cc_disable_cc_style">關閉字幕樣式</string>
 </resources>

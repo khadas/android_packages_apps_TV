@@ -410,4 +410,8 @@
     <string name="invalid_channel_number">頻道號無效，請輸入1～135範圍內的頻道</string>
     <string name="invalid_atsct_channel_number">atsc-t頻道號無效，請輸入2～69範圍內的頻道號</string>
     <string name="bad_channel_number">"沒有輸入完整的頻道號"</string>
+
+    <!--close caption-->
+    <string name="cc_enable_cc_style">打開字幕樣式</string>
+    <string name="cc_disable_cc_style">關閉字幕樣式</string>
 </resources>

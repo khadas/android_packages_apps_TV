@@ -469,4 +469,8 @@
     <string name="invalid_channel_number">频道号无效，请输入1~135范围内的频道</string>
     <string name="invalid_atsct_channel_number">atsc-t频道号无效，请输入2~69范围内的频道</string>
     <string name="bad_channel_number">"没有输入完整的频道号"</string>
+
+    <!--close caption-->
+    <string name="cc_enable_cc_style">字幕をつける</string>
+    <string name="cc_disable_cc_style">字幕を閉じる</string>
 </resources>

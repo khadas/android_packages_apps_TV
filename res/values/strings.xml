@@ -1164,6 +1164,8 @@
     <string name="subtitle_country_ellinika">Ellinika</string>
     <string name="subtitle_country_alarabia">Alarabia / English</string>
     <string name="subtitle_country_russky">Russky / Balgarski</string>
+    <string name="cc_enable_cc_style">Captions Styles Enabled</string>
+    <string name="cc_disable_cc_style">Captions Styles Disabled</string>
 
     <string name="tv_all_band_search_dialog_message1">Found </string>
     <string name="tv_all_band_search_dialog_messages1">channels.</string>
