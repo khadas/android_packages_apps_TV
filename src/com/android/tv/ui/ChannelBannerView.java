@@ -462,7 +462,16 @@ public class ChannelBannerView extends FrameLayout
             int videoStd = channelInfo.getVideoStd();
             switch (videoStd) {
                 case TvControlManager.ATV_VIDEO_STD_PAL:
-                    colorOrSoundType = mMainActivity.getResources().getString(R.string.channel_video_pal);
+                    int vfmt = channelInfo.getVfmt();
+                    if ((vfmt & 0x00ffffff) == TvControlManager.V4L2_STD_PAL_M) {
+                        colorOrSoundType = mMainActivity.getResources().getString(R.string.channel_video_pal_m);
+                    } else if ((vfmt & 0x00ffffff) == TvControlManager.V4L2_STD_PAL_Nc) {
+                        colorOrSoundType = mMainActivity.getResources().getString(R.string.channel_video_pal_n);
+                    } else if ((vfmt & 0x00ffffff) == TvControlManager.V4L2_STD_PAL_60) {
+                        colorOrSoundType = mMainActivity.getResources().getString(R.string.channel_video_pal_60);
+                    } else {
+                        colorOrSoundType = mMainActivity.getResources().getString(R.string.channel_video_pal);
+                    }
                     break;
                 case TvControlManager.ATV_VIDEO_STD_NTSC:
                     colorOrSoundType = mMainActivity.getResources().getString(R.string.channel_video_ntsc);
@@ -970,7 +979,8 @@ public class ChannelBannerView extends FrameLayout
             String type = mCurrentChannel != null ? mCurrentChannel.getType() : null;
             if (TvContract.Channels.TYPE_PAL.equals(type)) {
                 int vfmt = mMainActivity.mQuickKeyInfo.getCurrentChannelInfo().getVfmt();
-                if ((vfmt & 0x00ffffff) == TvControlManager.V4L2_STD_PAL_M) {
+                if ((vfmt & 0x00ffffff) == TvControlManager.V4L2_STD_PAL_M
+                    || (vfmt & 0x00ffffff) == TvControlManager.V4L2_STD_PAL_60) {
                     resolution = ATVRESOLUTION_NTSC;
                 } else {
                     resolution = ATVRESOLUTION_PAL;

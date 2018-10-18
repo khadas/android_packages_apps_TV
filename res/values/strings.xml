@@ -973,6 +973,9 @@
     <string name="channel_video_ntsc">NTSC</string>
     <string name="channel_video_secam">SECAM</string>
     <string name="channel_audio">Sound System</string>
+    <string name="channel_video_pal_m">PAL-M</string>
+    <string name="channel_video_pal_n">PAL-N</string>
+    <string name="channel_video_pal_60">PAL-60</string>
     <string name="channel_audio_dk">DK</string>
     <string name="channel_audio_bg">BG</string>
     <string name="channel_audio_i">I</string>
