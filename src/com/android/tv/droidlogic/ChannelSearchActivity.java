@@ -1521,7 +1521,8 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
 
     public void setSearchType(int mode) {
         Log.d(TAG, "setSearchType = " + mode);
-        mTvControlDataManager.putInt(ChannelSearchActivity.this.getContentResolver(), "tv_search_type", mode);
+        DroidLogicTvUtils.setSearchType(ChannelSearchActivity.this, mode);
+        //mTvControlDataManager.putInt(ChannelSearchActivity.this.getContentResolver(), "tv_search_type", mode);
     }
 
     public int getSearchType() {

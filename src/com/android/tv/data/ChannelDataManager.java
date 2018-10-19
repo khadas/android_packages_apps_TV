@@ -187,14 +187,8 @@ public class ChannelDataManager {
                 if (!mHandler.hasMessages(MSG_UPDATE_CHANNELS)) {
                     mHandler.sendEmptyMessage(MSG_UPDATE_CHANNELS);
                 }
-                //[DroidLogic]
-                //When tv_search_type changed,set the flag TV_SEARCH_TYPE_CHANGED for the BROADCAST_CHANGED_SEARCH_TYPE in MainActivity.
                 String mUri = uri.toString();
-                if (mUri.equals(URI_TV_SEARCH_TYPE)) {
-                    if (DEBUG) Log.d(TAG, "===== tv_search_type was changed");
-                    TvSingletons.getSingletons(mContext).getTvControlDataManager().putInt(mContentResolver, DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 1);
-                    //Settings.System.putInt(mContext.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 1);
-                } else if (mUri.equals(URI_TV_COUNTRY)) {
+                if (mUri.equals(URI_TV_COUNTRY)) {
                     if (DEBUG) Log.d(TAG, "===== tv_country was changed, so delete all channels");
                     mTvDataBaseManager.deleteChannels(DroidLogicTvUtils.getInputId(context));
                 }
@@ -223,13 +217,7 @@ public class ChannelDataManager {
         handleUpdateChannels();
         mContentResolver.registerContentObserver(
                 TvContract.Channels.CONTENT_URI, true, mChannelObserver);
-        mContentResolver.registerContentObserver(TvContract.Channels.CONTENT_URI, true,
-                mChannelObserver);
         mInputManager.addCallback(mTvInputCallback);
-        //[DroidLogic]
-        //observe the tv_search_type and tv_country in Settings.
-        mContentResolver.registerContentObserver(Settings.System.getUriFor(DroidLogicTvUtils.TV_SEARCH_TYPE), true,
-                mChannelObserver);
         mContentResolver.registerContentObserver(Settings.System.getUriFor(DroidLogicTvUtils.KEY_SEARCH_COUNTRY), true,
                 mChannelObserver);
         /*try {
@@ -580,7 +568,7 @@ public class ChannelDataManager {
     }
 
     @MainThread
-    private void handleUpdateChannels() {
+    public void handleUpdateChannels() {
         if (mChannelsUpdateTask != null) {
             mChannelsUpdateTask.cancel(true);
         }

@@ -436,6 +436,16 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                         resumeTvIfNeeded();
                     }
                     mOverlayManager.onBrowsableChannelsUpdated();
+                    //When switched tv_search_type, it will update and filter channel list in resumeTvIfNeeded;
+                    //When load finished, send broadcast to tune to specific channel.
+                    int searchTypeChanged = getSearchTypeChangedStatus();
+                    Log.d(TAG, "searchTypeChanged : " + searchTypeChanged);
+                    if (searchTypeChanged == 1) {
+                        Intent intent = new Intent();
+                        intent.setAction(BROADCAST_CHANGED_SEARCH_TYPE);
+                        sendBroadcast(intent);
+                        Settings.System.putInt(MainActivity.this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0);
+                    }
                 }
 
                 @Override
@@ -1182,14 +1192,16 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         mTvView.setBlockScreenType(getDesiredBlockScreenType());
 
         //[DroidLogic]
-        //when change search type,send broadcast to switch channel at the same time.
-        int searchTypeChanged = Settings.System.getInt(this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0);
+        //when change search type, update the channel list at the same time.
+        int searchTypeChanged = getSearchTypeChangedStatus();
+        Log.d(TAG, "searchTypeChanged : " + searchTypeChanged);
         if (searchTypeChanged == 1) {
-            Intent intent = new Intent();
-            intent.setAction(BROADCAST_CHANGED_SEARCH_TYPE);
-            sendBroadcast(intent);
-            Settings.System.putInt(this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0);
+            mChannelDataManager.handleUpdateChannels();
         }
+    }
+
+    private int getSearchTypeChangedStatus() {
+        return Settings.System.getInt(this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0);
     }
 
     private void saveChannelIndex(int channelIndex) {
