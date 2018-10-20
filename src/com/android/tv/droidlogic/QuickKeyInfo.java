@@ -121,6 +121,9 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
             Intent intent = new Intent();
             intent.setClassName("com.droidlogic.tv.settings", "com.droidlogic.tv.settings.MainSettings");
             intent.putExtra("from_live_tv", 1);
+            intent.putExtra("current_channel_id", mChannelTuner.getCurrentChannelId());
+            intent.putExtra("current_tvinputinfo_id", mChannelTuner.getCurrentInputInfo() != null ? mChannelTuner.getCurrentInputInfo().getId() : null);
+            intent.putExtra("tv_current_device_id", getDeviceIdFromInfo(mChannelTuner.getCurrentInputInfo()));
             mActivity.startActivityForResult(intent, REQUEST_CODE_START_DROID_SETTINGS);
         } catch (ActivityNotFoundException e) {
             Toast.makeText(mContext, mActivity.getString(R.string.droidsettings_not_found), Toast.LENGTH_SHORT).show();
