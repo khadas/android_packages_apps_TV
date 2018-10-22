@@ -79,7 +79,8 @@ public class ListFragment extends SideFragment {
                             + ", channel type: " + tempVideoChannelList.get(i).getType());
                         if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
                             ChannelInfo channelInfo = getMainActivity().convertToChannelInfo(tempVideoChannelList.get(i), getActivity());
-                            if (channelInfo.getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(getActivity()))) {
+                            if (channelInfo != null
+                                && channelInfo.getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(getActivity()))) {
                                 videoChannelsList.add(tempVideoChannelList.get(i));
                             }
                         } else {
@@ -103,7 +104,8 @@ public class ListFragment extends SideFragment {
                             + ", channel type: " + tempRadioChannelList.get(i).getType());
                         if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
                             ChannelInfo channelInfo = getMainActivity().convertToChannelInfo(tempRadioChannelList.get(i), getActivity());
-                            if (channelInfo.getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(getActivity()))) {
+                            if (channelInfo != null
+                                && channelInfo.getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(getActivity()))) {
                                 radioChannelsList.add(tempRadioChannelList.get(i));
                             }
                         } else {
@@ -126,7 +128,8 @@ public class ListFragment extends SideFragment {
                     if (one.isFavourite()) {
                         if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
                             ChannelInfo channelInfo = getMainActivity().convertToChannelInfo(one, getActivity());
-                            if (channelInfo.getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(getActivity()))) {
+                            if (channelInfo != null
+                                && channelInfo.getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(getActivity()))) {
                                 need.add(one);
                             }
                         } else {
@@ -145,7 +148,8 @@ public class ListFragment extends SideFragment {
                     if (one.isFavourite()) {
                         if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
                             ChannelInfo channelInfo = getMainActivity().convertToChannelInfo(one, getActivity());
-                            if (channelInfo.getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(getActivity()))) {
+                            if (channelInfo != null
+                                && channelInfo.getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(getActivity()))) {
                                 need.add(one);
                             }
                         } else {
