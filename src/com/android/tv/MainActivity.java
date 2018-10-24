@@ -2044,7 +2044,8 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 }
             }
         }
-
+        //avl module need realtime source id
+        mQuickKeyInfo.sendSourceToAvlModule(channel);
         if (channel == null) {
             long channelId = Utils.getLastWatchedChannelId(this);
             if (channelId != Channel.INVALID_ID) {

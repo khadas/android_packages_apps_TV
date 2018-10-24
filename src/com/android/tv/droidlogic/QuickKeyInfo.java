@@ -1452,4 +1452,55 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         return mTypedNumber;
     }
     /********end: add for number search********/
+
+    /********start: dynamicly set source for audio avl module********/
+    private static final int UNKOWN_SOURCE = -1;
+    private static final int AVL_SOURCE_DTV = 0;
+    private static final int AVL_SOURCE_ATV = 1;
+    private static final int AVL_SOURCE_AV = 2;
+    private static final int AVL_SOURCE_HDMI = 3;
+    private static final int AVL_SOURCE_SPDIF = 4;
+    private static final int AVL_SOURCE_REMOTE_SUBMIX = 5;
+    private static final int AVL_SOURCE_WIRED_HEADSET = 6;
+
+    public void sendSourceToAvlModule(final Channel channel) {
+        int source = AVL_SOURCE_HDMI;
+        if (channel == null) {
+            if (DEBUG) Log.d(TAG, "sendSourceToAvlModule null");
+        } else {
+            if (channel.isAnalogChannel()) {
+                sendBroadcastToAvlModule(AVL_SOURCE_ATV);
+                return;
+            } else if (channel.isDigitalChannel()) {
+                sendBroadcastToAvlModule(AVL_SOURCE_DTV);
+                return;
+            }
+            //passthrough or other type
+            int deviceid = DroidLogicTvUtils.getHardwareDeviceId(channel.getInputId());
+            int sigtype = DroidLogicTvUtils.getSigType(DroidLogicTvUtils.getSourceType(deviceid));
+            switch (sigtype) {
+                case DroidLogicTvUtils.SIG_INFO_TYPE_AV:
+                    source = AVL_SOURCE_AV;
+                    break;
+                case DroidLogicTvUtils.SIG_INFO_TYPE_HDMI:
+                    source = AVL_SOURCE_HDMI;
+                    break;
+                case DroidLogicTvUtils.SIG_INFO_TYPE_SPDIF:
+                    source = AVL_SOURCE_SPDIF;
+                    break;
+                default:
+                    break;
+            }
+        }
+        sendBroadcastToAvlModule(source);
+    }
+
+    private void sendBroadcastToAvlModule(int sourceid) {
+        if (DEBUG) Log.d(TAG, "sendBroadcastToAvlModule sourceid = " + sourceid);
+        Intent intent = new Intent();
+        intent.setAction("droid.action.avlmodule");
+        intent.putExtra("source_id", sourceid);
+        mContext.sendBroadcast(intent);
+    }
+    /********end: dynamicly set source for audio avl module********/
 }
