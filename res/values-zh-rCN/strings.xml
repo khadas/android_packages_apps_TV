@@ -447,6 +447,7 @@
     <string name="radio_channel">广播频道</string>
     <string name="tv_search_channel_from">起始:</string>
     <string name="tv_search_channel_to">终止:</string>
+    <string name="tv_search_channel_stopped">搜台终止了</string>
     <string name="shortcutactivity_not_found">找不到设置程序！</string>
 
     <string name="tv_all_band_search_dialog_message1">搜索到 </string>

@@ -1221,7 +1221,9 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
     @Override
     public void onResume() {
         if (isFinished) {
-            resume();
+            ShowToastTint(getString(R.string.tv_search_channel_stopped));
+            finish();
+            //resume();
             isFinished = false;
         }
 
@@ -1257,7 +1259,6 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
     public void onStop() {
         Log.d(TAG, "onStop");
         super.onStop();
-        release();
     }
 
     @Override
@@ -1266,6 +1267,7 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
         super.onDestroy();
         mTvScanManager.unBindService();
         resetSearchStatus();
+        release();
     }
 
     @Override
@@ -1328,6 +1330,12 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
     };
 
     private void resume() {
+        isManualStarted = false;
+        isAutoStarted = false;
+        isAllBandScanStopped = false;
+
+        initSpinner();
+        mChannelList.setAdapter(null);
         mTvScanManager.init();
         startShowActivityTimer();
     }
