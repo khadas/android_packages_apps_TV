@@ -41,7 +41,7 @@ public class TvClock implements Clock {
         mContext = context;
         mSystemControlManager = TvSingletons.getSingletons(context).getSystemControlManager();
         mTvTime = TvSingletons.getSingletons(context).getTvTime();
-        isTvTimeEnabled = mSystemControlManager.getPropertyBoolean(PROP_SET_TVTIME_ENABLED, false);
+        isTvTimeEnabled = mSystemControlManager.getPropertyBoolean(PROP_SET_TVTIME_ENABLED, true);
     }
 
     public long currentTimeMillis() {
