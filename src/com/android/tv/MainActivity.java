@@ -167,6 +167,7 @@ import com.droidlogic.app.tv.DroidLogicTvUtils;
 import com.droidlogic.app.tv.TvDataBaseManager;
 import com.droidlogic.app.tv.TvControlManager;
 import com.droidlogic.app.tv.ChannelInfo;
+import com.droidlogic.app.tv.DroidLogicHdmiCecManager;
 import android.provider.Settings;
 /**
  * The main activity for the Live TV app.
@@ -353,6 +354,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
     private int channelIndex = 0;
     private boolean isOKPressed = false;
+    DroidLogicHdmiCecManager hdmi_cec = null;
 
     private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -869,7 +871,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 mHdmiTvClient.setInputChangeListener(mInputListener);
             }
         }
-
+        hdmi_cec = DroidLogicHdmiCecManager.getInstance(this);
         Debug.getTimer(Debug.TAG_START_UP_TIMER).log("MainActivity.onCreate end");
         mPerformanceMonitor.stopTimer(timer, EventNames.MAIN_ACTIVITY_ONCREATE);
 
@@ -1328,6 +1330,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         stopAll(false);
         unregisterReceiver(mBroadcastReceiver);
         mTracker.sendMainStop(mMainDurationTimer.reset());
+        hdmi_cec.selectHdmiDevice(0, 0, 0);
         super.onStop();
     }
 
