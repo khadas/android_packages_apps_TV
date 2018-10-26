@@ -2336,9 +2336,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             return;
         }
 
-        String id = TvSettings.getMultiAudioId(this);
-        String language = TvSettings.getMultiAudioLanguage(this);
-        int channelCount = TvSettings.getMultiAudioChannelCount(this);
+        String id = TvSettings.getMultiAudioId(this, getCurrentChannel());
+        String language = TvSettings.getMultiAudioLanguage(this, getCurrentChannel());
+        int channelCount = TvSettings.getMultiAudioChannelCount(this, getCurrentChannel());
         TvTrackInfo bestTrack =
                 TvTrackInfoUtils.getBestTrackInfo(tracks, id, language, channelCount);
         if (bestTrack != null) {
@@ -3165,16 +3165,16 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         if (tracks != null) {
             for (TvTrackInfo track : tracks) {
                 if (track.getId().equals(trackId)) {
-                    TvSettings.setMultiAudioId(this, track.getId());
-                    TvSettings.setMultiAudioLanguage(this, track.getLanguage());
-                    TvSettings.setMultiAudioChannelCount(this, track.getAudioChannelCount());
+                    TvSettings.setMultiAudioId(this, track.getId(), getCurrentChannel());
+                    TvSettings.setMultiAudioLanguage(this, track.getLanguage(), getCurrentChannel());
+                    TvSettings.setMultiAudioChannelCount(this, track.getAudioChannelCount(), getCurrentChannel());
                     return;
                 }
             }
         }
-        TvSettings.setMultiAudioId(this, null);
-        TvSettings.setMultiAudioLanguage(this, null);
-        TvSettings.setMultiAudioChannelCount(this, 0);
+        TvSettings.setMultiAudioId(this, null, getCurrentChannel());
+        TvSettings.setMultiAudioLanguage(this, null, getCurrentChannel());
+        TvSettings.setMultiAudioChannelCount(this, 0, getCurrentChannel());
     }
 
     public void selectSubtitleTrack(int option, String trackId) {

@@ -27,6 +27,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.android.tv.data.api.Channel;
+
 /**
  * A class about the constants for TV settings. Objects that are returned from the various {@code
  * get} methods must be treated as immutable.
@@ -72,39 +74,39 @@ public final class TvSettings {
     private TvSettings() {}
 
     // Multi-track audio settings
-    public static String getMultiAudioId(Context context) {
+    public static String getMultiAudioId(Context context, Channel channel) {
         return PreferenceManager.getDefaultSharedPreferences(context)
-                .getString(PREF_MULTI_AUDIO_ID, null);
+                .getString(PREF_MULTI_AUDIO_ID + "_" + String.valueOf(channel.getId()), null);
     }
 
-    public static void setMultiAudioId(Context context, String language) {
+    public static void setMultiAudioId(Context context, String id, Channel channel) {
         PreferenceManager.getDefaultSharedPreferences(context)
                 .edit()
-                .putString(PREF_MULTI_AUDIO_ID, language)
+                .putString(PREF_MULTI_AUDIO_ID + "_" + String.valueOf(channel.getId()), id)
                 .apply();
     }
 
-    public static String getMultiAudioLanguage(Context context) {
+    public static String getMultiAudioLanguage(Context context, Channel channel) {
         return PreferenceManager.getDefaultSharedPreferences(context)
-                .getString(PREF_MULTI_AUDIO_LANGUAGE, null);
+                .getString(PREF_MULTI_AUDIO_LANGUAGE + "_" + String.valueOf(channel.getId()), null);
     }
 
-    public static void setMultiAudioLanguage(Context context, String language) {
+    public static void setMultiAudioLanguage(Context context, String language, Channel channel) {
         PreferenceManager.getDefaultSharedPreferences(context)
                 .edit()
-                .putString(PREF_MULTI_AUDIO_LANGUAGE, language)
+                .putString(PREF_MULTI_AUDIO_LANGUAGE + "_" + String.valueOf(channel.getId()), language)
                 .apply();
     }
 
-    public static int getMultiAudioChannelCount(Context context) {
+    public static int getMultiAudioChannelCount(Context context, Channel channel) {
         return PreferenceManager.getDefaultSharedPreferences(context)
-                .getInt(PREF_MULTI_AUDIO_CHANNEL_COUNT, 0);
+                .getInt(PREF_MULTI_AUDIO_CHANNEL_COUNT + "_" + String.valueOf(channel.getId()), 0);
     }
 
-    public static void setMultiAudioChannelCount(Context context, int channelCount) {
+    public static void setMultiAudioChannelCount(Context context, int channelCount, Channel channel) {
         PreferenceManager.getDefaultSharedPreferences(context)
                 .edit()
-                .putInt(PREF_MULTI_AUDIO_CHANNEL_COUNT, channelCount)
+                .putInt(PREF_MULTI_AUDIO_CHANNEL_COUNT + "_" + String.valueOf(channel.getId()), channelCount)
                 .apply();
     }
 
