@@ -254,8 +254,11 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
     private static final int MSG_CHANNEL_DOWN_PRESSED = 1000;
     private static final int MSG_CHANNEL_UP_PRESSED = 1001;
+    private static final int MSG_FILTER_CEC_OTP_TIMEOUT = 1002;
 
     private static final int TVVIEW_SET_MAIN_TIMEOUT_MS = 3000;
+    private static final int DELAY_TIMEOUT_MS = 6000;
+    private static boolean mFilterOtpEnabled = false;
 
     // Lazy initialization.
     // Delay 1 second in order not to interrupt the first tune.
@@ -490,7 +493,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     private ProgramGuideSearchFragment mSearchFragment;
 
     //parameters relate with hdmi switch
-    private boolean mIgnoreTvInputPlugIn = true;
+    private boolean mIgnoreHdmiCecTvInput = true;
 
     private final TvInputCallback mTvInputCallback =
             new TvInputCallback() {
@@ -506,8 +509,6 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                         CommonPreferences.setShouldShowSetupActivity(MainActivity.this, false);
                         mSetupUtils.markAsKnownInput(mTunerInputId);
                     }
-                    if (mIgnoreTvInputPlugIn)
-                        return;
                     }
 
                 @Override
@@ -846,9 +847,11 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 Log.d(TAG,"onChanged:"+info);
                 if (info == null)
                     return ;
-                Log.d(TAG,"mIgnoreTvInputPlugIn:"+mIgnoreTvInputPlugIn);
-                if (mIgnoreTvInputPlugIn)
+                if (mIgnoreHdmiCecTvInput || mFilterOtpEnabled) {
+                    if (DEBUG)
+                        Log.d(TAG,"mIgnoreHdmiCecTvInput: " + mIgnoreHdmiCecTvInput + " mFilterOtpEnabled: " + mFilterOtpEnabled);
                     return;
+                }
                 if (info.isCecDevice() && mTvView.getEasStatus() == EAS_NOT_IN_PROGRESS)  {
                     List<TvInputInfo> input_list = mTvInputManagerHelper.getTvInputList();
                     for (TvInputInfo tvinputinfo : input_list) {
@@ -1082,14 +1085,14 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         }
         Debug.getTimer(Debug.TAG_START_UP_TIMER).log("MainActivity.onResume end");
         mPerformanceMonitor.stopTimer(timer, EventNames.MAIN_ACTIVITY_ONRESUME);
-        mIgnoreTvInputPlugIn = false;
+        mIgnoreHdmiCecTvInput = false;
         mQuickKeyInfo.dealOnResume();
     }
 
     @Override
     protected void onPause() {
         if (DEBUG) Log.d(TAG, "onPause()");
-        mIgnoreTvInputPlugIn = true;
+        mIgnoreHdmiCecTvInput = true;
         if (mDvrConflictChecker != null) {
             mDvrConflictChecker.stop();
         }
@@ -2166,6 +2169,11 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
         // Explicitly make the TV view main to make the selected input an HDMI-CEC active source.
         mTvView.setMain();
+        /*filtered cec otp beging*/
+        mFilterOtpEnabled = true;
+        mHandler.removeMessages(MSG_FILTER_CEC_OTP_TIMEOUT);
+        mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_FILTER_CEC_OTP_TIMEOUT, 0, 0), DELAY_TIMEOUT_MS);
+         /*filtered cec otp end*/
         scheduleRestoreMainTvView();
         if (!isUnderShrunkenTvView()) {
             if (!channel.isPassthrough()) {
@@ -3383,6 +3391,10 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     // existence of message to decide if users are switching channel.
                     sendMessageDelayed(Message.obtain(msg), getDelay(startTime));
                     mainActivity.moveToAdjacentChannel(true, true);
+                    break;
+                case MSG_FILTER_CEC_OTP_TIMEOUT:
+                    mFilterOtpEnabled = false;
+                    if (DEBUG) Log.d(TAG, "reset mFilterOtpEnabled to false");
                     break;
                 default: // fall out
             }
