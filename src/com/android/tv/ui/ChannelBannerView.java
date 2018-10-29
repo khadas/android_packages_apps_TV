@@ -423,7 +423,7 @@ public class ChannelBannerView extends FrameLayout
                     updateText(mAtvSoundSysTextView, getCurrentColorOrSound(ATV_SYS_SOUND_FLAG));
                     audiotext = mMainActivity.mQuickKeyInfo.getAtvAudioStreamOutmodestring();
                 } else {
-                    audiotext = TvSettings.getMultiAudioLanguage(getContext(), mCurrentChannel);
+                    audiotext = TvSettings.getMultiAudioLanguage(getContext());
                 }
                 updateText(mAudioChannelTextView, audiotext
                     /*Utils.getAudioChannelString(mMainActivity, info.getAudioChannelCount())*/);

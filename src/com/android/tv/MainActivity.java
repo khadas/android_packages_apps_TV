@@ -2152,6 +2152,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         }*/
         //sub index is saved in db of each channel
         resetCaptionSettings();
+        resetAudioTrack();
 
         boolean success = mTvView.tuneTo(channel, mTuneParams, mOnTuneListener);
         if (DEBUG) Log.d(TAG, "tune status = " + success + ", channeluri = " + (channel != null ? (channel.getUri() + "  " + channel.getDisplayNumber()) : null));
@@ -2336,22 +2337,36 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             return;
         }
 
-        String id = TvSettings.getMultiAudioId(this, getCurrentChannel());
-        String language = TvSettings.getMultiAudioLanguage(this, getCurrentChannel());
-        int channelCount = TvSettings.getMultiAudioChannelCount(this, getCurrentChannel());
-        TvTrackInfo bestTrack =
-                TvTrackInfoUtils.getBestTrackInfo(tracks, id, language, channelCount);
+        String id = TvSettings.getMultiAudioId(this);
+        String language = TvSettings.getMultiAudioLanguage(this);
+        int channelCount = TvSettings.getMultiAudioChannelCount(this);
+        TvTrackInfo bestTrack = null;
+        if (!(id == null && language == null && channelCount == 0)) {
+            bestTrack = TvTrackInfoUtils.getBestTrackInfo(tracks, id, language, channelCount);
+        }
+        String selectedTrack = getSelectedTrack(TvTrackInfo.TYPE_AUDIO);
+        TvTrackInfo selectedTrackInfo = null;
+        for (TvTrackInfo track : tracks) {
+            if (track.getId().equals(selectedTrack)) {
+                selectedTrackInfo = track;
+                break;
+            }
+        }
         if (bestTrack != null) {
-            String selectedTrack = getSelectedTrack(TvTrackInfo.TYPE_AUDIO);
             if (!bestTrack.getId().equals(selectedTrack)) {
                 selectTrack(TvTrackInfo.TYPE_AUDIO, bestTrack, UNDEFINED_TRACK_INDEX);
             } else {
                 mTvOptionsManager.onMultiAudioChanged(
                         Utils.getMultiAudioString(this, bestTrack, false));
             }
-            return;
+        } else {
+            if (selectedTrackInfo != null) {
+                mTvOptionsManager.onMultiAudioChanged(
+                        Utils.getMultiAudioString(this, selectedTrackInfo, false));
+            } else {
+                mTvOptionsManager.onMultiAudioChanged(null);
+            }
         }
-        mTvOptionsManager.onMultiAudioChanged(null);
     }
 
     private void applyClosedCaption() {
@@ -3165,16 +3180,16 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         if (tracks != null) {
             for (TvTrackInfo track : tracks) {
                 if (track.getId().equals(trackId)) {
-                    TvSettings.setMultiAudioId(this, track.getId(), getCurrentChannel());
-                    TvSettings.setMultiAudioLanguage(this, track.getLanguage(), getCurrentChannel());
-                    TvSettings.setMultiAudioChannelCount(this, track.getAudioChannelCount(), getCurrentChannel());
+                    TvSettings.setMultiAudioId(this, track.getId());
+                    TvSettings.setMultiAudioLanguage(this, track.getLanguage());
+                    TvSettings.setMultiAudioChannelCount(this, track.getAudioChannelCount());
                     return;
                 }
             }
         }
-        TvSettings.setMultiAudioId(this, null, getCurrentChannel());
-        TvSettings.setMultiAudioLanguage(this, null, getCurrentChannel());
-        TvSettings.setMultiAudioChannelCount(this, 0, getCurrentChannel());
+        TvSettings.setMultiAudioId(this, null);
+        TvSettings.setMultiAudioLanguage(this, null);
+        TvSettings.setMultiAudioChannelCount(this, 0);
     }
 
     public void selectSubtitleTrack(int option, String trackId) {
@@ -3218,6 +3233,12 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         mCaptionSettings.setEnableOption(CaptionSettings.OPTION_SYSTEM);
         mCaptionSettings.setLanguage(null);
         mCaptionSettings.setTrackId(null);
+    }
+
+    private void resetAudioTrack() {
+        TvSettings.setMultiAudioId(this, null);
+        TvSettings.setMultiAudioLanguage(this, null);
+        TvSettings.setMultiAudioChannelCount(this, 0);
     }
 
     private void updateAvailabilityToast() {
