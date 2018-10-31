@@ -74,6 +74,7 @@ import com.android.tv.util.TvSettings;
 import com.droidlogic.app.tv.ChannelInfo;
 import com.droidlogic.app.tv.TvDataBaseManager;
 import com.droidlogic.app.tv.TvControlManager;
+import com.droidlogic.app.tv.DroidLogicTvUtils;
 
 /** A view to render channel banner. */
 public class ChannelBannerView extends FrameLayout
@@ -797,7 +798,11 @@ public class ChannelBannerView extends FrameLayout
             }
             if (ratings == null || (ratings != null && ratings.length == 0)) {
                 mContentRatingsTextViews[0].setText(ContentRatingsManager.RATING_NO);
-                mContentRatingsTextViews[0].setVisibility(View.VISIBLE);
+                if (TextUtils.equals(DroidLogicTvUtils.getCurrentSignalType(getContext()), TvContract.Channels.TYPE_DTMB)) {
+                    mContentRatingsTextViews[0].setVisibility(View.GONE);
+                } else {
+                    mContentRatingsTextViews[0].setVisibility(View.VISIBLE);
+                }
             }
         }
     }

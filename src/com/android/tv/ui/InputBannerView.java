@@ -18,6 +18,7 @@ package com.android.tv.ui;
 
 import android.content.Context;
 import android.media.tv.TvInputInfo;
+import android.media.tv.TvContract;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
@@ -26,6 +27,8 @@ import android.widget.TextView;
 import com.android.tv.MainActivity;
 import com.android.tv.R;
 import com.android.tv.data.api.Channel;
+
+import com.droidlogic.app.tv.DroidLogicTvUtils;
 
 public class InputBannerView extends LinearLayout implements TvTransitionManager.TransitionLayout {
     private final long mShowDurationMillis;
@@ -101,9 +104,14 @@ public class InputBannerView extends LinearLayout implements TvTransitionManager
         int inputType = input.getType();
         if (inputType == TvInputInfo.TYPE_COMPOSITE) {//TYPE_COMPOSITE is AV type.
             mCaptionTextView.setText(hascaption ? (DELIMITER + mainActivity.getString(R.string.closed_caption)) : EMPTY);
-            mVchipTextView.setText(TextUtils.isEmpty(vchip) ? EMPTY : (DELIMITER + vchip));
-            mCaptionTextView.setVisibility(View.VISIBLE);
-            mVchipTextView.setVisibility(View.VISIBLE);
+            if (TextUtils.equals(DroidLogicTvUtils.getCurrentSignalType(getContext()), TvContract.Channels.TYPE_DTMB)) {
+                mCaptionTextView.setVisibility(View.GONE);
+                mVchipTextView.setVisibility(View.GONE);
+            } else {
+                mVchipTextView.setText(TextUtils.isEmpty(vchip) ? EMPTY : (DELIMITER + vchip));
+                mCaptionTextView.setVisibility(View.VISIBLE);
+                mVchipTextView.setVisibility(View.VISIBLE);
+            }
         } else if (inputType == TvInputInfo.TYPE_HDMI) {//TYPE_HDMI is HDMI type.
             mCaptionTextView.setVisibility(View.GONE);
             mVchipTextView.setVisibility(View.GONE);
