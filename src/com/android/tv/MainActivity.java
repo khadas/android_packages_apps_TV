@@ -3168,6 +3168,19 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         return mTvView.getSelectedTrack(type);
     }
 
+    public TvTrackInfo getCurrentTrackInfo() {
+        List<TvTrackInfo> tracks = getTracks(TvTrackInfo.TYPE_AUDIO);
+        String selectedTrackId = getSelectedTrack(TvTrackInfo.TYPE_AUDIO);
+        if (tracks != null) {
+            for (TvTrackInfo track : tracks) {
+                if (track.getId().equals(selectedTrackId)) {
+                    return track;
+                }
+            }
+        }
+        return null;
+    }
+
     private void selectTrack(int type, TvTrackInfo track, int trackIndex) {
         mTvView.selectTrack(type, track == null ? null : track.getId());
         if (type == TvTrackInfo.TYPE_AUDIO) {

@@ -27,6 +27,7 @@ import android.graphics.Bitmap;
 import android.media.tv.TvContentRating;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvContract;
+import android.media.tv.TvTrackInfo;
 import android.net.Uri;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -424,7 +425,8 @@ public class ChannelBannerView extends FrameLayout
                     updateText(mAtvSoundSysTextView, getCurrentColorOrSound(ATV_SYS_SOUND_FLAG));
                     audiotext = mMainActivity.mQuickKeyInfo.getAtvAudioStreamOutmodestring();
                 } else {
-                    audiotext = TvSettings.getMultiAudioLanguage(getContext());
+                    TvTrackInfo currentTrack = mMainActivity.getCurrentTrackInfo();
+                    audiotext = currentTrack != null ? currentTrack.getLanguage() : "";
                 }
                 updateText(mAudioChannelTextView, audiotext
                     /*Utils.getAudioChannelString(mMainActivity, info.getAudioChannelCount())*/);
