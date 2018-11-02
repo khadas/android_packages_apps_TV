@@ -315,9 +315,9 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                             Log.w(TAG, "Invalid track ID: " + trackId);
                         }
                     }
-                    if (mOnTuneListener != null) {
+                    /*if (mOnTuneListener != null) {
                         mOnTuneListener.onStreamInfoChanged(TunableTvView.this);
-                    }
+                    }*/
                 }
 
                 @Override
