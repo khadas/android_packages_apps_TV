@@ -1507,4 +1507,30 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         mContext.sendBroadcast(intent);
     }
     /********end: dynamicly set source for audio avl module********/
+
+    /********start: deal channel changed by service********/
+    //private boolean mIsChanged = false;
+    private Uri mReturnedChannelUri = null;
+
+    /*public void setChannelChangeStatus(boolean value) {
+        mIsChanged = value;
+    }*/
+
+    public boolean getChannelChangeStatus() {
+        return mReturnedChannelUri != null;
+    }
+
+    public void setReturnedChannelUri(Uri channeluri) {
+        mReturnedChannelUri = channeluri;
+    }
+
+    public Uri getReturnedChannelUri() {
+        return mReturnedChannelUri;
+    }
+
+    public void resetReturnedChannel() {
+        //mIsChanged = false;
+        mReturnedChannelUri = null;
+    }
+    /********start: deal channel changed by service********/
 }

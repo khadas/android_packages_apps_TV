@@ -465,6 +465,18 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                                 tuneToChannel(channel);
                             }
                         }
+                    } else if (USE_DROIDLOIC_CUSTOMIZATION && mQuickKeyInfo.getChannelChangeStatus()) {
+                        Channel currentChannel = mChannelDataManager.getChannel(ContentUriUtils.safeParseId(mQuickKeyInfo.getReturnedChannelUri()));
+                        if (isChannelChangeKeyDownReceived() || currentChannel == null) {
+                            if (DEBUG) Log.d(TAG, "onBrowsableChannelListChanged returned channel hasn't found!");
+                            return;
+                        }
+                        mChannelTuner.moveToChannel(currentChannel);
+                        mTvView.setCurrentChannel(currentChannel);
+                        //hide no channel ui when changed
+                        mTvView.hideNoDataBaseHint();
+                        mOverlayManager.updateChannelBannerAndShowIfNeeded(TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE);
+                        mQuickKeyInfo.resetReturnedChannel();
                     }
                 }
 
@@ -2202,6 +2214,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         mMediaSessionWrapper.update(mTvView.isBlocked(), getCurrentChannel(), getCurrentProgram());
         mQuickKeyInfo.setSearchedChannelFlag(false);
         mTvView.hideNoDataBaseHint();//hide no channel after tune success
+        mQuickKeyInfo.resetReturnedChannel();
     }
 
     // Runs the runnable after the activity is attached to window to show the fragment transition
@@ -3488,7 +3501,10 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                         TAG,
                         "onChannelRetuned is called but can't find a channel with the URI "
                                 + channel);
+                mQuickKeyInfo.setReturnedChannelUri(channel);
                 return;
+            } else {
+                mQuickKeyInfo.resetReturnedChannel();
             }
             if (isChannelChangeKeyDownReceived()) {
                 // Ignore this message if the user is changing the channel.
