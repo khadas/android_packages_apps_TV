@@ -3494,7 +3494,8 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 // Ignore this message if the user is changing the channel.
                 return;
             }
-            mChannelTuner.setCurrentChannel(currentChannel);
+            mChannelTuner.moveToChannel(currentChannel);
+            //mChannelTuner.setCurrentChannel(currentChannel);
             mTvView.setCurrentChannel(currentChannel);
             //hide no channel ui when changed
             mTvView.hideNoDataBaseHint();

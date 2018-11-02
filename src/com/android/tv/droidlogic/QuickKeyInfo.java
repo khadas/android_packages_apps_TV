@@ -371,7 +371,11 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         } else if (isAvCurrentSourceInputType()) {
             return mActivity.getTvView().getCurrentTvContentRating();
         } else {
-            final Program currentprogram = mActivity.getCurrentProgram();
+            Program currentprogram = mActivity.getCurrentProgram();
+            if (currentprogram != null && channel != null && currentprogram.getChannelId() != channel.getId()) {
+                //get the latest program
+                currentprogram = mActivity.getProgramDataManager().getCurrentProgram(channel.getId());
+            }
             TvContentRating[] programratings = currentprogram == null ? null : currentprogram.getContentRatings();
             TvContentRating[] channelratings = null;
             if (channel != null) {

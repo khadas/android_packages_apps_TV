@@ -24,6 +24,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.Log;
 import com.android.tv.MainActivity;
 import com.android.tv.R;
 import com.android.tv.TimeShiftManager;
@@ -45,6 +46,7 @@ import com.android.tv.menu.Menu.MenuShowReason;
 import com.android.tv.ui.TunableTvView;
 
 public class PlayControlsRowView extends MenuRowView {
+    private static final String TAG = "PlayControlsRowView";
     private static final int NORMAL_WIDTH_MAX_BUTTON_COUNT = 5;
     // Dimensions
     private final int mTimeIndicatorLeftMargin;
@@ -416,6 +418,10 @@ public class PlayControlsRowView extends MenuRowView {
 
     private void initializeTimeline() {
         Program program = mTimeShiftManager.getProgramAt(mTimeShiftManager.getCurrentPositionMs());
+        if (program == null) {
+            Log.w(TAG, "initializeTimeline erro");
+            return;
+        }
         mProgramStartTimeMs = program.getStartTimeUtcMillis();
         mProgramEndTimeMs = program.getEndTimeUtcMillis();
         mProgress.setMax(mProgramEndTimeMs - mProgramStartTimeMs);

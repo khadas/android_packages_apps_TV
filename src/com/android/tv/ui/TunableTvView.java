@@ -423,6 +423,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
 
                 @Override
                 public void onContentAllowed(String inputId) {
+                    if (DEBUG) Log.d(TAG, "onContentAllowed");
                     mBlockedContentRating = null;
                     updateBlockScreenAndMuting();
                     if (mOnTuneListener != null) {
@@ -432,6 +433,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
 
                 @Override
                 public void onContentBlocked(String inputId, TvContentRating rating) {
+                    if (DEBUG) Log.d(TAG, "onContentBlocked");
                     if (rating != null && rating.equals(mBlockedContentRating)) {
                         return;
                     }
@@ -745,6 +747,10 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
         mAudioChannelCount = StreamInfo.AUDIO_CHANNEL_COUNT_UNKNOWN;
         mHasClosedCaption = false;
         mBlockedContentRating = null;
+        TvContentRating[] ratings = mMainActivity.mQuickKeyInfo.getContentRatingsOfCurrentProgram();
+        if (ratings != null && ratings.length > 0) {
+            mBlockedContentRating = mParentalControlSettings.getBlockedRating(ratings);
+        }
         mTimeShiftCurrentPositionMs = TvInputManager.TIME_SHIFT_INVALID_TIME;
         // To reduce the IPCs, unregister the callback here and register it when necessary.
         mTvView.setTimeShiftPositionCallback(null);
@@ -1073,8 +1079,8 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                 if (blockReason == TvInputManager.VIDEO_UNAVAILABLE_REASON_TUNING) {
                     showImageForTuningIfNeeded();
                     //show nothing when tuning
-                    mBufferingSpinnerView.setVisibility(GONE);
                     mBlockScreenView.setVisibility(GONE);
+                    mBufferingSpinnerView.setVisibility(GONE);
                 } else if (blockReason == TvInputManager.VIDEO_UNAVAILABLE_REASON_UNKNOWN
                         && mCurrentChannel != null
                         && !mCurrentChannel.isPhysicalTunerChannel()) {
@@ -1563,13 +1569,22 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
     }
 
     //show no channel hint
+    private boolean mHasShowNoChannel = false;
+
     public void showNoDataBaseHint() {
-        mBlockScreenView.setVisibility(VISIBLE);
-        mBlockScreenView.setNoChannelHint();
+        if (!mHasShowNoChannel) {
+            mHasShowNoChannel = true;
+            mBlockedContentRating = null;
+            mBlockScreenView.setVisibility(VISIBLE);
+            mBlockScreenView.setNoChannelHint();
+        }
     }
 
     public void hideNoDataBaseHint() {
-        mBlockScreenView.setVisibility(INVISIBLE);
-        mBlockScreenView.hideNoChannelTint();
+        if (mHasShowNoChannel) {
+            mHasShowNoChannel = false;
+            mBlockScreenView.setVisibility(INVISIBLE);
+            mBlockScreenView.hideNoChannelTint();
+        }
     }
 }

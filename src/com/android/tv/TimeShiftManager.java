@@ -1099,18 +1099,22 @@ public class TimeShiftManager {
         // to show the time-line duration of {@link MAX_DUMMY_PROGRAM_DURATION} at most
         // for a dummy program.
         private List<Program> createDummyPrograms(long startTimeMs, long endTimeMs) {
-            SoftPreconditions.checkArgument(
+            /*SoftPreconditions.checkArgument(
                     endTimeMs - startTimeMs <= TWO_WEEKS_MS,
                     TAG,
                     "createDummyProgram: long duration of dummy programs are requested ( %s , %s)",
                     Utils.toTimeString(startTimeMs),
-                    Utils.toTimeString(endTimeMs));
+                    Utils.toTimeString(endTimeMs));*/
             if (startTimeMs >= endTimeMs) {
                 return Collections.emptyList();
             }
             List<Program> programs = new ArrayList<>();
-            long start = startTimeMs;
-            long end = Utils.ceilTime(startTimeMs, MAX_DUMMY_PROGRAM_DURATION);
+            boolean isLong = endTimeMs - startTimeMs > TWO_WEEKS_MS;
+            if (isLong) {
+               Log.d(TAG, "createDummyPrograms is too long, then limt it in two weeks!");
+            }
+            long start = (isLong ? (endTimeMs - TWO_WEEKS_MS) : startTimeMs);
+            long end = Utils.ceilTime(start/*startTimeMs*/, MAX_DUMMY_PROGRAM_DURATION);
             while (end < endTimeMs) {
                 programs.add(
                         new Program.Builder()
