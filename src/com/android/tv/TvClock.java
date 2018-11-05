@@ -30,7 +30,7 @@ import com.droidlogic.app.tv.TvTime;
  */
 public class TvClock implements Clock {
     private static final String TAG = "TvClock";
-    private static final String PROP_SET_TVTIME_ENABLED = "persist.sys.usetvtime";
+    private static final String PROP_SET_TVTIME_ENABLED = "persist.tv.usetvtime";
 
     private Context mContext;
     private SystemControlManager mSystemControlManager;

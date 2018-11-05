@@ -1739,7 +1739,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         // Keep the focus, but just don't deliver the key events.
         if ((mContentView.hasFocusable() && !mOverlayManager.getSideFragmentManager().isHiding())
                 || mOverlayManager.getSideFragmentManager().isActive()) {
-            if (SystemProperties.USE_KEY.getValue() || TvSingletons.getSingletons(this).getSystemControlManager().getPropertyBoolean("sys.platform.need_key", false)) {
+            if (SystemProperties.USE_KEY.getValue() || TvSingletons.getSingletons(this).getSystemControlManager().getPropertyBoolean("tv.platform.need_key", false)) {
                 if (event.getAction() == KeyEvent.ACTION_UP) {
                     if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
                         // It takes long time for TV app to finish, so stop TV first.
@@ -1768,7 +1768,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             // Since we don't expect that TIS want to handle gamepad buttons now,
             // blacklist gamepad buttons and wait for next fallback keys.
             // TODO: Need to consider other fallback keys (e.g. ESCAPE)
-            if (SystemProperties.USE_KEY.getValue() || TvSingletons.getSingletons(this).getSystemControlManager().getPropertyBoolean("sys.platform.need_key", false)) {
+            if (SystemProperties.USE_KEY.getValue() || TvSingletons.getSingletons(this).getSystemControlManager().getPropertyBoolean("tv.platform.need_key", false)) {
                 if (event.getAction() == KeyEvent.ACTION_UP) {
                     if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
                         // It takes long time for TV app to finish, so stop TV first.
@@ -3028,7 +3028,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         }
 
         if (USE_DROIDLOIC_CUSTOMIZATION && isQuickKeyNoNeedDispatchedToTvview(event.getKeyCode())) {
-            if (SystemProperties.USE_KEY.getValue() || TvSingletons.getSingletons(this).getSystemControlManager().getPropertyBoolean("sys.platform.need_key", false)) {
+            if (SystemProperties.USE_KEY.getValue() || TvSingletons.getSingletons(this).getSystemControlManager().getPropertyBoolean("tv.platform.need_key", false)) {
                 if (event.getAction() == KeyEvent.ACTION_UP) {
                     if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
                         // It takes long time for TV app to finish, so stop TV first.
