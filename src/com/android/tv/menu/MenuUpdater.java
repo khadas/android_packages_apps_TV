@@ -55,6 +55,9 @@ public class MenuUpdater {
                 public void onChannelChanged(Channel previousChannel, Channel currentChannel) {
                     mMenu.update(ChannelsRow.ID);
                 }
+
+                @Override
+                public void onAllChannelsListChanged(){}
             };
     private final OptionChangedListener mOptionChangeListener =
             new OptionChangedListener() {

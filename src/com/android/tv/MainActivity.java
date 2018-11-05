@@ -440,7 +440,8 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     if (mActivityResumed) {
                         resumeTvIfNeeded();
                     }
-                    mOverlayManager.onBrowsableChannelsUpdated();
+                    //need both browse channels and skipped channels
+                    //mOverlayManager.onBrowsableChannelsUpdated();
                     //When switched tv_search_type, it will update and filter channel list in resumeTvIfNeeded;
                     //When load finished, send broadcast to tune to specific channel.
                     int searchTypeChanged = getSearchTypeChangedStatus();
@@ -455,7 +456,8 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
                 @Override
                 public void onBrowsableChannelListChanged() {
-                    mOverlayManager.onBrowsableChannelsUpdated();
+                    //need both browse channels and skipped channels
+                    //mOverlayManager.onBrowsableChannelsUpdated();
                     //in case that channel cannot update on time
                     if (USE_DROIDLOIC_CUSTOMIZATION && mQuickKeyInfo.hasSearchedChannel()) {
                         Channel channel = mQuickKeyInfo.getFirstSearchedChannel();
@@ -493,6 +495,12 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
                 @Override
                 public void onChannelChanged(Channel previousChannel, Channel currentChannel) {}
+
+                @Override
+                public void onAllChannelsListChanged(){
+                    //need both browse channels and skipped channels
+                    mOverlayManager.onAllChannelsUpdated();
+                }
             };
 
     private final Runnable mRestoreMainViewRunnable =

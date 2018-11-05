@@ -152,6 +152,10 @@ public class ChannelTuner {
         return Collections.unmodifiableList(mBrowsableChannels);
     }
 
+    public List<Channel> getAllChannelList() {
+        return Collections.unmodifiableList(mChannels);
+    }
+
     /** Returns the number of browsable channels. */
     public int getBrowsableChannelCount() {
         return mBrowsableChannels.size();
@@ -373,6 +377,7 @@ public class ChannelTuner {
         void onCurrentChannelUnavailable(Channel channel);
         /** Called when the current channel is changed. */
         void onChannelChanged(Channel previousChannel, Channel currentChannel);
+        void onAllChannelsListChanged();
     }
 
     private void setCurrentChannelAndNotify(Channel channel) {
@@ -432,6 +437,7 @@ public class ChannelTuner {
         // TODO: Do not call onBrowsableChannelListChanged, when only non-browsable
         // channels are changed.
         for (Listener l : mListeners) {
+            l.onAllChannelsListChanged();
             l.onBrowsableChannelListChanged();
         }
     }

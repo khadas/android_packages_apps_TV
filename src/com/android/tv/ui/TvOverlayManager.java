@@ -494,6 +494,10 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
         mKeypadChannelSwitchView.setChannels(mChannelTuner.getBrowsableChannelList());
     }
 
+    public void onAllChannelsUpdated() {
+        mKeypadChannelSwitchView.setChannels(mChannelTuner.getAllChannelList());
+    }
+
     private void runAfterSideFragmentsAreClosed(final Runnable runnable) {
         if (mSideFragmentManager.isSidePanelVisible()) {
             // When the side panel is closing, it closes all the fragments, so the new fragment
