@@ -104,13 +104,13 @@ public class InputBannerView extends LinearLayout implements TvTransitionManager
         int inputType = input.getType();
         if (inputType == TvInputInfo.TYPE_COMPOSITE) {//TYPE_COMPOSITE is AV type.
             mCaptionTextView.setText(hascaption ? (DELIMITER + mainActivity.getString(R.string.closed_caption)) : EMPTY);
-            if (TextUtils.equals(DroidLogicTvUtils.getCurrentSignalType(getContext()), TvContract.Channels.TYPE_DTMB)) {
-                mCaptionTextView.setVisibility(View.GONE);
-                mVchipTextView.setVisibility(View.GONE);
-            } else {
+            if (DroidLogicTvUtils.getCurrentSignalType(getContext()).contains("ATSC")) {
                 mVchipTextView.setText(TextUtils.isEmpty(vchip) ? EMPTY : (DELIMITER + vchip));
                 mCaptionTextView.setVisibility(View.VISIBLE);
                 mVchipTextView.setVisibility(View.VISIBLE);
+            } else {
+                mCaptionTextView.setVisibility(View.GONE);
+                mVchipTextView.setVisibility(View.GONE);
             }
         } else if (inputType == TvInputInfo.TYPE_HDMI) {//TYPE_HDMI is HDMI type.
             mCaptionTextView.setVisibility(View.GONE);
