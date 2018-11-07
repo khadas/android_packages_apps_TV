@@ -261,7 +261,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                     if (mOnTuneListener != null) {
                         mOnTuneListener.onStreamInfoChanged(TunableTvView.this);
                     }
-                    applyAudioADSwitch(-1);//apply audio ad swicth settings
+                    //applyAudioADSwitch(-1);//apply audio ad swicth settings
                 }
 
                 @Override
