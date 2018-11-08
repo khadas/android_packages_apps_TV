@@ -278,7 +278,7 @@ public class ChannelTuner {
         if (mCurrentChannel == null) {
             channelIndex = 0;
             Channel channel = mChannels.get(channelIndex);
-            if (channel.isBrowsable()) {
+            if (channel.isBrowsable() && ((MainActivity)mContext).mQuickKeyInfo.isChannelMatchAtvDtvSource(channel)) {
                 return channel;
             }
         } else {
@@ -291,7 +291,7 @@ public class ChannelTuner {
                 nextChannelIndex -= size;
             }
             Channel channel = mChannels.get(nextChannelIndex);
-            if (channel.isBrowsable()) {
+            if (channel.isBrowsable() && ((MainActivity)mContext).mQuickKeyInfo.isChannelMatchAtvDtvSource(channel)) {
                 return channel;
             }
         }
@@ -346,7 +346,7 @@ public class ChannelTuner {
         }
         SoftPreconditions.checkState(mChannelDataManagerLoaded, TAG, "Channel data is not loaded");
         Channel newChannel = mChannelMap.get(channel.getId());
-        if (newChannel != null) {
+        if (newChannel != null && ((MainActivity)mContext).mQuickKeyInfo.isChannelMatchAtvDtvSource(channel)) {
             setCurrentChannelAndNotify(newChannel);
             return true;
         }

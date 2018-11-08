@@ -68,6 +68,7 @@ import com.android.tv.data.api.Channel;
 import com.android.tv.data.ChannelImpl;
 import com.android.tv.data.Program;
 import com.android.tv.parental.ContentRatingsManager;
+import com.android.tv.data.ChannelDataManager;
 import com.android.tv.data.ChannelNumber;
 import com.android.tv.util.Utils;
 import com.android.tv.TvSingletons;
@@ -268,6 +269,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                     if (input.getType() == TvInputInfo.TYPE_TUNER) {
                         Channel currentChannel = mChannelTuner.getCurrentChannel();
                         Log.d(TAG,"onTunerInputSelected:" + currentChannel);
+                        int searchTypeChanged = mActivity.getSearchTypeChangedStatus();
                         if (intent.getBooleanExtra(DroidLogicTvUtils.KEY_LIVETV_PROGRAM_APPOINTED, false)) {
                             //tune to appoint channel
                             Channel appointone = mChannelTuner.getChannelById(intent.getLongExtra(COMMAND_EPG_CHANNEL_ID, -1));
@@ -284,10 +286,22 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                                     mActivity.tuneToLastWatchedChannelForTunerInput();
                                 }
                             }
-                        } else if (currentChannel != null && !currentChannel.isPassthrough()) {
+                        } else if (currentChannel != null && !currentChannel.isPassthrough() && searchTypeChanged == 0) {
                             //hideOverlays();
                         } else {
-                            mActivity.tuneToLastWatchedChannelForTunerInput();
+                            //[DroidLogic]
+                            //when change search type, update the channel list at the same time.
+                            Log.d(TAG, "handleUiCommand searchTypeChanged : " + searchTypeChanged);
+                            if (searchTypeChanged == 1) {
+                                mActivity.getChannelDataManager().handleUpdateChannels();
+                            }
+                            if (mActivity.isActivityStarted()) {
+                                Log.w(TAG, "tuneToLastWatchedChannelForTunerInput");
+                                //wait for tune after source change
+                                mActivity.tuneToLastWatchedChannelForTunerInput();
+                            } else {
+                                useAtvDtvChannelIndex();
+                            }
                         }
                     } else if (input.isPassthroughInput()) {
                         Channel currentChannel = mChannelTuner.getCurrentChannel();
@@ -297,10 +311,17 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                             //hideOverlays();
                         } else {
                             canShowResolution(false);
+                            String inputid = null;
                             if (input.getHdmiDeviceInfo() != null && input.getHdmiDeviceInfo().isCecDevice()) {
-                                mActivity.tuneToChannel(ChannelImpl.createPassthroughChannel(input.getParentId()));
+                                inputid = input.getParentId();
                             } else {
-                                mActivity.tuneToChannel(ChannelImpl.createPassthroughChannel(input.getId()));
+                                inputid = input.getId();
+                            }
+                            if (mActivity.isActivityStarted()) {
+                                Log.w(TAG, "tuneToChannel select passthrough");
+                                mActivity.tuneToChannel(ChannelImpl.createPassthroughChannel(inputid));
+                            } else {
+                                usePassthroughIndex(inputid);
                             }
                         }
                     }
@@ -356,6 +377,46 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
             }
         }
         return tunerinputinfo;
+    }
+
+    public boolean useAtvDtvChannelIndex() {
+        boolean needatvdtvsource = !DroidLogicTvUtils.isAtscCountry(mContext);
+        long channelindex = mActivity.getChannelIdForAtvDtvMode();
+        if (needatvdtvsource) {
+            if (channelindex == Channel.INVALID_ID) {
+               Log.w(TAG, "useAtvDtvChannelIndex need a invalid channeluri");
+            }
+            Uri channelUri = TvContract.buildChannelUri(channelindex);
+            Utils.setLastWatchedChannelUri(mContext, channelUri.toString());
+            return true;
+        }
+        return false;
+    }
+
+    public boolean usePassthroughIndex(String inputId) {
+        if (inputId == null) {
+            return false;
+        }
+        ChannelImpl passthroughchannel = ChannelImpl.createPassthroughChannel(inputId);
+        Utils.setLastWatchedChannelUri(mContext, passthroughchannel.getUri().toString());
+        return true;
+    }
+
+    public boolean isChannelMatchAtvDtvSource(final Channel channel) {
+        boolean needatvdtvsource = !DroidLogicTvUtils.isAtscCountry(mContext);
+        long channelindex = mActivity.getChannelIdForAtvDtvMode();
+        if (needatvdtvsource && channel != null) {
+            if ((DroidLogicTvUtils.getSearchType(mContext) == 0 && channel.isAnalogChannel()) ||
+                    (DroidLogicTvUtils.getSearchType(mContext) > 0 && channel.isDigitalChannel())) {
+                Log.d(TAG, "isChannelMatchAtvDtvSource true");
+                return true;
+            } else {
+                Log.d(TAG, "isChannelMatchAtvDtvSource false");
+                return false;
+            }
+        }
+        Log.d(TAG, "isChannelMatchAtvDtvSource do not need needatvdtvsource");
+        return true;
     }
     /********end: hand droidsetting request to lunch fragment********/
 

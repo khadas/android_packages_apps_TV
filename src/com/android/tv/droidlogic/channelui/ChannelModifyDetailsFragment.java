@@ -152,7 +152,7 @@ public class ChannelModifyDetailsFragment extends SideFragment {
                     mChannelTuner.moveToAdjacentBrowsableChannel(true);
                     getMainActivity().tuneToChannel(mChannelTuner.getCurrentChannel());
                 }
-                getMainActivity().setChannelIndex(deletedChannelIndex);
+                //getMainActivity().setChannelIndex(deletedChannelIndex);
                 mChannelSettingsManager.deleteChannel(mId);
                 //[DroidLogic]
                 //when delete a channel,update the channel counts in Settings.

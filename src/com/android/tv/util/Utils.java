@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.ContentUris;
 import android.database.Cursor;
 import android.media.tv.TvContract;
 import android.media.tv.TvContract.Channels;
@@ -229,6 +230,12 @@ public class Utils {
         }
         PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putString(PREF_KEY_LAST_WATCHED_CHANNEL_URI, uri).apply();
+        Uri channelUri = Uri.parse(uri);
+        if (channelUri != null && !TvContract.isChannelUriForPassthroughInput(channelUri)) {
+            Settings.System.putLong(context.getContentResolver(), DroidLogicTvUtils.TV_DTV_CHANNEL_INDEX, ContentUris.parseId(channelUri));
+            Settings.System.putInt(context.getContentResolver(), DroidLogicTvUtils.TV_CURRENT_DEVICE_ID,
+                    DroidLogicTvUtils.DEVICE_ID_ADTV);
+        }
     }
 
     /**

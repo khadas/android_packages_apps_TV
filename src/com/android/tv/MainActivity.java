@@ -355,7 +355,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     //for TvClock
     private TvClock mClock;
 
-    private int channelIndex = 0;
+    //private long channelIndex = 0;
     private boolean isOKPressed = false;
     DroidLogicHdmiCecManager hdmi_cec = null;
 
@@ -396,9 +396,11 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 case BROADCAST_CHANGED_SEARCH_TYPE:
                     //[DroidLogic]
                     //When change search type, switch channel at the same time.
-                    channelIndex = getChannelIndex();
+                    //channelIndex = getChannelIndex();
+                    long channelIndex = getChannelIdForAtvDtvMode();
                     if (DEBUG) Log.d(TAG, "**********BROADCAST_CHANGED_SEARCH_TYPE, channelIndex: " + channelIndex);
-                    Channel toChannel = mChannelTuner.getChannelByIndex(channelIndex);
+                    //Channel toChannel = mChannelTuner.getChannelByIndex(channelIndex);
+                    Channel toChannel = mChannelTuner.getChannelById(channelIndex);
                     tuneToChannel(toChannel);
                     break;
                 case BROADCAST_DELETE_ALL_CHANNELS:
@@ -445,12 +447,30 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     //When switched tv_search_type, it will update and filter channel list in resumeTvIfNeeded;
                     //When load finished, send broadcast to tune to specific channel.
                     int searchTypeChanged = getSearchTypeChangedStatus();
-                    Log.d(TAG, "searchTypeChanged : " + searchTypeChanged);
+                    String lastplayuristring = Utils.getLastWatchedChannelUri(MainActivity.this);
+                    Uri lastplayuri = null;
+                    if (lastplayuristring != null) {
+                        lastplayuri = Uri.parse(lastplayuristring);
+                    }
+                    final Channel currentone = getCurrentChannel();
+                    Log.d(TAG, "onLoadFinished searchTypeChanged : " + searchTypeChanged);
                     if (searchTypeChanged == 1) {
+                        //channelIndex = getChannelIndex();
+                        //Channel toChannel = mChannelTuner.getChannelByIndex(channelIndex);
+                        long channelIndex = getChannelIdForAtvDtvMode();
+                        Channel toChannel = mChannelTuner.getChannelById(channelIndex);
+                        if (toChannel != null && !toChannel.isPassthrough() && !mQuickKeyInfo.isChannelMatchAtvDtvSource(toChannel)) {
+                            Log.d(TAG, "onLoadFinished channel does not match source");
+                            return;
+                        }
                         Intent intent = new Intent();
                         intent.setAction(BROADCAST_CHANGED_SEARCH_TYPE);
                         sendBroadcast(intent);
                         Settings.System.putInt(MainActivity.this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0);
+                    } else if (currentone == null || (lastplayuri != null && !TvContract.isChannelUriForPassthroughInput(lastplayuri))) {
+                        long channelIndex = getChannelIdForAtvDtvMode();
+                        Channel toChannel = mChannelTuner.getChannelById(channelIndex);
+                        tuneToChannel(toChannel);
                     }
                 }
 
@@ -479,6 +499,33 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                         mTvView.hideNoDataBaseHint();
                         mOverlayManager.updateChannelBannerAndShowIfNeeded(TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE);
                         mQuickKeyInfo.resetReturnedChannel();
+                    }
+                    //When browselist updated, send broadcast to tune to specific channel.
+                    int searchTypeChanged = getSearchTypeChangedStatus();
+                    String lastplayuristring = Utils.getLastWatchedChannelUri(MainActivity.this);
+                    Uri lastplayuri = null;
+                    if (lastplayuristring != null) {
+                        lastplayuri = Uri.parse(lastplayuristring);
+                    }
+                    final Channel currentone = getCurrentChannel();
+                    if (searchTypeChanged == 1) {
+                        Log.d(TAG, "onBrowsableChannelListChanged searchTypeChanged : " + searchTypeChanged);
+                        //channelIndex = getChannelIndex();
+                        //Channel toChannel = mChannelTuner.getChannelByIndex(channelIndex);
+                        long channelIndex = getChannelIdForAtvDtvMode();
+                        Channel toChannel = mChannelTuner.getChannelById(channelIndex);
+                        if (toChannel != null && !toChannel.isPassthrough() && !mQuickKeyInfo.isChannelMatchAtvDtvSource(toChannel)) {
+                            Log.d(TAG, "onBrowsableChannelListChanged channel does not match source");
+                            return;
+                        }
+                        Intent intent = new Intent();
+                        intent.setAction(BROADCAST_CHANGED_SEARCH_TYPE);
+                        sendBroadcast(intent);
+                        Settings.System.putInt(MainActivity.this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0);
+                    } else if (currentone == null || (lastplayuri != null && !TvContract.isChannelUriForPassthroughInput(lastplayuri))) {
+                        long channelIndex = getChannelIdForAtvDtvMode();
+                        Channel toChannel = mChannelTuner.getChannelById(channelIndex);
+                        tuneToChannel(toChannel);
                     }
                 }
 
@@ -591,13 +638,13 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         //}
     }
 
-    public void setChannelIndex(int deletedChannelIndex) {
+    /*public void setChannelIndex(int deletedChannelIndex) {
         if (deletedChannelIndex <= channelIndex) {
             channelIndex--;
         }
-        saveChannelIndex(channelIndex);
+        //saveChannelIndex(channelIndex);
         if (DEBUG) Log.d(TAG, "setChannelIndex=======channelIndex: " + channelIndex);
-    }
+    }*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -1215,21 +1262,13 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         // application.
         restoreMainTvView();
         mTvView.setBlockScreenType(getDesiredBlockScreenType());
-
-        //[DroidLogic]
-        //when change search type, update the channel list at the same time.
-        int searchTypeChanged = getSearchTypeChangedStatus();
-        Log.d(TAG, "searchTypeChanged : " + searchTypeChanged);
-        if (searchTypeChanged == 1) {
-            mChannelDataManager.handleUpdateChannels();
-        }
     }
 
-    private int getSearchTypeChangedStatus() {
+    public int getSearchTypeChangedStatus() {
         return Settings.System.getInt(this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0);
     }
 
-    private void saveChannelIndex(int channelIndex) {
+    /*private void saveChannelIndex(int channelIndex) {
         if (DroidLogicTvUtils.isAtscCountry(this)) {
             String currentSignalType = DroidLogicTvUtils.getCurrentSignalType(this) == DroidLogicTvUtils.SIGNAL_TYPE_ERROR
                 ? TvContract.Channels.TYPE_ATSC_T : DroidLogicTvUtils.getCurrentSignalType(this);
@@ -1239,9 +1278,22 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 ? DroidLogicTvUtils.ATV_CHANNEL_INDEX : DroidLogicTvUtils.DTV_CHANNEL_INDEX,
                 channelIndex);
         }
+    }*/
+
+    private void saveChannelIdForAtvDtvMode(long channelid) {
+        if (DroidLogicTvUtils.isAtscCountry(this)) {
+            String currentSignalType = DroidLogicTvUtils.getCurrentSignalType(this) == DroidLogicTvUtils.SIGNAL_TYPE_ERROR
+                ? TvContract.Channels.TYPE_ATSC_T : DroidLogicTvUtils.getCurrentSignalType(this);
+            Settings.System.putLong(this.getContentResolver(), currentSignalType, channelid);
+        } else {
+            Settings.System.putLong(this.getContentResolver(), DroidLogicTvUtils.getSearchType(this) == 0
+                ? DroidLogicTvUtils.ATV_CHANNEL_INDEX : DroidLogicTvUtils.DTV_CHANNEL_INDEX,
+                channelid);
+            Log.d(TAG, "save atv = " + (DroidLogicTvUtils.getSearchType(this) == 0) + ", channelid = " + channelid);
+        }
     }
 
-    private int getChannelIndex() {
+    /*public int getChannelIndex() {
         String currentSignalType = DroidLogicTvUtils.getCurrentSignalType(this) == DroidLogicTvUtils.SIGNAL_TYPE_ERROR
             ? TvContract.Channels.TYPE_ATSC_T : DroidLogicTvUtils.getCurrentSignalType(this);
         int index = 0;
@@ -1254,6 +1306,23 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         if (index == -1) {
             index = 0;
         }
+        return index;
+    }*/
+
+    public long getChannelIdForAtvDtvMode() {
+        String currentSignalType = DroidLogicTvUtils.getCurrentSignalType(this) == DroidLogicTvUtils.SIGNAL_TYPE_ERROR
+            ? TvContract.Channels.TYPE_ATSC_T : DroidLogicTvUtils.getCurrentSignalType(this);
+        long index = 0;
+        if (DroidLogicTvUtils.isAtscCountry(this)) {
+            Settings.System.getLong(this.getContentResolver(), currentSignalType, -1);
+        } else {
+            index = Settings.System.getLong(this.getContentResolver(), DroidLogicTvUtils.getSearchType(this) == 0
+                ? DroidLogicTvUtils.ATV_CHANNEL_INDEX : DroidLogicTvUtils.DTV_CHANNEL_INDEX, -1);
+            Log.d(TAG, "atv = " + (DroidLogicTvUtils.getSearchType(this) == 0) + ", index = " + index);
+        }
+        /*if (index == -1) {
+            index = 0;
+        }*/
         return index;
     }
 
@@ -1317,13 +1386,16 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 long channelId = ContentUris.parseId(channelUri);
                 Channel channel = mChannelDataManager.getChannel(channelId);
                 if (channel == null || !mChannelTuner.moveToChannel(channel)) {
-                    mChannelTuner.moveToChannel(mChannelTuner.findNearestBrowsableChannel(0));
-                    Log.w(
-                            TAG,
-                            "The requested channel (id="
-                                    + channelId
-                                    + ") doesn't exist. "
-                                    + "The first channel will be tuned to.");
+                    Channel nearone = mChannelTuner.findNearestBrowsableChannel(0);
+                    if (nearone != null && !nearone.isPassthrough() && !mQuickKeyInfo.isChannelMatchAtvDtvSource(nearone)) {
+                        Log.w(TAG,"the channel to be tuned is not matched to source, and wait for further update");
+                    } else {
+                        mChannelTuner.moveToChannel(mChannelTuner.findNearestBrowsableChannel(0));
+                        Log.w(TAG,"The requested channel (id="
+                                + channelId
+                                + ") doesn't exist. "
+                                + "The first channel will be tuned to.");
+                    }
                 }
             }
         }
@@ -1995,7 +2067,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         }
     }
 
-    private void stopTv() {
+    public void stopTv() {
         stopTv(null, false);
     }
 
@@ -2072,7 +2144,8 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         }
         //avl module need realtime source id
         mQuickKeyInfo.sendSourceToAvlModule(channel);
-        if (channel == null) {
+        Log.d(TAG, "tune channel = " + channel);
+        if (channel == null || (channel != null && !channel.isPassthrough() && !mQuickKeyInfo.isChannelMatchAtvDtvSource(channel))) {
             long channelId = Utils.getLastWatchedChannelId(this);
             if (channelId != Channel.INVALID_ID) {
                 Log.w(TAG, "tune need a invalid channeluri");
@@ -2223,6 +2296,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         mQuickKeyInfo.setSearchedChannelFlag(false);
         mTvView.hideNoDataBaseHint();//hide no channel after tune success
         mQuickKeyInfo.resetReturnedChannel();
+        if (!channel.isPassthrough()) {
+           saveChannelIdForAtvDtvMode(channel.getId());
+        }
     }
 
     // Runs the runnable after the activity is attached to window to show the fragment transition
@@ -3098,7 +3174,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             Log.w(TAG, "tuneToLastWatchedChannelForTunerInput need a invalid channeluri");
         }
         Uri channelUri = TvContract.buildChannelUri(channelId);
-        Utils.setLastWatchedChannelUri(this, channelUri.toString());
+        if (!mQuickKeyInfo.useAtvDtvChannelIndex()) {
+           Utils.setLastWatchedChannelUri(this, channelUri.toString());
+        }
         startTv(null);
     }
 
@@ -3106,11 +3184,13 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         if (channel == null) {
             if (mTvView.isPlaying()) {
                 mTvView.reset();
+                mTvView.showNoDataBaseHint();
             }
         } else {
             if (!channel.isPassthrough()) {
-                channelIndex = mChannelTuner.getChannelIndex(channel);
-                saveChannelIndex(channelIndex);
+                //channelIndex = mChannelTuner.getChannelIndex(channel);
+                //saveChannelIndex(channelIndex);
+                //saveChannelIdForAtvDtvMode(channel.getId());
             }
             if (!mTvView.isPlaying()) {
                 startTv(channel.getUri());
