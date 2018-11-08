@@ -258,7 +258,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     private static final int MSG_FILTER_CEC_OTP_TIMEOUT = 1002;
 
     private static final int TVVIEW_SET_MAIN_TIMEOUT_MS = 3000;
-    private static final int DELAY_TIMEOUT_MS = 6000;
+    private static final int DELAY_TIMEOUT_MS = 10000;
     private static boolean mFilterOtpEnabled = false;
 
     // Lazy initialization.
@@ -1476,6 +1476,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             mParentInputIdWhenScreenOff = input.getParentId();
             if (DEBUG) Log.d(TAG, "Parent input: " + mParentInputIdWhenScreenOff);
         }
+        /*
         TvInputInfo cectvinputinfo = getFirstCecTvInputInfo();
         if (cectvinputinfo != null) {
             String cecinputid = cectvinputinfo.getId();
@@ -1489,6 +1490,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 if (DEBUG) Log.d(TAG, "init cec parentinputid during screen off = " + cecparentinputid);
             }
         }
+        */
     }
 
     private void stopAll(boolean keepVisibleBehind) {
