@@ -745,7 +745,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
             int index = 0;
             if (audioTrackId != null && audiopids != null) {
                 String[] item = audioTrackId.split("\\&");
-                String[] audioTrack = item[0].split("=");
+                String[] audioTrack = item[1].split("=");
                 int audioTrackPid = Integer.parseInt(audioTrack[1]);
                 for (int i = 0; i < audiopids.length; i++) {
                     if (audioTrackPid == (audiopids[i])) {
