@@ -446,32 +446,8 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     //mOverlayManager.onBrowsableChannelsUpdated();
                     //When switched tv_search_type, it will update and filter channel list in resumeTvIfNeeded;
                     //When load finished, send broadcast to tune to specific channel.
-                    int searchTypeChanged = getSearchTypeChangedStatus();
-                    String lastplayuristring = Utils.getLastWatchedChannelUri(MainActivity.this);
-                    Uri lastplayuri = null;
-                    if (lastplayuristring != null) {
-                        lastplayuri = Uri.parse(lastplayuristring);
-                    }
-                    final Channel currentone = getCurrentChannel();
-                    Log.d(TAG, "onLoadFinished searchTypeChanged : " + searchTypeChanged);
-                    if (searchTypeChanged == 1) {
-                        //channelIndex = getChannelIndex();
-                        //Channel toChannel = mChannelTuner.getChannelByIndex(channelIndex);
-                        long channelIndex = getChannelIdForAtvDtvMode();
-                        Channel toChannel = mChannelTuner.getChannelById(channelIndex);
-                        if (toChannel != null && !toChannel.isPassthrough() && !mQuickKeyInfo.isChannelMatchAtvDtvSource(toChannel)) {
-                            Log.d(TAG, "onLoadFinished channel does not match source");
-                            return;
-                        }
-                        Intent intent = new Intent();
-                        intent.setAction(BROADCAST_CHANGED_SEARCH_TYPE);
-                        sendBroadcast(intent);
-                        Settings.System.putInt(MainActivity.this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0);
-                    } else if (currentone == null || (lastplayuri != null && !TvContract.isChannelUriForPassthroughInput(lastplayuri))) {
-                        long channelIndex = getChannelIdForAtvDtvMode();
-                        Channel toChannel = mChannelTuner.getChannelById(channelIndex);
-                        tuneToChannel(toChannel);
-                    }
+                    Log.d(TAG, "onLoadFinished");
+                    checkNeedTuneWhenUpdated();
                 }
 
                 @Override
@@ -501,32 +477,8 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                         mQuickKeyInfo.resetReturnedChannel();
                     }
                     //When browselist updated, send broadcast to tune to specific channel.
-                    int searchTypeChanged = getSearchTypeChangedStatus();
-                    String lastplayuristring = Utils.getLastWatchedChannelUri(MainActivity.this);
-                    Uri lastplayuri = null;
-                    if (lastplayuristring != null) {
-                        lastplayuri = Uri.parse(lastplayuristring);
-                    }
-                    final Channel currentone = getCurrentChannel();
-                    if (searchTypeChanged == 1) {
-                        Log.d(TAG, "onBrowsableChannelListChanged searchTypeChanged : " + searchTypeChanged);
-                        //channelIndex = getChannelIndex();
-                        //Channel toChannel = mChannelTuner.getChannelByIndex(channelIndex);
-                        long channelIndex = getChannelIdForAtvDtvMode();
-                        Channel toChannel = mChannelTuner.getChannelById(channelIndex);
-                        if (toChannel != null && !toChannel.isPassthrough() && !mQuickKeyInfo.isChannelMatchAtvDtvSource(toChannel)) {
-                            Log.d(TAG, "onBrowsableChannelListChanged channel does not match source");
-                            return;
-                        }
-                        Intent intent = new Intent();
-                        intent.setAction(BROADCAST_CHANGED_SEARCH_TYPE);
-                        sendBroadcast(intent);
-                        Settings.System.putInt(MainActivity.this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0);
-                    } else if (currentone == null || (lastplayuri != null && !TvContract.isChannelUriForPassthroughInput(lastplayuri))) {
-                        long channelIndex = getChannelIdForAtvDtvMode();
-                        Channel toChannel = mChannelTuner.getChannelById(channelIndex);
-                        tuneToChannel(toChannel);
-                    }
+                    Log.d(TAG, "onBrowsableChannelListChanged");
+                    checkNeedTuneWhenUpdated();
                 }
 
                 @Override
@@ -629,6 +581,80 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         return target;
     }
 
+    private void checkNeedTuneWhenUpdated() {
+        int searchTypeChanged = getSearchTypeChangedStatus();
+        String lastplayuristring = Utils.getLastWatchedChannelUri(MainActivity.this);
+        Uri lastplayuri = null;
+        if (lastplayuristring != null) {
+            lastplayuri = Uri.parse(lastplayuristring);
+        }
+        final Channel currentone = getCurrentChannel();
+        Log.d(TAG, "checkNeedTuneWhenUpdated uri = " + lastplayuristring);
+        if (searchTypeChanged == 1) {
+            Log.d(TAG, "checkNeedTuneWhenUpdated searchTypeChanged : " + searchTypeChanged);
+            long channelIndex = getChannelIdForAtvDtvMode();
+            Channel toChannel = mChannelTuner.getChannelById(channelIndex);
+            if (toChannel != null && !toChannel.isPassthrough() && !mQuickKeyInfo.isChannelMatchAtvDtvSource(toChannel)) {
+                Log.d(TAG, "checkNeedTuneWhenUpdated channel does not match source");
+                return;
+            }
+            Intent intent = new Intent();
+            intent.setAction(BROADCAST_CHANGED_SEARCH_TYPE);
+            sendBroadcast(intent);
+            Settings.System.putInt(MainActivity.this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0);
+        } else if (lastplayuri == null || (currentone == null && lastplayuri != null && !TvContract.isChannelUriForPassthroughInput(lastplayuri))
+                    || (lastplayuri != null && !TvContract.isChannelUriForPassthroughInput(lastplayuri))) {
+            Log.d(TAG, "checkNeedTuneWhenUpdated tune as channel may be available");
+            long channelIndex = getChannelIdForAtvDtvMode();
+            Channel toChannel = mChannelTuner.getChannelById(channelIndex);
+            tuneToChannel(toChannel);
+        }
+    }
+
+    private void updateLastWatchedUriAsChangeOutLiveTv(final Intent intent, TvInputManagerHelper tvinputmanager) {
+        if (intent == null || tvinputmanager == null) {
+            return;
+        }
+        String inputid = null;
+        TvInputInfo info = null;
+        if (intent != null && TvInputManager.ACTION_SETUP_INPUTS.equals(intent.getAction()) && intent.getBooleanExtra(QuickKeyInfo.COMMAND_FROM_TV_SOURCE, false)) {
+            inputid = intent.getStringExtra(TvInputInfo.EXTRA_INPUT_ID);
+        }
+        if (inputid == null) {
+            return;
+        }
+        info = tvinputmanager.getTvInputInfo(inputid);
+        if (info == null) {
+            return;
+        }
+        if (info.isPassthroughInput()) {
+            usePassthroughIndex(inputid);
+        } else {
+            useAtvDtvChannelIndex();
+        }
+    }
+
+    public boolean useAtvDtvChannelIndex() {
+        long channelindex = getChannelIdForAtvDtvMode();
+        if (channelindex == Channel.INVALID_ID) {
+            Log.w(TAG, "useAtvDtvChannelIndex need a invalid channeluri");
+        }
+        Uri channelUri = TvContract.buildChannelUri(channelindex);
+        Utils.setLastWatchedChannelUri(this, channelUri.toString());
+
+        return true;
+    }
+
+    public boolean usePassthroughIndex(String inputId) {
+        if (inputId == null) {
+            return false;
+        }
+        ChannelImpl passthroughchannel = ChannelImpl.createPassthroughChannel(inputId);
+        Utils.setLastWatchedChannelUri(this, passthroughchannel.getUri().toString());
+
+        return true;
+    }
+
     private void applyParentalControlSettings() {
         boolean parentalControlEnabled =
                 mTvInputManagerHelper.getParentalControlSettings().isParentalControlsEnabled();
@@ -671,6 +697,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             finishAndRemoveTask();
             return;
         }
+        updateLastWatchedUriAsChangeOutLiveTv(getIntent(), tvSingletons.getTvInputManagerHelper());
         mPerformanceMonitor = tvSingletons.getPerformanceMonitor();
         mSetupUtils = tvSingletons.getSetupUtils();
 
@@ -2144,7 +2171,6 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         }
         //avl module need realtime source id
         mQuickKeyInfo.sendSourceToAvlModule(channel);
-        Log.d(TAG, "tune channel = " + channel);
         if (channel == null || (channel != null && !channel.isPassthrough() && !mQuickKeyInfo.isChannelMatchAtvDtvSource(channel))) {
             long channelId = Utils.getLastWatchedChannelId(this);
             if (channelId != Channel.INVALID_ID) {
@@ -3169,14 +3195,6 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             return;
         }
         stopTv();
-        long channelId = Utils.getLastWatchedChannelId(this);
-        if (channelId == Channel.INVALID_ID) {
-            Log.w(TAG, "tuneToLastWatchedChannelForTunerInput need a invalid channeluri");
-        }
-        Uri channelUri = TvContract.buildChannelUri(channelId);
-        if (!mQuickKeyInfo.useAtvDtvChannelIndex()) {
-           Utils.setLastWatchedChannelUri(this, channelUri.toString());
-        }
         startTv(null);
     }
 

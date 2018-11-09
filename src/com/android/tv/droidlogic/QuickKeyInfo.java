@@ -292,6 +292,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                             //[DroidLogic]
                             //when change search type, update the channel list at the same time.
                             Log.d(TAG, "handleUiCommand searchTypeChanged : " + searchTypeChanged);
+                            mActivity.useAtvDtvChannelIndex();
                             if (searchTypeChanged == 1) {
                                 mActivity.getChannelDataManager().handleUpdateChannels();
                             }
@@ -299,8 +300,6 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                                 Log.w(TAG, "tuneToLastWatchedChannelForTunerInput");
                                 //wait for tune after source change
                                 mActivity.tuneToLastWatchedChannelForTunerInput();
-                            } else {
-                                useAtvDtvChannelIndex();
                             }
                         }
                     } else if (input.isPassthroughInput()) {
@@ -312,6 +311,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                         } else {
                             canShowResolution(false);
                             String inputid = null;
+                            mActivity.usePassthroughIndex(inputid);
                             if (input.getHdmiDeviceInfo() != null && input.getHdmiDeviceInfo().isCecDevice()) {
                                 inputid = input.getParentId();
                             } else {
@@ -320,8 +320,6 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                             if (mActivity.isActivityStarted()) {
                                 Log.w(TAG, "tuneToChannel select passthrough");
                                 mActivity.tuneToChannel(ChannelImpl.createPassthroughChannel(inputid));
-                            } else {
-                                usePassthroughIndex(inputid);
                             }
                         }
                     }
@@ -377,29 +375,6 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
             }
         }
         return tunerinputinfo;
-    }
-
-    public boolean useAtvDtvChannelIndex() {
-        boolean needatvdtvsource = !DroidLogicTvUtils.isAtscCountry(mContext);
-        long channelindex = mActivity.getChannelIdForAtvDtvMode();
-        if (needatvdtvsource) {
-            if (channelindex == Channel.INVALID_ID) {
-               Log.w(TAG, "useAtvDtvChannelIndex need a invalid channeluri");
-            }
-            Uri channelUri = TvContract.buildChannelUri(channelindex);
-            Utils.setLastWatchedChannelUri(mContext, channelUri.toString());
-            return true;
-        }
-        return false;
-    }
-
-    public boolean usePassthroughIndex(String inputId) {
-        if (inputId == null) {
-            return false;
-        }
-        ChannelImpl passthroughchannel = ChannelImpl.createPassthroughChannel(inputId);
-        Utils.setLastWatchedChannelUri(mContext, passthroughchannel.getUri().toString());
-        return true;
     }
 
     public boolean isChannelMatchAtvDtvSource(final Channel channel) {
