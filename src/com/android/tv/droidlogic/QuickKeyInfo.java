@@ -798,11 +798,16 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         }
     }
 
-    public String getAudioFormat() {
+    public String getAudioFormat(boolean withTvTrackInfo, TvTrackInfo track) {
         final ChannelInfo channelinfo = getCurrentChannelInfo();
         if (channelinfo != null && channelinfo.isDigitalChannel()) {
             int audiopids[] = channelinfo.getAudioPids();
-            String audioTrackId = mActivity.getTvView().getSelectedTrack(TvTrackInfo.TYPE_AUDIO);
+            String audioTrackId;
+            if (withTvTrackInfo && track != null) {
+                audioTrackId = track.getId();
+            } else {
+                audioTrackId = mActivity.getTvView().getSelectedTrack(TvTrackInfo.TYPE_AUDIO);
+            }
             int index = 0;
             if (audioTrackId != null && audiopids != null) {
                 String[] item = audioTrackId.split("\\&");
@@ -835,7 +840,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
     public boolean isAudioFormatAC3() {
         final ChannelInfo channelinfo = getCurrentChannelInfo();
         if (channelinfo != null && channelinfo.isDigitalChannel()) {
-            final String audioformat = getAudioFormat();
+            final String audioformat = getAudioFormat(false, null);
             if (!TextUtils.isEmpty(audioformat) && (audioformat.equals("AC3") || audioformat.equals("EAC3"))) {
                 return true;
             } else {

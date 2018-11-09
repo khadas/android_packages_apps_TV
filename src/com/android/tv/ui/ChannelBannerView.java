@@ -435,7 +435,7 @@ public class ChannelBannerView extends FrameLayout
             if (mMainActivity.mQuickKeyInfo.isAudioFormatAC3()) {
                 updateText(mAudioFormatTextView,  mMainActivity.getResources().getDrawable(R.drawable.certifi_dobly_white));
             } else {
-                updateText(mAudioFormatTextView,  mMainActivity.mQuickKeyInfo.getAudioFormat());
+                updateText(mAudioFormatTextView,  mMainActivity.mQuickKeyInfo.getAudioFormat(false, null));
             }
             updateText(mTimeTextView, mCurrentChannel != null ? mMainActivity.mQuickKeyInfo.getDtvTime(!mCurrentChannel.isAnalogChannel()) : null);
         } else {

@@ -268,11 +268,8 @@ public class MultiAudioFragment extends SideFragment {
             boolean needToShowSampleRate = Utils.needToShowSampleRate(getActivity(), tracks);
             int pos = 0;
             for (final TvTrackInfo track : tracks) {
-                RadioButtonItem item =
-                        new MultiAudioOptionItem(
-                                Utils.getMultiAudioString(
-                                        getActivity(), track, needToShowSampleRate),
-                                track.getId());
+                RadioButtonItem item = new MultiAudioOptionItem(
+                    Utils.getMultiAudioWithFormat(getMainActivity(), track), track.getId());
                 if (track.getId().equals(mSelectedTrackId)) {
                     item.setChecked(true);
                     mInitialSelectedPosition = pos;

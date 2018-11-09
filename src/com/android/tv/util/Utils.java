@@ -45,6 +45,7 @@ import android.view.View;
 import android.util.ArraySet;
 import com.android.tv.R;
 import com.android.tv.TvSingletons;
+import com.android.tv.MainActivity;
 import com.android.tv.common.SoftPreconditions;
 import com.android.tv.common.util.Clock;
 import com.android.tv.data.GenreItems;
@@ -83,6 +84,8 @@ public class Utils {
     public static final String EXTRA_KEY_RECORDED_PROGRAM_SEEK_TIME = "recorded_program_seek_time";
     public static final String EXTRA_KEY_RECORDED_PROGRAM_PIN_CHECKED =
             "recorded_program_pin_checked";
+
+    private static final String AUDIO_FORMAT_DD = "Dolby Digital";
 
     private static final String PATH_CHANNEL = "channel";
     private static final String PATH_PROGRAM = "program";
@@ -644,6 +647,24 @@ public class Utils {
             multiAudioStrings.add(multiAudioString);
         }
         return false;
+    }
+
+    public static String getMultiAudioWithFormat(Context context, TvTrackInfo track) {
+        if (track.getType() != TvTrackInfo.TYPE_AUDIO) {
+            throw new IllegalArgumentException("Not an audio track: " + track);
+        }
+        String language = context.getString(R.string.multi_audio_unknown_language);
+        if (!TextUtils.isEmpty(track.getLanguage())) {
+            language = new Locale(track.getLanguage()).getDisplayName();
+        } else {
+            Log.d(TAG, "No language information found for the audio track: " + track);
+        }
+        String audioformat = ((MainActivity)context).mQuickKeyInfo.getAudioFormat(true, track);
+        if (!TextUtils.isEmpty(audioformat) && (audioformat.equals("AC3") || audioformat.equals("EAC3"))) {
+            audioformat = AUDIO_FORMAT_DD;
+        }
+        return context.getString(
+                R.string.multi_audio_display_string_with_channel, language, audioformat);
     }
 
     public static String getMultiAudioString(
