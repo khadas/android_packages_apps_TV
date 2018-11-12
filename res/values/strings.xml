@@ -1062,12 +1062,14 @@
     <string name="tv_mexico">Mexico</string>
     <string name="tv_germany">Germany</string>
     <string name="tv_china">China</string>
+    <string name="tv_brazil">Brazil</string>
     <string name="tv_search_mode">Mode</string>
     <string name="tv_search_mode_manual">Manual</string>
     <string name="tv_search_mode_auto">Auto</string>
     <string name="tv_search_type">Type</string>
     <string name="tv_search_type_atv">ATV</string>
     <string name="tv_search_type_dtmb">DTMB</string>
+    <string name="tv_search_type_isdb_t">ISDB-T</string>
     <string name="tv_search_type_dvb_t">DVB-T</string>
     <string name="tv_search_type_dvb_c">DVB-C</string>
     <string name="tv_search_type_dvb_s">DVB-S</string>

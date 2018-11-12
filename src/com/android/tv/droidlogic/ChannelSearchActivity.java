@@ -424,10 +424,11 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
     public final int COUNTRY_MEXICO = 3;//Mexico
     public final int COUNTRY_GERMANY = 4;
     public final int COUNTRY_CHINA = 5;
+    public final int COUNTRY_BRAZIL = 6;
 
-    public final ArrayList<String> COUNTRY_LIST = new ArrayList<String>(){{add("US"); add("IN"); add("ID"); add("MX"); add("DE"); add("CN");}};
+    public final ArrayList<String> COUNTRY_LIST = new ArrayList<String>(){{add("US"); add("IN"); add("ID"); add("MX"); add("DE"); add("CN"); add("BR");}};
 
-    final private int[] COUNTRY = {R.string.tv_america, R.string.tv_india, R.string.tv_indonesia, R.string.tv_mexico, R.string.tv_germany, R.string.tv_china};
+    final private int[] COUNTRY = {R.string.tv_america, R.string.tv_india, R.string.tv_indonesia, R.string.tv_mexico, R.string.tv_germany, R.string.tv_china, R.string.tv_brazil};
 
     final private int[] SEARCH_MODE = {R.string.tv_search_mode_manual, R.string.tv_search_mode_auto};
 
@@ -437,6 +438,7 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
     final private int[] MEXICO_TV_TYPE = {R.string.tv_search_type_atsc_t, R.string.tv_search_type_atsc_c_standard, R.string.tv_search_type_atsc_c_lrc, R.string.tv_search_type_atsc_c_hrc, R.string.tv_search_type_atsc_c_auto};
     final private int[] GERMANY_TV_TYPE = {R.string.atv, R.string.tv_search_type_dvb_t, R.string.tv_search_type_dvb_c, R.string.tv_search_type_dvb_s};
     final private int[] CHINA_TV_TYPE = {R.string.tv_search_type_atv, R.string.tv_search_type_dtmb};
+    final private int[] BRAZIL_TV_TYPE = {R.string.tv_search_type_atv, R.string.tv_search_type_isdb_t};
 
     final private int[] SEARCH_ORDER = {R.string.tv_search_order_low, R.string.tv_search_order_high};
     final private int[] ATV_COLOR_SYSTEM = {R.string.tv_search_atv_clolor_auto, R.string.tv_search_atv_clolor_pal, R.string.tv_search_atv_clolor_ntsc, R.string.tv_search_atv_clolor_secam};
@@ -492,6 +494,9 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
                 break;
             case "CN"://COUNTRY_LIST.get(COUNTRY_CHINA):
                 list = CHINA_TV_TYPE;
+                break;
+            case "BR"://COUNTRY_LIST.get(COUNTRY_BRAZIL):
+                list = BRAZIL_TV_TYPE;
                 break;
             default:
                 list = INDIA_TV_TYPE;
@@ -1422,6 +1427,7 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
     public final String[] MEXICO_TV_TYPE_LIST = {TvContract.Channels.TYPE_ATSC_T, TvContract.Channels.TYPE_ATSC_C, TvContract.Channels.TYPE_ATSC_C, TvContract.Channels.TYPE_ATSC_C, TvContract.Channels.TYPE_ATSC_C};
     public final String[] GERMANY_TV_TYPE_LIST = {TvContract.Channels.TYPE_NTSC, TvContract.Channels.TYPE_DVB_T, TvContract.Channels.TYPE_DVB_C, TvContract.Channels.TYPE_DVB_S};
     public final String[] CHINA_TV_TYPE_LIST = {TvContract.Channels.TYPE_PAL, TvContract.Channels.TYPE_DTMB};
+    public final String[] BRAZIL_TV_TYPE_LIST = {TvContract.Channels.TYPE_PAL, TvContract.Channels.TYPE_ISDB_T};
 
     public final int TV_SEARCH_MANUAL = 0;
     public final int TV_SEARCH_AUTO = 1;
@@ -1506,9 +1512,9 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
     }
 
     public ArrayList<String> getSupportCountry() {
-        String config = getTVSupportCountries();//"US,IN,ID,MX,DE,CN";
+        String config = getTVSupportCountries();//"US,IN,ID,MX,DE,CN,BR";
         Log.d(TAG, "getCountry = " + config);
-        String[] supportcountry = {"US", "IN", "ID", "MX", "DE", "CN"};//default
+        String[] supportcountry = {"US", "IN", "ID", "MX", "DE", "CN", "BR"};//default
         ArrayList<String> getsupportlist = new ArrayList<String>();
         if (!TextUtils.isEmpty(config)) {
             supportcountry = config.split(",");
@@ -1542,6 +1548,8 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
                 return GERMANY_TV_TYPE_LIST;
             case COUNTRY_CHINA:
                 return CHINA_TV_TYPE_LIST;
+            case COUNTRY_BRAZIL:
+                return BRAZIL_TV_TYPE_LIST;
             default:
                 return INDIA_TV_TYPE_LIST;
         }
