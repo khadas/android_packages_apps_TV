@@ -394,6 +394,14 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         Log.d(TAG, "isChannelMatchAtvDtvSource do not need needatvdtvsource");
         return true;
     }
+
+    public void printCallBackTraceIfNeeded(String func) {
+        if (SystemProperties.USE_DEBUG_TRACE.getValue()) {
+           RuntimeException ex = new RuntimeException(func + " is here");
+           ex.fillInStackTrace();
+           Log.d(TAG, "------", ex);
+        }
+    }
     /********end: hand droidsetting request to lunch fragment********/
 
 /********start: channelbannerview related********/

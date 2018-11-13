@@ -448,6 +448,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     //When switched tv_search_type, it will update and filter channel list in resumeTvIfNeeded;
                     //When load finished, send broadcast to tune to specific channel.
                     Log.d(TAG, "onLoadFinished");
+                    mQuickKeyInfo.printCallBackTraceIfNeeded("onLoadFinished");
                     checkNeedTuneWhenUpdated();
                 }
 
@@ -480,6 +481,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     //When browselist updated, send broadcast to tune to specific channel.
                     Log.d(TAG, "onBrowsableChannelListChanged");
                     checkNeedTuneWhenUpdated();
+                    mQuickKeyInfo.printCallBackTraceIfNeeded("onBrowsableChannelListChanged");
                 }
 
                 @Override
@@ -595,21 +597,22 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             Log.d(TAG, "checkNeedTuneWhenUpdated searchTypeChanged : " + searchTypeChanged);
             long channelIndex = getChannelIdForAtvDtvMode();
             Channel toChannel = mChannelTuner.getChannelById(channelIndex);
-            if (toChannel != null && !toChannel.isPassthrough() && !mQuickKeyInfo.isChannelMatchAtvDtvSource(toChannel)) {
-                Log.d(TAG, "checkNeedTuneWhenUpdated channel does not match source");
+            if (toChannel == null || (lastplayuri != null && TvContract.isChannelUriForPassthroughInput(lastplayuri))
+                    || (!toChannel.isPassthrough() && !mQuickKeyInfo.isChannelMatchAtvDtvSource(toChannel))) {
+                Log.d(TAG, "checkNeedTuneWhenUpdated channel has not prepared or is passthrough");
                 return;
             }
             Intent intent = new Intent();
             intent.setAction(BROADCAST_CHANGED_SEARCH_TYPE);
             sendBroadcast(intent);
-            Settings.System.putInt(MainActivity.this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0);
-        } else if (lastplayuri == null || (currentone == null && lastplayuri != null && !TvContract.isChannelUriForPassthroughInput(lastplayuri))
+            resetSearchTypeChangedStatus();
+        }/* else if (lastplayuri == null || (currentone == null && lastplayuri != null && !TvContract.isChannelUriForPassthroughInput(lastplayuri))
                     || (lastplayuri != null && !TvContract.isChannelUriForPassthroughInput(lastplayuri))) {
             Log.d(TAG, "checkNeedTuneWhenUpdated tune as channel may be available");
             long channelIndex = getChannelIdForAtvDtvMode();
             Channel toChannel = mChannelTuner.getChannelById(channelIndex);
             tuneToChannel(toChannel);
-        }
+        }*/
     }
 
     private void updateLastWatchedUriAsChangeOutLiveTv(final Intent intent, TvInputManagerHelper tvinputmanager) {
@@ -1073,6 +1076,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         mActivityStarted = true;
         mTracker.sendMainStart();
         mMainDurationTimer.start();
+        updateLastWatchedUriAsChangeOutLiveTv(getIntent(), mTvInputManagerHelper);
 
         applyParentalControlSettings();
         registerReceiver(mBroadcastReceiver, SYSTEM_INTENT_FILTER);
@@ -1296,6 +1300,10 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         return Settings.System.getInt(this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0);
     }
 
+    public void resetSearchTypeChangedStatus() {
+        Settings.System.putInt(MainActivity.this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0);
+    }
+
     /*private void saveChannelIndex(int channelIndex) {
         if (DroidLogicTvUtils.isAtscCountry(this)) {
             String currentSignalType = DroidLogicTvUtils.getCurrentSignalType(this) == DroidLogicTvUtils.SIGNAL_TYPE_ERROR
@@ -1418,7 +1426,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     if (nearone != null && !nearone.isPassthrough() && !mQuickKeyInfo.isChannelMatchAtvDtvSource(nearone)) {
                         Log.w(TAG,"the channel to be tuned is not matched to source, and wait for further update");
                     } else {
-                        mChannelTuner.moveToChannel(mChannelTuner.findNearestBrowsableChannel(0));
+                        mChannelTuner.moveToChannel(nearone/*mChannelTuner.findNearestBrowsableChannel(0)*/);
                         Log.w(TAG,"The requested channel (id="
                                 + channelId
                                 + ") doesn't exist. "
@@ -2141,6 +2149,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
     private void tune(boolean updateChannelBanner) {
         if (DEBUG) Log.d(TAG, "tune()");
+        mQuickKeyInfo.printCallBackTraceIfNeeded("tune");
         mTuneDurationTimer.start();
 
         lazyInitializeIfNeeded();
@@ -2328,6 +2337,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         if (!channel.isPassthrough()) {
            saveChannelIdForAtvDtvMode(channel.getId());
         }
+        resetSearchTypeChangedStatus();
     }
 
     // Runs the runnable after the activity is attached to window to show the fragment transition

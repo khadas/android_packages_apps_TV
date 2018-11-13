@@ -43,6 +43,9 @@ public final class SystemProperties {
     public static final BooleanSystemProperty USE_KEY =
             new BooleanSystemProperty("sys.platform.customize_key", false);
 
+    public static final BooleanSystemProperty USE_DEBUG_TRACE =
+            new BooleanSystemProperty("tv_use_debug_trace", false);
+
     static {
         updateSystemProperties();
     }
