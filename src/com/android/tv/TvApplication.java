@@ -42,6 +42,7 @@ import com.android.tv.common.ui.setup.animation.SetupAnimationHelper;
 import com.android.tv.common.util.Clock;
 import com.android.tv.common.util.Debug;
 import com.android.tv.common.util.SharedPreferencesUtils;
+import com.android.tv.common.util.SystemPropertiesProxy;
 import com.android.tv.data.ChannelDataManager;
 import com.android.tv.data.PreviewDataManager;
 import com.android.tv.data.ProgramDataManager;
@@ -200,7 +201,8 @@ public abstract class TvApplication extends BaseApplication implements TvSinglet
                 mRecordingScheduler = RecordingScheduler.createScheduler(this);
             }
             mEpgFetcher.startRoutineService();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                     && !TextUtils.isEmpty(SystemPropertiesProxy.getString("ro.com.google.gmsversion", ""))) {
                 ChannelPreviewUpdater.getInstance(this).startRoutineService();
                 RecordedProgramPreviewUpdater.getInstance(this)
                         .updatePreviewDataForRecordedPrograms();

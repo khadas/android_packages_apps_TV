@@ -21,6 +21,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.text.TextUtils;
 import android.os.Build;
 import android.util.Log;
 import com.android.tv.Starter;
@@ -33,6 +34,7 @@ import com.android.tv.recommendation.ChannelPreviewUpdater;
 import com.android.tv.recommendation.NotificationService;
 import com.android.tv.util.OnboardingUtils;
 import com.android.tv.util.SetupUtils;
+import com.android.tv.common.util.SystemPropertiesProxy;
 
 /**
  * Boot completed receiver for TV app.
@@ -59,7 +61,8 @@ public class BootCompletedReceiver extends BroadcastReceiver {
         if (DEBUG) Log.d(TAG, "boot completed " + intent);
         Starter.start(context);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && !TextUtils.isEmpty(SystemPropertiesProxy.getString("ro.com.google.gmsversion", ""))) {
             ChannelPreviewUpdater.getInstance(context).updatePreviewDataForChannelsImmediately();
         } else {
             Intent notificationIntent = new Intent(context, NotificationService.class);

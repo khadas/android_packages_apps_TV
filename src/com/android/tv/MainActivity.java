@@ -85,6 +85,7 @@ import com.android.tv.common.util.Debug;
 import com.android.tv.common.util.DurationTimer;
 import com.android.tv.common.util.PermissionUtils;
 import com.android.tv.common.util.SystemProperties;
+import com.android.tv.common.util.SystemPropertiesProxy;
 import com.android.tv.data.ChannelDataManager;
 import com.android.tv.data.ChannelImpl;
 import com.android.tv.data.ChannelNumber;
@@ -641,9 +642,10 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         boolean parentalControlEnabled =
                 mTvInputManagerHelper.getParentalControlSettings().isParentalControlsEnabled();
         mTvView.onParentalControlChanged(parentalControlEnabled);
-        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        //    ChannelPreviewUpdater.getInstance(this).updatePreviewDataForChannelsImmediately();
-        //}
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && !TextUtils.isEmpty(SystemPropertiesProxy.getString("ro.com.google.gmsversion", ""))) {
+            ChannelPreviewUpdater.getInstance(this).updatePreviewDataForChannelsImmediately();
+        }
     }
 
     /*public void setChannelIndex(int deletedChannelIndex) {
@@ -1068,15 +1070,8 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         mPerformanceMonitor.stopTimer(timer, EventNames.MAIN_ACTIVITY_ONSTART);
     }
 
-    private void startRoutineService(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ChannelPreviewUpdater.getInstance(this).startRoutineService();
-        }
-    }
-
     @Override
     protected void onResume() {
-        startRoutineService();
         TimerEvent timer = mPerformanceMonitor.startTimer();
         Debug.getTimer(Debug.TAG_START_UP_TIMER).log("MainActivity.onResume start");
         if (DEBUG) Log.d(TAG, "onResume()");
@@ -1420,7 +1415,6 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     @Override
     protected void onStop() {
         if (DEBUG) Log.d(TAG, "onStop()");
-        stopRoutineService();
         if (mScreenOffIntentReceived) {
             mScreenOffIntentReceived = false;
         } else {
@@ -1439,14 +1433,6 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         mTracker.sendMainStop(mMainDurationTimer.reset());
         hdmi_cec.selectHdmiDevice(0, 0, 0);
         super.onStop();
-    }
-
-    // fix suspend hang up by JobScheduler WakeLocks by yubo.wu
-    private void stopRoutineService() {
-        int ret = Settings.System.getInt(getContentResolver(), "power_key_definition", 0);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && ret == 0) {
-            ChannelPreviewUpdater.getInstance(this).stopRoutineService();
-        }
     }
 
     /** Handles screen off to keep the current channel for next screen on. */

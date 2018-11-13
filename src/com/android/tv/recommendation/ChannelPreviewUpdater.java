@@ -41,7 +41,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import android.content.Intent;
 
 /** Class for updating the preview programs for {@link Channel}. */
 @RequiresApi(Build.VERSION_CODES.O)
@@ -124,14 +123,6 @@ public class ChannelPreviewUpdater {
         if (jobScheduler.schedule(job) < 0) {
             Log.i(TAG, "JobScheduler failed to schedule the job");
         }
-    }
-
-     /**
-     * Stop the routine service
-     */
-    public void stopRoutineService() {
-        JobScheduler jobScheduler= (JobScheduler) mContext.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        jobScheduler.cancel(UPATE_PREVIEW_PROGRAMS_JOB_ID);
     }
 
     /** Called when {@link ChannelPreviewUpdateService} is started. */

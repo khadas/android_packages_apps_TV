@@ -19,6 +19,7 @@ package com.android.tv.ui.sidepanel.parentalcontrols;
 import android.database.ContentObserver;
 import android.media.tv.TvContract;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -39,6 +40,7 @@ import com.android.tv.ui.sidepanel.ChannelCheckItem;
 import com.android.tv.ui.sidepanel.DividerItem;
 import com.android.tv.ui.sidepanel.Item;
 import com.android.tv.ui.sidepanel.SideFragment;
+import com.android.tv.common.util.SystemPropertiesProxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -107,7 +109,8 @@ public class ChannelsBlockedFragment extends SideFragment {
         getActivity().getContentResolver().unregisterContentObserver(mProgramUpdateObserver);
         getChannelDataManager().applyUpdatedValuesToDb();
         getMainActivity().endShrunkenTvView();
-        if (VERSION.SDK_INT >= VERSION_CODES.O && mUpdated) {
+        if (VERSION.SDK_INT >= VERSION_CODES.O && mUpdated
+                && !TextUtils.isEmpty(SystemPropertiesProxy.getString("ro.com.google.gmsversion", ""))) {
             ChannelPreviewUpdater.getInstance(getMainActivity())
                     .updatePreviewDataForChannelsImmediately();
         }
