@@ -134,6 +134,8 @@ public interface Channel {
 
     boolean isDigitalChannel();
 
+    boolean isOtherChannel();
+
     boolean isRadioChannel();
 
     boolean isVideoChannel();

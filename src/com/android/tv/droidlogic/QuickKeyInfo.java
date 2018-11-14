@@ -269,7 +269,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                 if (intent.getStringExtra(TvInputInfo.EXTRA_INPUT_ID).equals(input.getId())) {
                     if (input.getType() == TvInputInfo.TYPE_TUNER) {
                         Channel currentChannel = mChannelTuner.getCurrentChannel();
-                        Log.d(TAG,"onTunerInputSelected:" + currentChannel);
+                        Log.d(TAG,"onTunerInputSelected:" + input.getId() + ", currentChannel = " + currentChannel);
                         int searchTypeChanged = mActivity.getSearchTypeChangedStatus();
                         if (intent.getBooleanExtra(DroidLogicTvUtils.KEY_LIVETV_PROGRAM_APPOINTED, false)) {
                             //tune to appoint channel
@@ -292,34 +292,33 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                         } else {
                             //[DroidLogic]
                             //when change search type, update the channel list at the same time.
-                            Log.d(TAG, "handleUiCommand searchTypeChanged : " + searchTypeChanged);
-                            mActivity.useAtvDtvChannelIndex();
+                            Log.d(TAG, "handleUiCommand tuner searchTypeChanged : " + searchTypeChanged + ", useAtvDtvChannelIndex status = " + mActivity.useAtvDtvChannelIndex());
                             if (searchTypeChanged == 1) {
                                 mActivity.getChannelDataManager().handleUpdateChannels();
                             }
                             if (mActivity.isActivityStarted()) {
-                                Log.w(TAG, "tuneToLastWatchedChannelForTunerInput");
+                                Log.w(TAG, "handleUiCommand select tuner");
                                 //wait for tune after source change
                                 mActivity.tuneToLastWatchedChannelForTunerInput();
                             }
                         }
                     } else if (input.isPassthroughInput()) {
                         Channel currentChannel = mChannelTuner.getCurrentChannel();
-                        Log.d(TAG,"onPassthroughInputSelected:" + currentChannel);
+                        Log.d(TAG,"onPassthroughInputSelected:" + input.getId() + ", currentChannel = " + currentChannel);
                         String currentInputId = currentChannel == null ? null : currentChannel.getInputId();
                         if (TextUtils.equals(input.getId(), currentInputId)) {
                             //hideOverlays();
                         } else {
                             canShowResolution(false);
-                            String inputid = null;
-                            mActivity.usePassthroughIndex(inputid);
+                            String inputid = input.getId();
                             if (input.getHdmiDeviceInfo() != null && input.getHdmiDeviceInfo().isCecDevice()) {
                                 inputid = input.getParentId();
                             } else {
                                 inputid = input.getId();
                             }
+                            Log.d(TAG, "handleUiCommand passthrough usePassthroughIndex status = " + mActivity.usePassthroughIndex(inputid));
                             if (mActivity.isActivityStarted()) {
-                                Log.w(TAG, "tuneToChannel select passthrough");
+                                Log.w(TAG, "handleUiCommand select passthrough");
                                 mActivity.tuneToChannel(ChannelImpl.createPassthroughChannel(inputid));
                             }
                         }
@@ -383,7 +382,8 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         long channelindex = mActivity.getChannelIdForAtvDtvMode();
         if (needatvdtvsource && channel != null) {
             if ((DroidLogicTvUtils.getSearchType(mContext) == 0 && channel.isAnalogChannel()) ||
-                    (DroidLogicTvUtils.getSearchType(mContext) > 0 && channel.isDigitalChannel())) {
+                    (DroidLogicTvUtils.getSearchType(mContext) > 0 && channel.isDigitalChannel()) ||
+                    channel.isOtherChannel()) {
                 Log.d(TAG, "isChannelMatchAtvDtvSource true");
                 return true;
             } else {

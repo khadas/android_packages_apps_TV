@@ -231,7 +231,6 @@ public class Utils {
             Log.e(TAG, "setLastWatchedChannelUri: uri cannot be null");
             return;
         }
-        Log.d(TAG, "setLastWatchedChannelUri: uri = " + uri);
         PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putString(PREF_KEY_LAST_WATCHED_CHANNEL_URI, uri).apply();
         Uri channelUri = Uri.parse(uri);

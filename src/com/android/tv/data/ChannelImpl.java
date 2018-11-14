@@ -936,8 +936,11 @@ public final class ChannelImpl implements Channel {
             || mType.equals(TvContract.Channels.TYPE_DVB_C)
             || mType.equals(TvContract.Channels.TYPE_DVB_S)
             || mType.equals(TvContract.Channels.TYPE_ATSC_T)
-            || mType.equals(TvContract.Channels.TYPE_ATSC_C)
-            || mType.equals(TvContract.Channels.TYPE_OTHER));//other type like google channel
+            || mType.equals(TvContract.Channels.TYPE_ATSC_C));
+    }
+
+    public boolean isOtherChannel() {
+        return mType.equals(TvContract.Channels.TYPE_OTHER);//other type like google channel
     }
 
     public boolean isRadioChannel() {

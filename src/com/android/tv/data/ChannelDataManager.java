@@ -546,7 +546,7 @@ public class ChannelDataManager {
             }
         }
         //add channel like google movie which is marked others
-        if (TvContract.Channels.TYPE_OTHER.equals(channel.getType())) {
+        if (channel.isOtherChannel()) {
             addChannelByType(data, channel);
         }
     }

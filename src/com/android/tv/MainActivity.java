@@ -66,6 +66,7 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+
 import com.android.tv.analytics.SendChannelStatusRunnable;
 import com.android.tv.analytics.SendConfigInfoRunnable;
 import com.android.tv.analytics.Tracker;
@@ -625,10 +626,12 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             inputid = intent.getStringExtra(TvInputInfo.EXTRA_INPUT_ID);
         }
         if (inputid == null) {
+            Log.w(TAG, "updateLastWatchedUriAsChangeOutLiveTv inputid == null");
             return;
         }
         info = tvinputmanager.getTvInputInfo(inputid);
         if (info == null) {
+            Log.d(TAG, "updateLastWatchedUriAsChangeOutLiveTv info == null");
             return;
         }
         if (info.isPassthroughInput()) {
@@ -701,7 +704,6 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             finishAndRemoveTask();
             return;
         }
-        updateLastWatchedUriAsChangeOutLiveTv(getIntent(), tvSingletons.getTvInputManagerHelper());
         mPerformanceMonitor = tvSingletons.getPerformanceMonitor();
         mSetupUtils = tvSingletons.getSetupUtils();
 
@@ -1076,7 +1078,6 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         mActivityStarted = true;
         mTracker.sendMainStart();
         mMainDurationTimer.start();
-        updateLastWatchedUriAsChangeOutLiveTv(getIntent(), mTvInputManagerHelper);
 
         applyParentalControlSettings();
         registerReceiver(mBroadcastReceiver, SYSTEM_INTENT_FILTER);
