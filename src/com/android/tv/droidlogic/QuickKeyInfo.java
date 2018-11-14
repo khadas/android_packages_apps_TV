@@ -1196,6 +1196,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
 
     private void enableNosignalTimeout(boolean value) {
         Intent intent = new Intent("droidlogic.intent.action.TIMER_SUSPEND");
+        intent.addFlags(0x01000000/*Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND*/);
         intent.putExtra(DroidLogicTvUtils.KEY_ENABLE_NOSIGNAL_TIMEOUT, value);
         mContext.sendBroadcast(intent);
         mSetNoSignalTimeout = value;
