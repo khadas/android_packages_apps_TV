@@ -616,31 +616,6 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         }*/
     }
 
-    private void updateLastWatchedUriAsChangeOutLiveTv(final Intent intent, TvInputManagerHelper tvinputmanager) {
-        if (intent == null || tvinputmanager == null) {
-            return;
-        }
-        String inputid = null;
-        TvInputInfo info = null;
-        if (intent != null && TvInputManager.ACTION_SETUP_INPUTS.equals(intent.getAction()) && intent.getBooleanExtra(QuickKeyInfo.COMMAND_FROM_TV_SOURCE, false)) {
-            inputid = intent.getStringExtra(TvInputInfo.EXTRA_INPUT_ID);
-        }
-        if (inputid == null) {
-            Log.w(TAG, "updateLastWatchedUriAsChangeOutLiveTv inputid == null");
-            return;
-        }
-        info = tvinputmanager.getTvInputInfo(inputid);
-        if (info == null) {
-            Log.d(TAG, "updateLastWatchedUriAsChangeOutLiveTv info == null");
-            return;
-        }
-        if (info.isPassthroughInput()) {
-            usePassthroughIndex(inputid);
-        } else {
-            useAtvDtvChannelIndex();
-        }
-    }
-
     public boolean useAtvDtvChannelIndex() {
         long channelindex = getChannelIdForAtvDtvMode();
         if (channelindex == Channel.INVALID_ID) {
@@ -1317,7 +1292,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         }
     }*/
 
-    private void saveChannelIdForAtvDtvMode(long channelid) {
+    public void saveChannelIdForAtvDtvMode(long channelid) {
         if (DroidLogicTvUtils.isAtscCountry(this)) {
             String currentSignalType = DroidLogicTvUtils.getCurrentSignalType(this) == DroidLogicTvUtils.SIGNAL_TYPE_ERROR
                 ? TvContract.Channels.TYPE_ATSC_T : DroidLogicTvUtils.getCurrentSignalType(this);

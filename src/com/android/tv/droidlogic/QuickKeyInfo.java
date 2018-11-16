@@ -273,18 +273,45 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                         int searchTypeChanged = mActivity.getSearchTypeChangedStatus();
                         if (intent.getBooleanExtra(DroidLogicTvUtils.KEY_LIVETV_PROGRAM_APPOINTED, false)) {
                             //tune to appoint channel
-                            Channel appointone = mChannelTuner.getChannelById(intent.getLongExtra(COMMAND_EPG_CHANNEL_ID, -1));
+                            long appoint_channelid = intent.getLongExtra(COMMAND_EPG_CHANNEL_ID, -1);
+                            Log.d(TAG,"appointone id = " + appoint_channelid);
+                            Channel appointone_fromlist = mChannelTuner.getChannelById(appoint_channelid);
+                            Channel appointone_fromdb = null;
+                            if (!DroidLogicTvUtils.isAtscCountry(mContext) && DroidLogicTvUtils.getSearchType(mContext) == 0) {
+                                if (appointone_fromlist == null) {
+                                    Log.d(TAG, "appoint channel not exist in current list and need to be updated");
+                                    appointone_fromdb = getChannelFromDbById(appoint_channelid);
+                                }
+                                if (appointone_fromlist == null && appointone_fromdb != null) {
+                                    Log.d(TAG, "appoint channel found in db and update channel list");
+                                    appointone_fromlist = appointone_fromdb;
+                                    DroidLogicTvUtils.setSearchType(mContext, 1);
+                                    Uri channelUri = TvContract.buildChannelUri(appoint_channelid);
+                                    Utils.setLastWatchedChannelUri(mContext, channelUri.toString());
+                                    mActivity.saveChannelIdForAtvDtvMode(appoint_channelid);
+                                    mActivity.getChannelDataManager().handleUpdateChannels();//update dtv source channel
+                                    mActivity.stopTv();//stop it then wait for update
+                                    return true;
+                                }
+                            }
                             if (currentChannel != null) {
-                                if (appointone != null && currentChannel.getId() != appointone.getId()) {
-                                    Log.d(TAG,"handleUiCommand tune to appointone = " + appointone.getDisplayName());
-                                    mActivity.tuneToChannel(appointone);
+                                if (appointone_fromlist != null && currentChannel.getId() != appointone_fromlist.getId()) {
+                                    Log.d(TAG,"handleUiCommand tune to appointone = " + appointone_fromlist.getDisplayName());
+                                    mActivity.tuneToChannel(appointone_fromlist);
                                 }
                             } else {
-                                if (appointone != null) {
-                                    Log.d(TAG,"handleUiCommand start tune appointone = " + appointone.getDisplayName());
-                                    Uri channelUri = TvContract.buildChannelUri(appointone.getId());
+                                if (appointone_fromlist != null) {
+                                    Log.d(TAG,"handleUiCommand start tune appointone = " + appointone_fromlist.getDisplayName());
+                                    Uri channelUri = TvContract.buildChannelUri(appointone_fromlist.getId());
                                     Utils.setLastWatchedChannelUri(mContext, channelUri.toString());
                                     mActivity.tuneToLastWatchedChannelForTunerInput();
+                                }
+                            }
+                            if (appointone_fromlist == null) {
+                                Log.d(TAG, "appointone channel isn't exist");
+                                if (!mActivity.isActivityStarted()) {
+                                    Log.d(TAG, "livetv is call up by appoint action but appointed channel not found");
+                                    //mActivity.finish();
                                 }
                             }
                         } else if (currentChannel != null && !currentChannel.isPassthrough() && searchTypeChanged == 0) {
@@ -509,6 +536,28 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
             }
         }
         return channelinfo;
+    }
+
+    public Channel getChannelFromDbById(long channelid) {
+        if (channelid < 0) {
+            return null;
+        }
+        Cursor cursor = null;
+        Channel channel = null;
+        try {
+            cursor = mContext.getContentResolver().query(TvContract.buildChannelUri(channelid), ChannelImpl.PROJECTION, null, null, null);
+            if (cursor != null) {
+                cursor.moveToNext();
+                channel = ChannelImpl.fromCursor(cursor);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "getChannelFromDbById failed from TvProvider.", e);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return channel;
     }
 
     public ChannelInfo getCurrentChannelInfo() {
