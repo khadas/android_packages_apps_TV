@@ -49,7 +49,7 @@ public class ClosedCaptionFragment extends SideFragment {
 
     @Override
     protected String getTitle() {
-        return getString(R.string.side_panel_title_closed_caption);
+        return getString(R.string.side_panel_subtitle);
     }
 
     @Override
