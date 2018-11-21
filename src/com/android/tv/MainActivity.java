@@ -1779,6 +1779,11 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     }
                 } else {
                     mInputIdUnderSetup = null;
+                    //update if change search type
+                    if (getSearchTypeChangedStatus() == 1) {
+                        useAtvDtvChannelIndex();
+                        mChannelDataManager.handleUpdateChannels();
+                    }
                 }
                 if (!mIsSetupActivityCalledByPopup) {
                     mOverlayManager.getSideFragmentManager().showSidePanel(false);
@@ -2147,15 +2152,26 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         //avl module need realtime source id
         mQuickKeyInfo.sendSourceToAvlModule(channel);
         if (channel == null || (channel != null && !channel.isPassthrough() && !mQuickKeyInfo.isChannelMatchAtvDtvSource(channel))) {
-            long channelId = Utils.getLastWatchedChannelId(this);
-            if (channelId != Channel.INVALID_ID) {
-                Log.w(TAG, "tune need a invalid channeluri");
+            mChannelTuner.resetCurrentChannel();
+            //deal switch source when channel not update on time
+            Channel preparechannel = null;
+            if (getSearchTypeChangedStatus() == 1) {
+                preparechannel = mQuickKeyInfo.getChannelFromDbById(getChannelIdForAtvDtvMode());
             }
-            Uri channelUri = TvContract.buildChannelUri(channelId);
-            Utils.setLastWatchedChannelUri(this, channelUri.toString());
-            mTvView.showNoDataBaseHint();
-            mQuickKeyInfo.setNoSingalTimeout();
-            return;
+            if (preparechannel == null) {
+                long channelId = Utils.getLastWatchedChannelId(this);
+                if (channelId != Channel.INVALID_ID) {
+                    Log.w(TAG, "tune need a invalid channeluri");
+                }
+                Uri channelUri = TvContract.buildChannelUri(channelId);
+                Utils.setLastWatchedChannelUri(this, channelUri.toString());
+                mTvView.showNoDataBaseHint();
+                mQuickKeyInfo.setNoSingalTimeout();
+                return;
+            } else {
+                if (DEBUG) Log.d(TAG, "tune channel is not available");
+                return;
+            }
         }
         if (!mChannelTuner.isCurrentChannelPassthrough()) {
             if (mTvInputManagerHelper.getTunerTvInputSize() == 0) {
@@ -3171,7 +3187,26 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
     public void tuneToLastWatchedChannelForTunerInput() {
         if (!mChannelTuner.isCurrentChannelPassthrough() && mChannelTuner.getCurrentChannel() != null) {
-            return;
+            if (USE_DROIDLOIC_CUSTOMIZATION && getSearchTypeChangedStatus() == 1) {
+                String lastWatchedChannelUri = Utils.getLastWatchedChannelUri(this);
+                Uri channelUri = null;
+                if (lastWatchedChannelUri != null) {
+                    channelUri = Uri.parse(lastWatchedChannelUri);
+                }
+                if (TvContract.isChannelUriForTunerInput(channelUri)) {
+                    long channelId = ContentUris.parseId(channelUri);
+                    Channel channel = mChannelTuner.getChannelById(channelId);
+                    if (channel == null) {
+                       channel = mQuickKeyInfo.getChannelFromDbById(channelId);
+                    }
+                    if (channelId != -1 && channel != null) {
+                       tuneToChannel(channel);
+                       return;
+                    }
+                }
+            } else {
+                return;
+            }
         }
         stopTv();
         startTv(null);
@@ -3205,6 +3240,8 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             } else {
                 if (!USE_DROIDLOIC_CUSTOMIZATION) {
                     showSettingsFragment();
+                } else {
+                    stopTv();
                 }
             }
         }
