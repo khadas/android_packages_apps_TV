@@ -472,8 +472,8 @@
     <string name="bad_channel_number">"没有输入完整的频道号"</string>
 
     <!--close caption-->
-    <string name="cc_enable_cc_style">字幕をつける</string>
-    <string name="cc_disable_cc_style">字幕を閉じる</string>
+    <string name="cc_enable_cc_style">打开字幕样式</string>
+    <string name="cc_disable_cc_style">关闭字幕样式</string>
 
     <!-- subtitle-->
     <string name="side_panel_subtitle">字幕</string>

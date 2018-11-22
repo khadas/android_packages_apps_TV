@@ -407,8 +407,8 @@
     <string name="bad_channel_number">"完全なチャンネル番号は入力されていません"</string>
 
     <!--close caption-->
-    <string name="cc_enable_cc_style">打開字幕樣式</string>
-    <string name="cc_disable_cc_style">關閉字幕樣式</string>
+    <string name="cc_enable_cc_style">字幕をつける</string>
+    <string name="cc_disable_cc_style">字幕を閉じる</string>
 
     <!-- subtitle-->
     <string name="side_panel_subtitle">字幕</string>
