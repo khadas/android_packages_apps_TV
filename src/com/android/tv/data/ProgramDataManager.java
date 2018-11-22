@@ -93,6 +93,7 @@ public class ProgramDataManager implements MemoryManageable {
     private static final int MSG_UPDATE_CURRENT_PROGRAMS = 1000;
     private static final int MSG_UPDATE_ONE_CURRENT_PROGRAM = 1001;
     private static final int MSG_UPDATE_PREFETCH_PROGRAM = 1002;
+    private static final int MSG_UPDATE_CURRENT_PLAYING_PROGRAM = 1003;
 
     private final ContentResolver mContentResolver;
     private final Executor mDbExecutor;
@@ -399,7 +400,25 @@ public class ProgramDataManager implements MemoryManageable {
             delayedTime = program.getEndTimeUtcMillis() - mClock.currentTimeMillis();
         }
         mHandler.sendMessageDelayed(
-                mHandler.obtainMessage(MSG_UPDATE_ONE_CURRENT_PROGRAM, channelId), delayedTime);
+                mHandler.obtainMessage(MSG_UPDATE_ONE_CURRENT_PROGRAM, channelId), (delayedTime < 0 || delayedTime > CURRENT_PROGRAM_UPDATE_WAIT_MS) ? CURRENT_PROGRAM_UPDATE_WAIT_MS : delayedTime);
+    }
+
+    public void sendUpdateCurrentPlayingProgramByChannelId(long id) {
+        if (id == -1) {
+            Log.w(TAG, "sendUpdateProgramByChannelId program invalid channel id");
+        }
+        if (!mHandler.hasMessages(MSG_UPDATE_CURRENT_PLAYING_PROGRAM, id)) {
+            Log.d(TAG, "sendUpdateProgramByChannelId id = " + id);
+            mHandler.sendMessageDelayed(
+                mHandler.obtainMessage(MSG_UPDATE_CURRENT_PLAYING_PROGRAM, id), CURRENT_PROGRAM_UPDATE_WAIT_MS);
+        }
+    }
+
+    public void stopUpdateCurrentPlayingProgram() {
+        if (mHandler.hasMessages(MSG_UPDATE_CURRENT_PLAYING_PROGRAM)) {
+            Log.d(TAG, "stopUpdateCurrentPlayingProgram");
+            mHandler.removeMessages(MSG_UPDATE_CURRENT_PLAYING_PROGRAM);//MSG_UPDATE_ONE_CURRENT_PROGRAM
+        }
     }
 
     private void removePreviousProgramsAndUpdateCurrentProgramInCache(
@@ -710,6 +729,23 @@ public class ProgramDataManager implements MemoryManageable {
                                         mContentResolver, channelId, mClock.currentTimeMillis());
                         mProgramUpdateTaskMap.put(channelId, task);
                         task.executeOnDbThread();
+                        break;
+                    }
+                case MSG_UPDATE_CURRENT_PLAYING_PROGRAM:
+                    {
+                        long channelId = (Long) msg.obj;
+                        UpdateCurrentProgramForChannelTask oldTask =
+                                mProgramUpdateTaskMap.get(channelId);
+                        if (oldTask != null) {
+                            oldTask.cancel(true);
+                        }
+                        UpdateCurrentProgramForChannelTask task =
+                                new UpdateCurrentProgramForChannelTask(
+                                        mContentResolver, channelId, mClock.currentTimeMillis());
+                        mProgramUpdateTaskMap.put(channelId, task);
+                        task.executeOnDbThread();
+                        mHandler.sendMessageDelayed(
+                                mHandler.obtainMessage(MSG_UPDATE_CURRENT_PLAYING_PROGRAM, channelId), CURRENT_PROGRAM_UPDATE_WAIT_MS);
                         break;
                     }
                 case MSG_UPDATE_PREFETCH_PROGRAM:

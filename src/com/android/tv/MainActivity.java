@@ -2128,6 +2128,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             return;
         }
         mTunePending = false;
+        mProgramDataManager.stopUpdateCurrentPlayingProgram();//stop last update
         Channel channel = mChannelTuner.getCurrentChannel();
         try {
             SoftPreconditions.checkState(channel != null);
@@ -2315,6 +2316,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         mQuickKeyInfo.resetReturnedChannel();
         if (!channel.isPassthrough()) {
            saveChannelIdForAtvDtvMode(channel.getId());
+           mProgramDataManager.sendUpdateCurrentPlayingProgramByChannelId(channel.getId());//start new update
         }
         resetSearchTypeChangedStatus();
     }
