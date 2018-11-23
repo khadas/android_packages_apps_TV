@@ -1341,11 +1341,14 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
     }
 
     private void release() {
+        mTvScanManager.release();
         handler.removeCallbacksAndMessages(null);
         mHandler.removeCallbacksAndMessages(null);
-        mTvScanManager.release();
         mHandler = null;
         handler = null;
+        mTvDataBaseManager = null;
+        mTvControlDataManager = null;
+        mTvScanManager = null;
         exitNumberSearch();
     }
 
