@@ -399,7 +399,8 @@ public class ChannelBannerView extends FrameLayout
         if (mLockType != LOCK_CHANNEL_INFO && info != null) {
             updateText(
                     mClosedCaptionTextView,
-                    info.hasClosedCaption() ? sClosedCaptionMark : EMPTY_STRING);
+                    info.hasClosedCaption() ? /*sClosedCaptionMark*/
+                    (info.getSubtitleLabel() == null ? sClosedCaptionMark : info.getSubtitleLabel()) : EMPTY_STRING);
             updateText(
                     mAspectRatioTextView,
                     Utils.getAspectRatioString(info.getVideoDisplayAspectRatio()));
@@ -410,8 +411,6 @@ public class ChannelBannerView extends FrameLayout
             updateText(
                     mAudioChannelTextView,
                     Utils.getAudioChannelString(mMainActivity, info.getAudioChannelCount()));
-            updateText(mClosedCaptionTextView, info.hasClosedCaption() ? sClosedCaptionMark
-                    : EMPTY_STRING);
             updateText(mAspectRatioTextView, Utils.getAspectRatioString(info.getVideoDisplayAspectRatio()));
             //parse reslution from videoformat
             String videoformat = mCurrentChannel != null ? mCurrentChannel.getVideoFormat() : "";

@@ -46,6 +46,8 @@ public interface StreamInfo {
 
     boolean hasClosedCaption();
 
+    String getSubtitleLabel();
+
     boolean isVideoAvailable();
     /** Returns true, if video or audio is available. */
     boolean isVideoOrAudioAvailable();

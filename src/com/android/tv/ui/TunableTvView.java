@@ -90,6 +90,7 @@ import com.android.tv.data.Program;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
+import java.util.Locale;
 
 import com.droidlogic.app.tv.DroidLogicTvUtils;
 
@@ -897,7 +898,33 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
 
     @Override
     public boolean hasClosedCaption() {
-        return mHasClosedCaption;
+        return mHasClosedCaption || getSelectedTrack(TvTrackInfo.TYPE_SUBTITLE) != null;
+    }
+
+    @Override
+    public String getSubtitleLabel() {
+        if (mHasClosedCaption) {
+            return null;//return null to dispaly cc icon
+        }
+        TvTrackInfo track = null;
+        int index = -1;
+        String selecttrackid = getSelectedTrack(TvTrackInfo.TYPE_SUBTITLE);
+        List<TvTrackInfo> subtitletracks = getTracks(TvTrackInfo.TYPE_SUBTITLE);
+        if (selecttrackid != null && subtitletracks != null && subtitletracks.size() > 0) {
+            for (int i = 0; i < subtitletracks.size(); i++) {
+                if (subtitletracks.get(i).getId().equals(selecttrackid)) {
+                    track = subtitletracks.get(i);
+                    index = i;
+                    break;
+                }
+            }
+        }
+        if (track == null) {
+            return mMainActivity.getString(R.string.closed_caption_option_item_off);
+        } else if (track.getLanguage() != null) {
+            return new Locale(track.getLanguage()).getDisplayName();
+        }
+        return mMainActivity.getString(R.string.closed_caption_unknown_language, index + 1);
     }
 
     @Override
