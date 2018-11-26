@@ -191,6 +191,11 @@ public class ClosedCaptionFragment extends SideFragment {
         @Override
         protected void onSelected() {
             super.onSelected();
+
+            if (!getMainActivity().getCaptionSettings().isSystemSettingEnabled()) {
+                getMainActivity().getCaptionSettings().setCaptionsEnabled(true);
+            }
+
             mSelectedItem = this;
             getMainActivity().selectSubtitleTrack(mOption, mTrackId);
             //sub index is saved in db of each channel

@@ -99,6 +99,12 @@ public class CaptionSettings {
         mTrackId = trackId;
     }
 
+    public void setCaptionsEnabled(boolean enabled) {
+        Settings.Secure.putInt(mContext.getContentResolver(),
+                "accessibility_captioning_enabled"/*Settings.Secure.ACCESSIBILITY_CAPTIONING_ENABLED*/, enabled ? 1 : 0);
+        //can set by write data base
+    }
+
     public boolean isCaptionsStyleEnabled() {
         return Settings.Secure.getInt(mContext.getContentResolver(),
             DroidLogicTvUtils.SYSTEM_CAPTION_STYLE_ENABLE/*"accessibility_captioning_style_enabled"*/, 0) != 0;
