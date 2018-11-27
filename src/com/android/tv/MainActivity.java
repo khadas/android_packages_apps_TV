@@ -1473,17 +1473,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         return mTvInputManagerHelper;
     }
 
-    public Intent createSetupIntent(Intent originalSetupIntent, String inputId) {
-        if (originalSetupIntent == null) {
-            return null;
-        }
-        Intent setupIntent = new Intent(originalSetupIntent);
-        if (!CommonConstants.INTENT_ACTION_INPUT_SETUP.equals(originalSetupIntent.getAction())) {
-            Intent intentContainer = new Intent(CommonConstants.INTENT_ACTION_INPUT_SETUP);
-            intentContainer.putExtra(CommonConstants.EXTRA_SETUP_INTENT, originalSetupIntent);
-            intentContainer.putExtra(CommonConstants.EXTRA_INPUT_ID, inputId);
-            setupIntent = intentContainer;
-        }
+    public Intent createDroidLogicSetupIntent(String inputId) {
+        Intent setupIntent = new Intent(this, ChannelSearchActivity.class);
+        setupIntent.putExtra(CommonConstants.EXTRA_INPUT_ID, inputId);
         return setupIntent;
     }
 
@@ -1494,14 +1486,14 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
      */
     public void startSetupActivity(TvInputInfo input, boolean calledByPopup) {
         //Intent intent = TvCommonUtils.createSetupIntent(input);
-        Intent intent = createSetupIntent(new Intent(this, ChannelSearchActivity.class), input.getId());
+        Intent intent = createDroidLogicSetupIntent(input.getId());
         if (intent == null) {
             Toast.makeText(this, R.string.msg_no_setup_activity, Toast.LENGTH_SHORT).show();
             return;
         }
         // Even though other app can handle the intent, the setup launched by Live channels
         // should go through Live channels SetupPassthroughActivity.
-        intent.setComponent(new ComponentName(this, SetupPassthroughActivity.class));
+        //intent.setComponent(new ComponentName(this, SetupPassthroughActivity.class));
         //send number search channel parameter
         if (input != null && mQuickKeyInfo.isNumberSearch()) {
             intent.putExtra(DroidLogicTvUtils.TV_NUMBER_SEARCH_MODE, true);

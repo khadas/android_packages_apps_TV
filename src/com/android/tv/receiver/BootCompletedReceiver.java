@@ -61,13 +61,14 @@ public class BootCompletedReceiver extends BroadcastReceiver {
         if (DEBUG) Log.d(TAG, "boot completed " + intent);
         Starter.start(context);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                && !TextUtils.isEmpty(SystemPropertiesProxy.getString("ro.com.google.gmsversion", ""))) {
-            ChannelPreviewUpdater.getInstance(context).updatePreviewDataForChannelsImmediately();
-        } else {
-            Intent notificationIntent = new Intent(context, NotificationService.class);
-            notificationIntent.setAction(NotificationService.ACTION_SHOW_RECOMMENDATION);
-            context.startService(notificationIntent);
+        if (!TextUtils.isEmpty(SystemPropertiesProxy.getString("ro.com.google.gmsversion", ""))) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                ChannelPreviewUpdater.getInstance(context).updatePreviewDataForChannelsImmediately();
+            } else {
+                Intent notificationIntent = new Intent(context, NotificationService.class);
+                notificationIntent.setAction(NotificationService.ACTION_SHOW_RECOMMENDATION);
+                context.startService(notificationIntent);
+            }
         }
 
         // Grant permission to already set up packages after the system has finished booting.
