@@ -1633,4 +1633,14 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         mReturnedChannelUri = null;
     }
     /********start: deal channel changed by service********/
+
+    public boolean isTeletextSubtitleTrack(String trackid) {
+        Map<String, String> parsedMap = DroidLogicTvUtils.stringToMap(trackid);
+        int type = Integer.parseInt(parsedMap.get("type"));
+        if (DEBUG) Log.d(TAG, "isTeletextSubtitleTrack type = " + type);
+        if (type == ChannelInfo.Subtitle.TYPE_DTV_TELETEXT || type == ChannelInfo.Subtitle.TYPE_DTV_TELETEXT_IMG) {
+            return true;
+        }
+        return false;
+    }
 }

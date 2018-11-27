@@ -58,31 +58,55 @@ public class TeleTextFragment extends SideFragment {
         return TRACKER_LABEL;
     }
 
-    private String getLabel(TvTrackInfo track) {
-        if (track.getLanguage() != null) {
+    private String getLabel(TvTrackInfo track, Integer trackIndex) {
+        if (track == null) {
+            return getString(R.string.closed_caption_option_item_off);
+        } else if (track.getLanguage() != null) {
             return new Locale(track.getLanguage()).getDisplayName();
         }
-        return "";
+        return getString(R.string.closed_caption_unknown_language, trackIndex + 1);
     }
 
     @Override
     protected List<Item> getItemList() {
-
+        CaptionSettings captionSettings = getMainActivity().getCaptionSettings();
         mItems = new ArrayList<>();
 
         List<TvTrackInfo> tracks = getMainActivity().getTracks(TvTrackInfo.TYPE_SUBTITLE);
         if (tracks != null && !tracks.isEmpty()) {
-            String trackId = SubtitleFragment.getCaptionsEnabled(getMainActivity()) ?
-                    getMainActivity().getSelectedTrack(TvTrackInfo.TYPE_SUBTITLE) : null;
+            String trackId = captionSettings.isEnabled()
+                            ? getMainActivity().getSelectedTrack(TvTrackInfo.TYPE_SUBTITLE)
+                            : null;
             boolean isEnabled = trackId != null;
 
-            for (final TvTrackInfo track : tracks) {
-                TeleTextOptionItem item = new TeleTextOptionItem(getLabel(track),
-                        CaptionSettings.OPTION_ON, track.getId(), track.getLanguage());
-                if (isEnabled && track.getId().equals(trackId)) {
-                    item.setChecked(true);
+            TeleTextOptionItem item1 = new TeleTextOptionItem(null, null);
+            if (trackId == null) {
+                item1.setChecked(true);
+                setSelectedPosition(0);
+            }
+            int position = 1;
+            List<Item> items2 = new ArrayList<>();
+            TeleTextOptionItem item2 = null;
+            boolean hasteletext = false;
+
+            for (int i = 0; i < tracks.size(); i++) {
+                if (!getMainActivity().mQuickKeyInfo.isTeletextSubtitleTrack(tracks.get(i).getId())) {
+                    continue;
                 }
-                mItems.add(item);
+                item2 = new TeleTextOptionItem(tracks.get(i), position);
+                if (isEnabled && tracks.get(i).getId().equals(trackId)) {
+                    item2.setChecked(true);
+                    setSelectedPosition(position);
+                }
+                if (!hasteletext) {
+                    hasteletext = true;
+                }
+                position++;
+                items2.add(item2);
+            }
+            if (hasteletext) {
+                mItems.add(item1);
+                mItems.addAll(items2);
             }
         }
 
@@ -136,13 +160,16 @@ public class TeleTextFragment extends SideFragment {
     private class TeleTextOptionItem extends RadioButtonItem {
         private final int mOption;
         private final String mTrackId;
-        private final String mLanguage;
 
-        private TeleTextOptionItem(String title, int option, String trackId, String language) {
-            super(title);
-            mOption = option;
-            mTrackId = trackId;
-            mLanguage = language;
+        private TeleTextOptionItem(TvTrackInfo track, Integer trackIndex) {
+            super(getLabel(track, trackIndex));
+            if (track == null) {
+                mOption = CaptionSettings.OPTION_OFF;
+                mTrackId = null;
+            } else {
+                mOption = CaptionSettings.OPTION_ON;
+                mTrackId = track.getId();
+            }
         }
 
         @Override

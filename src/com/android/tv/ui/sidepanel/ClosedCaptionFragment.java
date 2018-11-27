@@ -65,7 +65,7 @@ public class ClosedCaptionFragment extends SideFragment {
         mClosedCaptionLanguage = captionSettings.getLanguage();
         mClosedCaptionTrackId = captionSettings.getTrackId();
 
-        List<Item> items = new ArrayList<>();
+        List<Item> items1 = new ArrayList<>();
         mSelectedItem = null;
 
         List<TvTrackInfo> tracks = getMainActivity().getTracks(TvTrackInfo.TYPE_SUBTITLE);
@@ -74,24 +74,38 @@ public class ClosedCaptionFragment extends SideFragment {
                     captionSettings.isEnabled()
                             ? getMainActivity().getSelectedTrack(TvTrackInfo.TYPE_SUBTITLE)
                             : null;
-            ClosedCaptionOptionItem item = new ClosedCaptionOptionItem(null, null);
-            items.add(item);
+            ClosedCaptionOptionItem item1 = new ClosedCaptionOptionItem(null, null);
             if (selectedTrackId == null) {
-                mSelectedItem = item;
-                item.setChecked(true);
+                mSelectedItem = item1;
+                item1.setChecked(true);
                 setSelectedPosition(0);
             }
+            int position = 1;
+            List<Item> items2 = new ArrayList<>();
+            ClosedCaptionOptionItem item2 = null;
+            boolean hassubtitle = false;
             for (int i = 0; i < tracks.size(); i++) {
-                item = new ClosedCaptionOptionItem(tracks.get(i), i);
-                if (TextUtils.equals(selectedTrackId, tracks.get(i).getId())) {
-                    mSelectedItem = item;
-                    item.setChecked(true);
-                    setSelectedPosition(i + 1);
+                if (getMainActivity().mQuickKeyInfo.isTeletextSubtitleTrack(tracks.get(i).getId())) {
+                    continue;
                 }
-                items.add(item);
+                item2 = new ClosedCaptionOptionItem(tracks.get(i), position);
+                if (TextUtils.equals(selectedTrackId, tracks.get(i).getId())) {
+                    mSelectedItem = item2;
+                    item2.setChecked(true);
+                    setSelectedPosition(position);
+                }
+                if (!hassubtitle) {
+                    hassubtitle = true;
+                }
+                position++;
+                items2.add(item2);
+            }
+            if (hassubtitle) {
+                items1.add(item1);
+                items1.addAll(items2);
             }
         }
-        items.add(new SwitchItem(getString(R.string.cc_enable_cc_style),
+        items1.add(new SwitchItem(getString(R.string.cc_enable_cc_style),
                 getString(R.string.cc_disable_cc_style)) {
             @Override
             protected void onUpdate() {
@@ -110,7 +124,7 @@ public class ClosedCaptionFragment extends SideFragment {
             }
         });
         if (getMainActivity().hasCaptioningSettingsActivity()) {
-            items.add(
+            items1.add(
                     mCaptionsSetting = new ActionItem(
                             getString(R.string.closed_caption_system_settings),
                             getString(R.string.closed_caption_system_settings_description)) {
@@ -131,7 +145,7 @@ public class ClosedCaptionFragment extends SideFragment {
                     });
             mCaptionsSetting.setEnabled(getMainActivity().getCaptionSettings().isCaptionsStyleEnabled());
         }
-        return items;
+        return items1;
     }
 
     @Override
@@ -156,7 +170,7 @@ public class ClosedCaptionFragment extends SideFragment {
         } else if (track.getLanguage() != null) {
             return new Locale(track.getLanguage()).getDisplayName();
         }
-        return getString(R.string.closed_caption_unknown_language, trackIndex + 1);
+        return getString(R.string.closed_caption_unknown_language, trackIndex);
     }
 
     private class ClosedCaptionOptionItem extends RadioButtonItem {
