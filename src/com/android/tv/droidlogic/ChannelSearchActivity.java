@@ -83,6 +83,7 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
     private Spinner mOrderSetting;
     private Spinner mAtvColorSystem;
     private Spinner mAtvSoundSystem;
+    private Spinner mDvbcQamModeSetting;
     private EditText mInputChannelFrom;
     private EditText mInputChannelTo;
 
@@ -93,6 +94,7 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
     private TextView mAtvSearchOrderText;
     private TextView mAtvColorSystemText;
     private TextView mAtvSoundSystemText;
+    private TextView mDvbcQamModeText;
 
     private String mInputId;
     private Intent in;
@@ -236,6 +238,7 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
         mAtvSearchOrderText = findViewById(R.id.order);
         mAtvColorSystemText = findViewById(R.id.atv_color);
         mAtvSoundSystemText = findViewById(R.id.atv_sound);
+        mDvbcQamModeText = findViewById(R.id.dvbc_qam_mode);
 
         mScanButton = (Button) findViewById(R.id.search_channel);
         mScanButton.setOnClickListener(this);
@@ -438,6 +441,7 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
     final private int[] SEARCH_ORDER = {R.string.tv_search_order_low, R.string.tv_search_order_high};
     final private int[] ATV_COLOR_SYSTEM = {R.string.tv_search_atv_clolor_auto, R.string.tv_search_atv_clolor_pal, R.string.tv_search_atv_clolor_ntsc, R.string.tv_search_atv_clolor_secam};
     final private int[] ATV_SOUND_SYSTEM = {R.string.tv_search_atv_sound_auto, R.string.tv_search_atv_sound_dk, R.string.tv_search_atv_sound_i, R.string.tv_search_atv_sound_bg, R.string.tv_search_atv_sound_m, R.string.tv_search_atv_sound_l};
+    final private int[] QAM_FOR_DVB_C = {R.string.ut_tune_dvb_c_qam16, R.string.ut_tune_dvb_c_qam32, R.string.ut_tune_dvb_c_qam64, R.string.ut_tune_dvb_c_qam128, R.string.ut_tune_dvb_c_qam256};
 
     private void initSpinner() {
         ArrayAdapter<String> country_arr_adapter;
@@ -452,6 +456,8 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
         List<String> search_atv_color_data_list = new ArrayList<String>();
         ArrayAdapter<String> search_atv_sound_arr_adapter;
         List<String> search_atv_sound_data_list = new ArrayList<String>();
+        ArrayAdapter<String> dvbc_qam_mode_arr_adapter;
+        List<String> dvbc_qam_mode_data_list = new ArrayList<String>();
 
         ArrayList<String> countrylist = getSupportCountry();
         for (int i = 0; i < countrylist.size(); i++) {
@@ -500,6 +506,9 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
         for (int i = 0; i < ATV_SOUND_SYSTEM.length; i++) {
             search_atv_sound_data_list.add(getString(ATV_SOUND_SYSTEM[i]));
         }
+        for (int i = 0; i < QAM_FOR_DVB_C.length; i++) {
+            dvbc_qam_mode_data_list.add(getString(QAM_FOR_DVB_C[i]));
+        }
 
         mCountrySetting = (Spinner) findViewById(R.id.country_spinner);
         mSearchModeSetting = (Spinner) findViewById(R.id.search_mode_spinner);
@@ -507,6 +516,7 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
         mOrderSetting = (Spinner) findViewById(R.id.order_spinner);
         mAtvColorSystem = (Spinner) findViewById(R.id.atv_color_spinner);
         mAtvSoundSystem = (Spinner) findViewById(R.id.atv_sound_spinner);
+        mDvbcQamModeSetting = (Spinner) findViewById(R.id.dvbc_qam_mode_spinner);
         country_arr_adapter = new ArrayAdapter<String>(ChannelSearchActivity.this, android.R.layout.simple_spinner_item, country_data_list);
         country_arr_adapter.setDropDownViewResource(android.R.layout.simple_list_item_single_choice );
         mCountrySetting.setAdapter(country_arr_adapter);
@@ -531,6 +541,10 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
         search_atv_sound_arr_adapter.setDropDownViewResource(android.R.layout.simple_list_item_single_choice );
         mAtvSoundSystem.setAdapter(search_atv_sound_arr_adapter);
         mAtvSoundSystem.setSelection((getTvSearchSoundSys() + 1) % ATV_SEARCH_SOUND_MAX);
+        dvbc_qam_mode_arr_adapter = new ArrayAdapter<String>(ChannelSearchActivity.this, android.R.layout.simple_spinner_item, dvbc_qam_mode_data_list);
+        dvbc_qam_mode_arr_adapter.setDropDownViewResource(android.R.layout.simple_list_item_single_choice );
+        mDvbcQamModeSetting.setAdapter(dvbc_qam_mode_arr_adapter);
+        mDvbcQamModeSetting.setSelection(getDvbcQamMode() - 1);//mode change from 1~5
         if (!(getAtvDtvModeFlag() == SEARCH_DTV)) {//atv type
             mAtvColorSystem.setEnabled(true);
             mAtvSoundSystem.setEnabled(true);
@@ -546,6 +560,13 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
         } else {
             hideInputChannel(false);
             mScanButton.setText(R.string.ut_manual_scan);
+        }
+        if (!TvContract.Channels.TYPE_DVB_C.equals(getDtvType())) {
+            mDvbcQamModeSetting.setVisibility(View.GONE);
+            mDvbcQamModeText.setVisibility(View.GONE);
+        } else {
+            mDvbcQamModeSetting.setVisibility(View.VISIBLE);
+            mDvbcQamModeText.setVisibility(View.VISIBLE);
         }
         //no effect at moment, and hide it
         mOrderSetting.setVisibility(View.GONE);
@@ -569,6 +590,7 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
                     setSearchOrder(TV_SEARCH_ORDER_LOW);
                     setTvSearchTypeSys(TV_SEARCH_SYS_AUTO);
                     setTvSearchSoundSys(ATV_SEARCH_SOUND_AUTO);
+                    setDvbcQamMode(DroidLogicTvUtils.TV_SEARCH_DVBC_QAM16);
                     initSpinner();//init again
                 }
             }
@@ -619,6 +641,13 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
                 String[] typelist = getTvTypebyCountry(COUNTRY_LIST.indexOf(getCountry()));
                 if (getSearchType() < typelist.length) {
                     setDtvType(typelist[getSearchType()]);
+                    if (!TvContract.Channels.TYPE_DVB_C.equals(getDtvType())) {
+                        mDvbcQamModeSetting.setVisibility(View.GONE);
+                        mDvbcQamModeText.setVisibility(View.GONE);
+                    } else {
+                        mDvbcQamModeSetting.setVisibility(View.VISIBLE);
+                        mDvbcQamModeText.setVisibility(View.VISIBLE);
+                    }
                 } else {
                     Log.e(TAG, "set search type error position = " + position + " >= " + typelist.length);
                 }
@@ -695,6 +724,19 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
                     setTvSearchSoundSys(value);
                 } else {
                     setTvSearchSoundSys(ATV_SEARCH_SOUND_AUTO);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // TODO Auto-generated method stub
+            }
+        });
+        mDvbcQamModeSetting.setOnItemSelectedListener(new OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (position >= (DroidLogicTvUtils.TV_SEARCH_DVBC_QAM16 - 1) && position < DroidLogicTvUtils.TV_SEARCH_DVBC_QAM256) {
+                    setDvbcQamMode(position + 1);
                 }
             }
 
@@ -1561,6 +1603,17 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
     public int getAtvDtvModeFlag() {
         int mode = mTvControlDataManager.getInt(ChannelSearchActivity.this.getContentResolver(), "search_atv_dtv_flag", SEARCH_ATV);
         Log.d(TAG, "getAtvDtvModeFlag = " + mode);
+        return mode;
+    }
+
+    public void setDvbcQamMode(int mode) {
+        Log.d(TAG, "setDvbcQamMode = " + mode);
+        mTvControlDataManager.putInt(ChannelSearchActivity.this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_DVBC_QAM, mode);
+    }
+
+    public int getDvbcQamMode() {
+        int mode = mTvControlDataManager.getInt(ChannelSearchActivity.this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_DVBC_QAM, DroidLogicTvUtils.TV_SEARCH_DVBC_QAM16);
+        Log.d(TAG, "getDvbcQamMode = " + mode);
         return mode;
     }
 

@@ -1100,6 +1100,12 @@
     <string name="ut_tune_atsc_c_standard">STD</string>
     <string name="ut_tune_atsc_c_lrc">LRC</string>
     <string name="ut_tune_atsc_c_hrc">HRC</string>
+    <string name="ut_tune_dvb_c_qam">QAM</string>
+    <string name="ut_tune_dvb_c_qam16">16QAM</string>
+    <string name="ut_tune_dvb_c_qam32">32QAM</string>
+    <string name="ut_tune_dvb_c_qam64">64QAM</string>
+    <string name="ut_tune_dvb_c_qam128">128QAM</string>
+    <string name="ut_tune_dvb_c_qam256">256QAM</string>
 
     <!-- number search channel-->
     <string name="number_search_title">Searching</string>
