@@ -37,6 +37,7 @@ import com.android.tv.dvr.data.SeriesRecording;
 import com.android.tv.dvr.recorder.InputTaskScheduler;
 import com.android.tv.util.CompositeComparator;
 import com.android.tv.util.Utils;
+import com.android.tv.util.TvClock;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -78,6 +79,7 @@ public class DvrScheduleManager {
     private final Context mContext;
     private final DvrDataManagerImpl mDataManager;
     private final ChannelDataManager mChannelDataManager;
+    private final TvClock mTvClock;
 
     private final Map<String, List<ScheduledRecording>> mInputScheduleMap = new HashMap<>();
     // The inner map is a hash map from scheduled recording to its conflicting status, i.e.,
@@ -97,6 +99,7 @@ public class DvrScheduleManager {
         TvSingletons tvSingletons = TvSingletons.getSingletons(context);
         mDataManager = (DvrDataManagerImpl) tvSingletons.getDvrDataManager();
         mChannelDataManager = tvSingletons.getChannelDataManager();
+        mTvClock = tvSingletons.getTvClock();
         if (mDataManager.isDvrScheduleLoadFinished() && mChannelDataManager.isDbLoadFinished()) {
             buildData();
         } else {
@@ -665,7 +668,7 @@ public class DvrScheduleManager {
         return getConflictingSchedulesForTune(
                 input.getId(),
                 channelId,
-                System.currentTimeMillis(),
+                mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/,
                 suggestHighestPriority(),
                 getStartedRecordings(input.getId()),
                 input.getTunerCount());
@@ -722,7 +725,7 @@ public class DvrScheduleManager {
         return getConflictingSchedulesForWatching(
                 input.getId(),
                 channelId,
-                System.currentTimeMillis(),
+                mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/,
                 suggestNewPriority(),
                 schedules,
                 input.getTunerCount());

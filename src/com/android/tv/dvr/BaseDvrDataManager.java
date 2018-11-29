@@ -45,7 +45,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @TargetApi(Build.VERSION_CODES.N)
 public abstract class BaseDvrDataManager implements WritableDvrDataManager {
     private static final String TAG = "BaseDvrDataManager";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     protected final Clock mClock;
 
     private final Set<OnDvrScheduleLoadFinishedListener> mOnDvrScheduleLoadFinishedListeners =

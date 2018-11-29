@@ -31,8 +31,8 @@ class EpisodicProgramRow extends ScheduleRow {
             String inputId,
             Program program,
             ScheduledRecording recording,
-            SchedulesHeaderRow headerRow) {
-        super(recording, headerRow);
+            SchedulesHeaderRow headerRow, Context context) {
+        super(recording, headerRow, context);
         mInputId = inputId;
         mProgram = program;
     }

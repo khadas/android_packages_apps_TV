@@ -100,7 +100,7 @@ class DvrHistoryRowAdapter extends ArrayObjectAdapter {
                                 deadLine);
                 add(headerRow);
                 for (ScheduledRecording recording : section) {
-                    add(new ScheduleRow(recording, headerRow));
+                    add(new ScheduleRow(recording, headerRow, mContext));
                 }
             }
             deadLine -= ONE_DAY_MS;
@@ -259,13 +259,13 @@ class DvrHistoryRowAdapter extends ArrayObjectAdapter {
             if (pre >= 0 && getHeaderRow(pre).getDeadLineMs() == deadLine) {
                 SchedulesHeaderRow headerRow = ((ScheduleRow) get(pre)).getHeaderRow();
                 headerRow.setItemCount(headerRow.getItemCount() + 1);
-                ScheduleRow addedRow = new ScheduleRow(recording, headerRow);
+                ScheduleRow addedRow = new ScheduleRow(recording, headerRow, mContext);
                 add(++pre, addedRow);
                 updateHeaderDescription(headerRow);
             } else if (index < size() && getHeaderRow(index).getDeadLineMs() == deadLine) {
                 SchedulesHeaderRow headerRow = ((ScheduleRow) get(index)).getHeaderRow();
                 headerRow.setItemCount(headerRow.getItemCount() + 1);
-                ScheduleRow addedRow = new ScheduleRow(recording, headerRow);
+                ScheduleRow addedRow = new ScheduleRow(recording, headerRow, mContext);
                 add(index, addedRow);
                 updateHeaderDescription(headerRow);
             } else {
@@ -278,7 +278,7 @@ class DvrHistoryRowAdapter extends ArrayObjectAdapter {
                                 1,
                                 deadLine);
                 add(++pre, headerRow);
-                ScheduleRow addedRow = new ScheduleRow(recording, headerRow);
+                ScheduleRow addedRow = new ScheduleRow(recording, headerRow, mContext);
                 add(pre, addedRow);
             }
         }

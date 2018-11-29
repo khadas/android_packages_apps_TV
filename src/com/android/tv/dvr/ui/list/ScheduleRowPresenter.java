@@ -49,6 +49,7 @@ import com.android.tv.dvr.ui.DvrStopRecordingFragment;
 import com.android.tv.dvr.ui.DvrUiHelper;
 import com.android.tv.util.ToastUtils;
 import com.android.tv.util.Utils;
+import com.android.tv.util.TvClock;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
@@ -78,6 +79,7 @@ class ScheduleRowPresenter extends RowPresenter {
     private final Context mContext;
     private final DvrManager mDvrManager;
     private final DvrScheduleManager mDvrScheduleManager;
+    private final TvClock mTvClock;
 
     private final String mTunerConflictWillNotBeRecordedInfo;
     private final String mTunerConflictWillBePartiallyRecordedInfo;
@@ -338,6 +340,7 @@ class ScheduleRowPresenter extends RowPresenter {
         mContext = context;
         mDvrManager = TvSingletons.getSingletons(context).getDvrManager();
         mDvrScheduleManager = TvSingletons.getSingletons(context).getDvrScheduleManager();
+        mTvClock = TvSingletons.getSingletons(context).getTvClock();
         mTunerConflictWillNotBeRecordedInfo =
                 mContext.getString(R.string.dvr_schedules_tuner_conflict_will_not_be_recorded_info);
         mTunerConflictWillBePartiallyRecordedInfo =
@@ -546,7 +549,7 @@ class ScheduleRowPresenter extends RowPresenter {
         List<ScheduledRecording> conflictSchedules =
                 mDvrScheduleManager.getConflictingSchedules(
                         schedule.getChannelId(),
-                        System.currentTimeMillis(),
+                        mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/,
                         schedule.getEndTimeMs());
         for (int i = conflictSchedules.size() - 1; i >= 0; i--) {
             ScheduledRecording conflictSchedule = conflictSchedules.get(i);

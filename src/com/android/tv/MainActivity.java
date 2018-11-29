@@ -2035,7 +2035,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
         @Override
         protected void onPostExecute(Program program) {
-            if (program == null || program.getStartTimeUtcMillis() <= System.currentTimeMillis()) {
+            if (program == null || program.getStartTimeUtcMillis() <= mClock.currentTimeMillis()/*System.currentTimeMillis()*/) {
                 // null or current program
                 return;
             }

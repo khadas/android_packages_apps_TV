@@ -63,6 +63,7 @@ import com.android.tv.tuner.util.TunerInputInfoUtils;
 import com.android.tv.util.SetupUtils;
 import com.android.tv.util.TvInputManagerHelper;
 import com.android.tv.util.Utils;
+import com.android.tv.util.TvClock;
 
 import com.droidlogic.app.SystemControlManager;
 import com.droidlogic.app.tv.TvTime;
@@ -125,6 +126,7 @@ public abstract class TvApplication extends BaseApplication implements TvSinglet
     private SystemControlManager mSystemControlManager;
     private TvTime mTvTime;
     private TvControlDataManager mTvControlDataManager;
+    private TvClock mTvClock;
 
     @Override
     public void onCreate() {
@@ -279,6 +281,17 @@ public abstract class TvApplication extends BaseApplication implements TvSinglet
     }
 
     /**
+     * Returns the {@link TvTime}.
+     */
+    @Override
+    public TvClock getTvClock() {
+        if (mTvClock == null) {
+            mTvClock = new TvClock(getApplicationContext());
+        }
+        return mTvClock;
+    }
+
+    /**
      * Returns the {@link TvControlDataManager}.
      */
     @Override
@@ -364,7 +377,7 @@ public abstract class TvApplication extends BaseApplication implements TvSinglet
     @Override
     public DvrDataManager getDvrDataManager() {
         if (mDvrDataManager == null) {
-            DvrDataManagerImpl dvrDataManager = new DvrDataManagerImpl(this, Clock.SYSTEM);
+            DvrDataManagerImpl dvrDataManager = new DvrDataManagerImpl(this, getTvClock()/*Clock.SYSTEM*/);
             mDvrDataManager = dvrDataManager;
             dvrDataManager.start();
         }

@@ -23,6 +23,7 @@ import com.android.tv.TvSingletons;
 import com.android.tv.dvr.DvrManager;
 import com.android.tv.dvr.data.ScheduledRecording;
 import com.android.tv.util.Utils;
+import com.android.tv.util.TvClock;
 import java.util.concurrent.TimeUnit;
 
 /** Presents a {@link ScheduledRecording} in the {@link DvrBrowseFragment}. */
@@ -31,6 +32,7 @@ class ScheduledRecordingPresenter extends DvrItemPresenter<ScheduledRecording> {
 
     private final DvrManager mDvrManager;
     private final int mProgressBarColor;
+    private final TvClock mTvClock;
 
     private final class ScheduledRecordingViewHolder extends DvrItemViewHolder {
         private final Handler mHandler = new Handler();
@@ -76,7 +78,7 @@ class ScheduledRecordingPresenter extends DvrItemPresenter<ScheduledRecording> {
                                 Math.min(
                                         (int)
                                                 (100
-                                                        * (System.currentTimeMillis()
+                                                        * (mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/
                                                                 - mScheduledRecording
                                                                         .getStartTimeMs())
                                                         / mScheduledRecording.getDuration()),
@@ -101,6 +103,7 @@ class ScheduledRecordingPresenter extends DvrItemPresenter<ScheduledRecording> {
     public ScheduledRecordingPresenter(Context context) {
         super(context);
         mDvrManager = TvSingletons.getSingletons(mContext).getDvrManager();
+        mTvClock = TvSingletons.getSingletons(mContext).getTvClock();
         mProgressBarColor =
                 mContext.getResources()
                         .getColor(R.color.play_controls_recording_icon_color_on_focus);
@@ -135,7 +138,7 @@ class ScheduledRecordingPresenter extends DvrItemPresenter<ScheduledRecording> {
             return mContext.getString(R.string.dvr_recording_failed);
         }
         int dateDifference =
-                Utils.computeDateDifference(System.currentTimeMillis(), recording.getStartTimeMs());
+                Utils.computeDateDifference(mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/, recording.getStartTimeMs());
         if (dateDifference <= 0) {
             return mContext.getString(
                     R.string.dvr_date_today_time,

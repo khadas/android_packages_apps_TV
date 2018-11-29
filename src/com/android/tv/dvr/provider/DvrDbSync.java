@@ -277,7 +277,7 @@ public class DvrDbSync {
                     }
                 }
             } else {
-                long currentTimeMs = System.currentTimeMillis();
+                //long currentTimeMs = System.currentTimeMillis();//not used
                 ScheduledRecording.Builder builder =
                         ScheduledRecording.buildFrom(schedule)
                                 .setEndTimeMs(program.getEndTimeUtcMillis())

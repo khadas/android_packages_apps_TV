@@ -38,6 +38,7 @@ import com.android.tv.dvr.DvrDataManager.ScheduledRecordingListener;
 import com.android.tv.dvr.DvrScheduleManager;
 import com.android.tv.dvr.data.ScheduledRecording;
 import com.android.tv.dvr.ui.DvrUiHelper;
+import com.android.tv.util.TvClock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -78,6 +79,7 @@ public class ConflictChecker {
     private final DvrScheduleManager mScheduleManager;
     private final InputSessionManager mSessionManager;
     private final ConflictCheckerHandler mHandler = new ConflictCheckerHandler(this);
+    private final TvClock mTvClock;
 
     private final List<ScheduledRecording> mUpcomingConflicts = new ArrayList<>();
     private final Set<OnUpcomingConflictChangeListener> mOnUpcomingConflictChangeListeners =
@@ -137,6 +139,7 @@ public class ConflictChecker {
         mChannelDataManager = tvSingletons.getChannelDataManager();
         mScheduleManager = tvSingletons.getDvrScheduleManager();
         mSessionManager = tvSingletons.getInputSessionManager();
+        mTvClock = tvSingletons.getTvClock();
     }
 
     /** Starts checking the conflict. */
@@ -214,7 +217,7 @@ public class ConflictChecker {
         List<ScheduledRecording> conflicts =
                 mScheduleManager.getConflictingSchedulesForWatching(channel.getId());
         long earliestToCheck = Long.MAX_VALUE;
-        long currentTimeMs = System.currentTimeMillis();
+        long currentTimeMs = mTvClock.currentTimeMillis();/*System.currentTimeMillis()*/;
         for (ScheduledRecording schedule : conflicts) {
             long startTimeMs = schedule.getStartTimeMs();
             if (startTimeMs < currentTimeMs + MIN_WATCH_CONFLICT_CHECK_TIME_MS) {

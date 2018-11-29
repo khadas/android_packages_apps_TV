@@ -21,6 +21,8 @@ import android.support.annotation.Nullable;
 import com.android.tv.common.SoftPreconditions;
 import com.android.tv.dvr.data.ScheduledRecording;
 import com.android.tv.dvr.ui.DvrUiHelper;
+import com.android.tv.util.TvClock;
+import com.android.tv.TvSingletons;
 
 /** A class for schedule recording row. */
 class ScheduleRow {
@@ -28,10 +30,14 @@ class ScheduleRow {
     @Nullable private ScheduledRecording mSchedule;
     private boolean mStopRecordingRequested;
     private boolean mStartRecordingRequested;
+    private Context mContext;
+    private TvClock mTvClock;
 
-    public ScheduleRow(@Nullable ScheduledRecording recording, SchedulesHeaderRow headerRow) {
+    public ScheduleRow(@Nullable ScheduledRecording recording, SchedulesHeaderRow headerRow, Context context) {
         mSchedule = recording;
         mHeaderRow = headerRow;
+        mContext = context;
+        mTvClock = TvSingletons.getSingletons(mContext).getTvClock();
     }
 
     /** Gets which {@link SchedulesHeaderRow} this schedule row belongs to. */
@@ -94,7 +100,7 @@ class ScheduleRow {
 
     /** Checks if the program is on air. */
     public final boolean isOnAir() {
-        long currentTimeMs = System.currentTimeMillis();
+        long currentTimeMs = mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/;
         return getStartTimeMs() <= currentTimeMs && getEndTimeMs() > currentTimeMs;
     }
 

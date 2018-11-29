@@ -33,6 +33,7 @@ import com.android.tv.dvr.data.ScheduledRecording;
 import com.android.tv.dvr.data.SeriesRecording;
 import com.android.tv.dvr.ui.list.SchedulesHeaderRow.SeriesRecordingHeaderRow;
 import com.android.tv.util.Utils;
+import com.android.tv.util.TvClock;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -49,6 +50,7 @@ class SeriesScheduleRowAdapter extends ScheduleRowAdapter {
     private final String mInputId;
     private final DvrManager mDvrManager;
     private final DvrDataManager mDataManager;
+    private final TvClock mTvClock;
     private final Map<Long, Program> mPrograms = new ArrayMap<>();
     private SeriesRecordingHeaderRow mHeaderRow;
 
@@ -67,6 +69,7 @@ class SeriesScheduleRowAdapter extends ScheduleRowAdapter {
         TvSingletons singletons = TvSingletons.getSingletons(context);
         mDvrManager = singletons.getDvrManager();
         mDataManager = singletons.getDvrDataManager();
+        mTvClock = singletons.getTvClock();
         setHasStableIds(true);
     }
 
@@ -103,7 +106,7 @@ class SeriesScheduleRowAdapter extends ScheduleRowAdapter {
             if (schedule != null && !willBeKept(schedule)) {
                 schedule = null;
             }
-            rows.add(new EpisodicProgramRow(mInputId, program, schedule, mHeaderRow));
+            rows.add(new EpisodicProgramRow(mInputId, program, schedule, mHeaderRow, getContext()));
             mPrograms.put(program.getId(), program);
         }
         mHeaderRow.setDescription(getDescription());
@@ -111,7 +114,7 @@ class SeriesScheduleRowAdapter extends ScheduleRowAdapter {
         for (EpisodicProgramRow row : rows) {
             add(row);
         }
-        sendNextUpdateMessage(System.currentTimeMillis());
+        sendNextUpdateMessage(mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/);
     }
 
     private String getDescription() {

@@ -35,6 +35,7 @@ import com.android.tv.dvr.data.ScheduledRecording;
 import com.android.tv.dvr.data.SeriesRecording;
 import com.android.tv.dvr.ui.DvrConflictFragment.DvrProgramConflictFragment;
 import com.android.tv.util.Utils;
+import com.android.tv.util.TvClock;
 import java.util.Collections;
 import java.util.List;
 
@@ -55,6 +56,7 @@ public class DvrScheduleFragment extends DvrGuidedStepFragment {
 
     private Program mProgram;
     private boolean mAddCurrentProgramToSeries;
+    private TvClock mTvClock;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -64,6 +66,7 @@ public class DvrScheduleFragment extends DvrGuidedStepFragment {
             mAddCurrentProgramToSeries = args.getBoolean(KEY_ADD_CURRENT_PROGRAM_TO_SERIES, false);
         }
         DvrManager dvrManager = TvSingletons.getSingletons(getContext()).getDvrManager();
+        mTvClock = TvSingletons.getSingletons(getContext()).getTvClock();
         SoftPreconditions.checkArgument(
                 mProgram != null && mProgram.isEpisodic(),
                 TAG,
@@ -95,7 +98,7 @@ public class DvrScheduleFragment extends DvrGuidedStepFragment {
     public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
         Context context = getContext();
         String description;
-        if (mProgram.getStartTimeUtcMillis() <= System.currentTimeMillis()) {
+        if (mProgram.getStartTimeUtcMillis() <= mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/) {
             description =
                     getString(
                             R.string.dvr_action_record_episode_from_now_description,

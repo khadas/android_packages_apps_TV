@@ -50,6 +50,7 @@ import com.android.tv.dvr.data.ScheduledRecording;
 import com.android.tv.dvr.data.SeriesRecording;
 import com.android.tv.util.AsyncDbTask;
 import com.android.tv.util.Utils;
+import com.android.tv.util.TvClock;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,7 +69,7 @@ import java.util.concurrent.Executor;
 @TargetApi(Build.VERSION_CODES.N)
 public class DvrManager {
     private static final String TAG = "DvrManager";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     private final WritableDvrDataManager mDataManager;
     private final DvrScheduleManager mScheduleManager;
@@ -76,6 +77,7 @@ public class DvrManager {
     private final Map<Listener, Handler> mListener = new HashMap<>();
     private final Context mAppContext;
     private final Executor mDbExecutor;
+    private final TvClock mTvClock;
 
     public DvrManager(Context context) {
         SoftPreconditions.checkFeatureEnabled(context, CommonFeatures.DVR, TAG);
@@ -84,6 +86,7 @@ public class DvrManager {
         mDbExecutor = tvSingletons.getDbExecutor();
         mDataManager = (WritableDvrDataManager) tvSingletons.getDvrDataManager();
         mScheduleManager = tvSingletons.getDvrScheduleManager();
+        mTvClock = tvSingletons.getTvClock();
         if (mDataManager.isInitialized() && mScheduleManager.isInitialized()) {
             createSeriesRecordingsForRecordedProgramsIfNeeded(mDataManager.getRecordedPrograms());
         } else {
@@ -383,7 +386,7 @@ public class DvrManager {
                             new ArrayList<>(mDataManager.getDeletedSchedules());
                     for (ScheduledRecording deletedSchedule : deletedSchedules) {
                         if (deletedSchedule.getSeriesRecordingId() == series.getId()
-                                && deletedSchedule.getEndTimeMs() > System.currentTimeMillis()) {
+                                && deletedSchedule.getEndTimeMs() > mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/) {
                             schedulesToRemove.add(deletedSchedule);
                         }
                     }
@@ -780,7 +783,7 @@ public class DvrManager {
     private ScheduledRecording.Builder createScheduledRecordingBuilder(
             String inputId, Program program) {
         ScheduledRecording.Builder builder = ScheduledRecording.builder(inputId, program);
-        long time = System.currentTimeMillis();
+        long time = mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/;
         if (program.getStartTimeUtcMillis() < time && time < program.getEndTimeUtcMillis()) {
             builder.setStartTimeMs(time);
         }

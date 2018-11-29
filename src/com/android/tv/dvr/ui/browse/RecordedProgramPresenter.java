@@ -24,6 +24,7 @@ import com.android.tv.dvr.DvrWatchedPositionManager;
 import com.android.tv.dvr.DvrWatchedPositionManager.WatchedPositionChangedListener;
 import com.android.tv.dvr.data.RecordedProgram;
 import com.android.tv.util.Utils;
+import com.android.tv.util.TvClock;
 
 /** Presents a {@link RecordedProgram} in the {@link DvrBrowseFragment}. */
 public class RecordedProgramPresenter extends DvrItemPresenter<RecordedProgram> {
@@ -33,6 +34,7 @@ public class RecordedProgramPresenter extends DvrItemPresenter<RecordedProgram> 
     private final int mProgressBarColor;
     private final boolean mShowEpisodeTitle;
     private final boolean mExpandTitleWhenFocused;
+    private final TvClock mTvClock;
 
     protected final class RecordedProgramViewHolder extends DvrItemViewHolder
             implements WatchedPositionChangedListener {
@@ -96,6 +98,7 @@ public class RecordedProgramPresenter extends DvrItemPresenter<RecordedProgram> 
         mYesterdayString = mContext.getString(R.string.dvr_date_yesterday);
         mDvrWatchedPositionManager =
                 TvSingletons.getSingletons(mContext).getDvrWatchedPositionManager();
+        mTvClock = TvSingletons.getSingletons(mContext).getTvClock();
         mProgressBarColor =
                 mContext.getResources().getColor(R.color.play_controls_progress_bar_watched);
         mShowEpisodeTitle = showEpisodeTitle;
@@ -127,7 +130,7 @@ public class RecordedProgramPresenter extends DvrItemPresenter<RecordedProgram> 
     private String generateMajorContent(RecordedProgram program) {
         int dateDifference =
                 Utils.computeDateDifference(
-                        program.getStartTimeUtcMillis(), System.currentTimeMillis());
+                        program.getStartTimeUtcMillis(), mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/);
         if (dateDifference == 0) {
             return mTodayString;
         } else if (dateDifference == 1) {

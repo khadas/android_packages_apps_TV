@@ -131,7 +131,7 @@ public class RecordingScheduler extends TvInputCallback implements ScheduledReco
                 singletons.getChannelDataManager(),
                 singletons.getTvInputManagerHelper(),
                 context,
-                Clock.SYSTEM,
+                singletons.getTvClock()/*Clock.SYSTEM*/,
                 (AlarmManager) context.getSystemService(Context.ALARM_SERVICE));
     }
 

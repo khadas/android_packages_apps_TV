@@ -58,7 +58,7 @@ import java.util.concurrent.TimeUnit;
 public class RecordingTask extends RecordingCallback
         implements Handler.Callback, DvrManager.Listener {
     private static final String TAG = "RecordingTask";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     /** Compares the end time in ascending order. */
     public static final Comparator<RecordingTask> END_TIME_COMPARATOR =

@@ -35,6 +35,7 @@ import com.android.tv.dvr.data.SeasonEpisodeNumber;
 import com.android.tv.dvr.data.SeriesRecording;
 import com.android.tv.util.AsyncDbTask.AsyncProgramQueryTask;
 import com.android.tv.util.AsyncDbTask.CursorFilter;
+import com.android.tv.util.TvClock;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -71,6 +72,7 @@ public abstract class EpisodicProgramLoadTask {
 
     private final Context mContext;
     private final DvrDataManager mDataManager;
+    private final TvClock mTvClock;
     private boolean mQueryAllChannels;
     private boolean mLoadCurrentProgram;
     private boolean mLoadScheduledEpisode;
@@ -92,6 +94,7 @@ public abstract class EpisodicProgramLoadTask {
     public EpisodicProgramLoadTask(Context context, Collection<SeriesRecording> seriesRecordings) {
         mContext = context.getApplicationContext();
         mDataManager = TvSingletons.getSingletons(context).getDvrDataManager();
+        mTvClock = TvSingletons.getSingletons(context).getTvClock();
         mSeriesRecordings.addAll(seriesRecordings);
     }
 
@@ -215,7 +218,7 @@ public abstract class EpisodicProgramLoadTask {
                                     ? PROGRAM_PREDICATE_WITH_CURRENT_PROGRAM
                                     : PROGRAM_PREDICATE);
             List<String> args = new ArrayList<>();
-            args.add(Long.toString(System.currentTimeMillis()));
+            args.add(Long.toString(mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/));
             // Channel option
             if (!mQueryAllChannels) {
                 selection.append(" AND ").append(CHANNEL_ID_PREDICATE);
@@ -237,7 +240,7 @@ public abstract class EpisodicProgramLoadTask {
                                 .buildUpon()
                                 .appendQueryParameter(
                                         PARAM_START_TIME,
-                                        String.valueOf(System.currentTimeMillis()))
+                                        String.valueOf(mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/))
                                 .appendQueryParameter(
                                         PARAM_END_TIME, String.valueOf(Long.MAX_VALUE))
                                 .build();
@@ -245,7 +248,7 @@ public abstract class EpisodicProgramLoadTask {
                 sqlParams.uri =
                         TvContract.buildProgramsUriForChannel(
                                 mSeriesRecordings.get(0).getChannelId(),
-                                System.currentTimeMillis(),
+                                mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/,
                                 Long.MAX_VALUE);
             }
             sqlParams.selection = null;
@@ -319,7 +322,7 @@ public abstract class EpisodicProgramLoadTask {
 
         @Override
         public boolean filter(Cursor c) {
-            return (mLoadCurrentProgram || c.getLong(START_TIME_INDEX) > System.currentTimeMillis())
+            return (mLoadCurrentProgram || c.getLong(START_TIME_INDEX) > mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/)
                     && c.getInt(RECORDING_PROHIBITED_INDEX) != 0
                     && super.filter(c);
         }

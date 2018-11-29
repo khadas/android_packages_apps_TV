@@ -35,6 +35,7 @@ import com.android.tv.dvr.DvrManager;
 import com.android.tv.dvr.data.ScheduledRecording;
 import com.android.tv.dvr.ui.list.SchedulesHeaderRow.DateHeaderRow;
 import com.android.tv.util.Utils;
+import com.android.tv.util.TvClock;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,6 +55,7 @@ class ScheduleRowAdapter extends ArrayObjectAdapter {
     private static final int MSG_UPDATE_ROW = 1;
 
     private Context mContext;
+    private TvClock mTvClock;
     private final List<String> mTitles = new ArrayList<>();
     private final Set<ScheduleRow> mPendingUpdate = new ArraySet<>();
 
@@ -62,7 +64,7 @@ class ScheduleRowAdapter extends ArrayObjectAdapter {
                 @Override
                 public void handleMessage(Message msg) {
                     if (msg.what == MSG_UPDATE_ROW) {
-                        long currentTimeMs = System.currentTimeMillis();
+                        long currentTimeMs = mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/;
                         handleUpdateRow(currentTimeMs);
                         sendNextUpdateMessage(currentTimeMs);
                     }
@@ -72,6 +74,7 @@ class ScheduleRowAdapter extends ArrayObjectAdapter {
     public ScheduleRowAdapter(Context context, ClassPresenterSelector classPresenterSelector) {
         super(classPresenterSelector);
         mContext = context;
+        mTvClock = TvSingletons.getSingletons(mContext).getTvClock();
         mTitles.add(mContext.getString(R.string.dvr_date_today));
         mTitles.add(mContext.getString(R.string.dvr_date_tomorrow));
     }
@@ -92,7 +95,7 @@ class ScheduleRowAdapter extends ArrayObjectAdapter {
                 TvSingletons.getSingletons(mContext).getDvrDataManager().getStartedRecordings());
         Collections.sort(
                 recordingList, ScheduledRecording.START_TIME_THEN_PRIORITY_THEN_ID_COMPARATOR);
-        long deadLine = Utils.getLastMillisecondOfDay(System.currentTimeMillis());
+        long deadLine = Utils.getLastMillisecondOfDay(mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/);
         for (int i = 0; i < recordingList.size(); ) {
             ArrayList<ScheduledRecording> section = new ArrayList<>();
             while (i < recordingList.size() && recordingList.get(i).getStartTimeMs() < deadLine) {
@@ -111,18 +114,18 @@ class ScheduleRowAdapter extends ArrayObjectAdapter {
                                 deadLine);
                 add(headerRow);
                 for (ScheduledRecording recording : section) {
-                    add(new ScheduleRow(recording, headerRow));
+                    add(new ScheduleRow(recording, headerRow, mContext));
                 }
             }
             deadLine += ONE_DAY_MS;
         }
-        sendNextUpdateMessage(System.currentTimeMillis());
+        sendNextUpdateMessage(mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/);
     }
 
     private String calculateHeaderDate(long deadLine) {
         int titleIndex =
                 (int)
-                        ((deadLine - Utils.getLastMillisecondOfDay(System.currentTimeMillis()))
+                        ((deadLine - Utils.getLastMillisecondOfDay(mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/))
                                 / ONE_DAY_MS);
         String headerDate;
         if (titleIndex < mTitles.size()) {
@@ -206,13 +209,13 @@ class ScheduleRowAdapter extends ArrayObjectAdapter {
             if (pre >= 0 && getHeaderRow(pre).getDeadLineMs() == deadLine) {
                 SchedulesHeaderRow headerRow = ((ScheduleRow) get(pre)).getHeaderRow();
                 headerRow.setItemCount(headerRow.getItemCount() + 1);
-                ScheduleRow addedRow = new ScheduleRow(recording, headerRow);
+                ScheduleRow addedRow = new ScheduleRow(recording, headerRow, mContext);
                 add(++pre, addedRow);
                 updateHeaderDescription(headerRow);
             } else if (index < size() && getHeaderRow(index).getDeadLineMs() == deadLine) {
                 SchedulesHeaderRow headerRow = ((ScheduleRow) get(index)).getHeaderRow();
                 headerRow.setItemCount(headerRow.getItemCount() + 1);
-                ScheduleRow addedRow = new ScheduleRow(recording, headerRow);
+                ScheduleRow addedRow = new ScheduleRow(recording, headerRow, mContext);
                 add(index, addedRow);
                 updateHeaderDescription(headerRow);
             } else {
@@ -225,7 +228,7 @@ class ScheduleRowAdapter extends ArrayObjectAdapter {
                                 1,
                                 deadLine);
                 add(++pre, headerRow);
-                ScheduleRow addedRow = new ScheduleRow(recording, headerRow);
+                ScheduleRow addedRow = new ScheduleRow(recording, headerRow, mContext);
                 add(pre, addedRow);
             }
         }
@@ -276,7 +279,7 @@ class ScheduleRowAdapter extends ArrayObjectAdapter {
         // instead of in this method.
         if (row == null) {
             addScheduleRow(schedule);
-            sendNextUpdateMessage(System.currentTimeMillis());
+            sendNextUpdateMessage(mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/);
         }
     }
 
@@ -287,7 +290,7 @@ class ScheduleRowAdapter extends ArrayObjectAdapter {
         if (row != null) {
             removeScheduleRow(row);
             notifyArrayItemRangeChanged(indexOf(row), 1);
-            sendNextUpdateMessage(System.currentTimeMillis());
+            sendNextUpdateMessage(mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/);
         }
     }
 
@@ -320,7 +323,7 @@ class ScheduleRowAdapter extends ArrayObjectAdapter {
                 }
             }
             notifyArrayItemRangeChanged(indexOf(row), 1);
-            sendNextUpdateMessage(System.currentTimeMillis());
+            sendNextUpdateMessage(mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/);
         } else {
             row = findRowWithStartRequest(schedule);
             // When the start recording was requested, we give the highest priority. So it is
@@ -337,7 +340,7 @@ class ScheduleRowAdapter extends ArrayObjectAdapter {
                 }
                 row.setSchedule(schedule);
                 notifyArrayItemRangeChanged(indexOf(row), 1);
-                sendNextUpdateMessage(System.currentTimeMillis());
+                sendNextUpdateMessage(mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/);
             }
         }
     }
@@ -376,7 +379,7 @@ class ScheduleRowAdapter extends ArrayObjectAdapter {
     protected boolean willBeKept(ScheduledRecording schedule) {
         // CANCELED state means that the schedule was removed temporarily, which should be shown
         // in the list so that the user can reschedule it.
-        return schedule.getEndTimeMs() > System.currentTimeMillis()
+        return schedule.getEndTimeMs() > mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/
                 && (schedule.getState() == ScheduledRecording.STATE_RECORDING_IN_PROGRESS
                         || schedule.getState() == ScheduledRecording.STATE_RECORDING_NOT_STARTED
                         || schedule.getState() == ScheduledRecording.STATE_RECORDING_CANCELED);
@@ -417,7 +420,7 @@ class ScheduleRowAdapter extends ArrayObjectAdapter {
         mHandler.removeMessages(MSG_UPDATE_ROW);
         long nextTime = getNextTimerMs(currentTimeMs);
         if (nextTime != Long.MAX_VALUE) {
-            mHandler.sendEmptyMessageDelayed(MSG_UPDATE_ROW, nextTime - System.currentTimeMillis());
+            mHandler.sendEmptyMessageDelayed(MSG_UPDATE_ROW, nextTime - mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/);
         }
     }
 }

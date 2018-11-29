@@ -37,6 +37,7 @@ import com.android.tv.tuner.TunerInputController;
 import com.android.tv.util.SetupUtils;
 import com.android.tv.util.TvInputManagerHelper;
 import com.android.tv.util.account.AccountHelper;
+import com.android.tv.util.TvClock;
 import java.util.concurrent.Executor;
 import javax.inject.Provider;
 
@@ -114,4 +115,6 @@ public interface TvSingletons extends BaseSingletons {
     TvTime getTvTime();
 
     TvControlDataManager getTvControlDataManager();
+
+    TvClock getTvClock();
 }

@@ -312,7 +312,7 @@ public class DvrSeriesSettingsFragment extends GuidedStepFragment
         }
         for (Program program : mPrograms) {
             // Removes current programs and scheduled episodes out, matches the channel option.
-            if (program.getStartTimeUtcMillis() >= System.currentTimeMillis()
+            if (program.getStartTimeUtcMillis() >= TvSingletons.getSingletons(getContext()).getTvClock().currentTimeMillis()/*System.currentTimeMillis()*/
                     && mSeriesRecording.matchProgram(program)
                     && !scheduledEpisodes.contains(
                             new SeasonEpisodeNumber(

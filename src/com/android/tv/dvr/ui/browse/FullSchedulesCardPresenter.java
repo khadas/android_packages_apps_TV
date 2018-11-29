@@ -24,6 +24,7 @@ import com.android.tv.TvSingletons;
 import com.android.tv.dvr.data.ScheduledRecording;
 import com.android.tv.dvr.ui.DvrUiHelper;
 import com.android.tv.util.Utils;
+import com.android.tv.util.TvClock;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,11 +32,13 @@ import java.util.List;
 class FullSchedulesCardPresenter extends DvrItemPresenter<Object> {
     private final Drawable mIconDrawable;
     private final String mCardTitleText;
+    private final TvClock mTvClock;
 
     FullSchedulesCardPresenter(Context context) {
         super(context);
         mIconDrawable = mContext.getDrawable(R.drawable.dvr_full_schedule);
         mCardTitleText = mContext.getString(R.string.dvr_full_schedule_card_view_title);
+        mTvClock = TvSingletons.getSingletons(context).getTvClock();
     }
 
     @Override
@@ -57,7 +60,7 @@ class FullSchedulesCardPresenter extends DvrItemPresenter<Object> {
         if (!scheduledRecordings.isEmpty()) {
             fullDays =
                     Utils.computeDateDifference(
-                                    System.currentTimeMillis(),
+                                    mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/,
                                     Collections.max(
                                                     scheduledRecordings,
                                                     ScheduledRecording.START_TIME_COMPARATOR)

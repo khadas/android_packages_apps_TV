@@ -37,6 +37,7 @@ import android.text.TextUtils;
 import android.text.style.TextAppearanceSpan;
 import android.widget.ImageView;
 import android.widget.Toast;
+import android.util.Log;
 import com.android.tv.MainActivity;
 import com.android.tv.R;
 import com.android.tv.TvSingletons;
@@ -646,7 +647,7 @@ public class DvrUiHelper {
     public static void showAddScheduleToast(
             Context context, String title, long startTimeMs, long endTimeMs) {
         String msg =
-                (startTimeMs > System.currentTimeMillis())
+                (startTimeMs > TvSingletons.getSingletons(context).getTvClock().currentTimeMillis()/*System.currentTimeMillis()*/)
                         ? context.getString(R.string.dvr_msg_program_scheduled, title)
                         : context.getString(
                                 R.string.dvr_msg_current_program_scheduled,

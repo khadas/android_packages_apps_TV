@@ -92,8 +92,8 @@ public class DvrChannelRecordDurationOptionFragment extends DvrGuidedStepFragmen
     public void onTrackedGuidedActionClicked(GuidedAction action) {
         DvrManager dvrManager = TvSingletons.getSingletons(getContext()).getDvrManager();
         long duration = mDurations.get((int) action.getId());
-        long startTimeMs = System.currentTimeMillis();
-        long endTimeMs = System.currentTimeMillis() + duration;
+        long startTimeMs = TvSingletons.getSingletons(getContext()).getTvClock().currentTimeMillis();/*System.currentTimeMillis()*/;
+        long endTimeMs = TvSingletons.getSingletons(getContext()).getTvClock().currentTimeMillis()/*System.currentTimeMillis()*/ + duration;
         List<ScheduledRecording> conflicts =
                 dvrManager.getConflictingSchedules(mChannel.getId(), startTimeMs, endTimeMs);
         dvrManager.addSchedule(mChannel, startTimeMs, endTimeMs);
