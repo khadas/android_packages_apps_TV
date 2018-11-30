@@ -262,7 +262,7 @@ public abstract class TvApplication extends BaseApplication implements TvSinglet
     @Override
     public SystemControlManager getSystemControlManager() {
         if (mSystemControlManager == null) {
-            mSystemControlManager = new SystemControlManager(getApplicationContext());
+            mSystemControlManager = SystemControlManager.getInstance();
         }
         return mSystemControlManager;
     }

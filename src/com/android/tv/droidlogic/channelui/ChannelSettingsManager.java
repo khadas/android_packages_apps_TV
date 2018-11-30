@@ -81,7 +81,7 @@ public class ChannelSettingsManager {
         this.mChannelId = mMainActivity.getCurrentChannelId();
 
         mTvDataBaseManager = new TvDataBaseManager(context);
-        mSystemControlManager = new SystemControlManager(context);
+        mSystemControlManager = SystemControlManager.getInstance();
         mTvControlManager = TvControlManager.getInstance();
         mStrength = mTvControlManager.DtvGetSignalStrength();
 

@@ -178,7 +178,7 @@ public class ProgramDataManager implements MemoryManageable {
     }
 
     public boolean getSystemProperty(String prop){
-        return (SystemControlManager.getInstance().getPropertyBoolean(prop, false);
+        return (SystemControlManager.getInstance().getPropertyBoolean(prop, false));
     }
 
     @VisibleForTesting
