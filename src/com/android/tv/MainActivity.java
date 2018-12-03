@@ -408,6 +408,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     tuneToChannel(toChannel);
                     break;
                 case BROADCAST_DELETE_ALL_CHANNELS:
+                    stopTv();
+                    mTvView.showNoDataBaseHint();
+                    break;
                 case BROADCAST_SKIP_ALL_CHANNELS:
                     //[DroidLogic]
                     //when all channels are deleted or skipped, stopTv.

@@ -40,6 +40,7 @@ import com.android.tv.ui.sidepanel.RadioButtonItem;
 import com.android.tv.ui.sidepanel.ActionItem;
 import com.android.tv.data.ChannelNumber;
 import com.android.tv.TvSingletons;
+import com.android.tv.data.api.Channel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ import com.droidlogic.app.tv.ChannelInfo;
 public class ChannelModifyDetailsFragment extends SideFragment {
     private static final String TAG = "ChannelModifyDetailsFragment";
 
-    private static final String BROADCAST_DELETE_ALL_CHANNELS = "android.action.delete.all.channels";
+    private static final String BROADCAST_DELETE_ALL_CHANNELS = "action.delete.all.channels";
     private static final boolean mDebug = false;
     private ChannelSettingsManager mChannelSettingsManager;
     private ChannelTuner mChannelTuner;
@@ -147,22 +148,23 @@ public class ChannelModifyDetailsFragment extends SideFragment {
                 mChannelSettingsManager.skipChannel(mId);
                 closeFragment();
             } else if (mTrackId == SET_DELETE) {
-                int deletedChannelIndex = mChannelTuner.getChannelIndexById(mId);
-                if (getMainActivity().getCurrentChannelId() == mId) {
-                    mChannelTuner.moveToAdjacentBrowsableChannel(true);
-                    getMainActivity().tuneToChannel(mChannelTuner.getCurrentChannel());
-                }
-                //getMainActivity().setChannelIndex(deletedChannelIndex);
                 mChannelSettingsManager.deleteChannel(mId);
-                //[DroidLogic]
-                //when delete a channel,update the channel counts in Settings.
-                int channelCnts = TvSingletons.getSingletons(getMainActivity()).getTvControlDataManager().getInt(getMainActivity().getContentResolver(), DroidLogicTvUtils.ALL_CHANNELS_NUMBER, 0);
-                if (channelCnts != 0) {
-                    channelCnts--;
-                    TvSingletons.getSingletons(getMainActivity()).getTvControlDataManager().putInt(getMainActivity().getContentResolver(), DroidLogicTvUtils.ALL_CHANNELS_NUMBER, channelCnts);
+                boolean deleteall = false;
+                Channel movedone = null;
+                if (getMainActivity().getCurrentChannelId() == mId) {
+                    if (mChannelTuner.moveToAdjacentBrowsableChannel(true)) {
+                        movedone = mChannelTuner.getCurrentChannel();
+                        Log.d(TAG, "onSelected movedone = " + movedone);
+                        if (movedone == null || (movedone != null && movedone.getId() == mId)) {
+                            deleteall = true;
+                        } else {
+                            getMainActivity().tuneToChannel(movedone);
+                        }
+                    } else {
+                        deleteall = true;
+                    }
                 }
-                int channelCntsAfterDelete = TvSingletons.getSingletons(getMainActivity()).getTvControlDataManager().getInt(getMainActivity().getContentResolver(), DroidLogicTvUtils.ALL_CHANNELS_NUMBER, 0);
-                if (channelCntsAfterDelete == 0) {
+                if (deleteall) {
                     Intent intent = new Intent();
                     intent.setAction(BROADCAST_DELETE_ALL_CHANNELS);
                     getMainActivity().sendBroadcast(intent);
