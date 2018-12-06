@@ -162,6 +162,11 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         return id;
     }
 
+    public Channel creatEmptyTunerChannel() {
+        TvInputInfo info = getTunerInput();
+        return ChannelImpl.createEmptyTunerChannel(info != null ? info.getId() : "inputId");
+    }
+
     public TvInputInfo getCurrentTvInputInfo() {
         return mChannelTuner.getCurrentInputInfo();
     }

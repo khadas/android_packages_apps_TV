@@ -246,6 +246,14 @@ public class ChannelTuner {
         return mCurrentChannelInputInfo;
     }
 
+    public boolean setCurrentInputInfo(TvInputInfo prepareone) {
+        if (prepareone != null) {
+            mCurrentChannelInputInfo = mInputManager.getTvInputInfo(prepareone.getId());
+            return true;
+        }
+        return false;
+    }
+
     /** Returns true, if the current channel is for a passthrough TV input. */
     public boolean isCurrentChannelPassthrough() {
         return mCurrentChannel != null && mCurrentChannel.isPassthrough();

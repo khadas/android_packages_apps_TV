@@ -492,6 +492,10 @@ public final class ChannelImpl implements Channel {
         return new Builder().setInputId(inputId).setPassthrough(true).build();
     }
 
+    public static ChannelImpl createEmptyTunerChannel(String inputId) {
+        return new Builder().setInputId(inputId).setPassthrough(false).build();
+    }
+
     /** Checks whether the channel is valid or not. */
     public static boolean isValid(Channel channel) {
         return channel != null && (channel.getId() != INVALID_ID || channel.isPassthrough());

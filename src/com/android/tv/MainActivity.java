@@ -2150,6 +2150,10 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         mQuickKeyInfo.sendSourceToAvlModule(channel);
         if (channel == null || (channel != null && !channel.isPassthrough() && !mQuickKeyInfo.isChannelMatchAtvDtvSource(channel))) {
             mChannelTuner.resetCurrentChannel();
+            //set current tvinputinfo to tuner as no channel
+            if (channel == null) {
+                mChannelTuner.setCurrentInputInfo(mQuickKeyInfo.getTunerInput());
+            }
             //deal switch source when channel not update on time
             Channel preparechannel = null;
             if (getSearchTypeChangedStatus() == 1) {
