@@ -1262,6 +1262,9 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
 
     @Override
     public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume");
+
         if (isFinished) {
             ShowToastTint(getString(R.string.tv_search_channel_stopped));
             finish();
@@ -1269,8 +1272,6 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
             isFinished = false;
         }
 
-        super.onResume();
-        Log.d(TAG, "onResume");
         IntentFilter filter = new IntentFilter();
         filter.addAction(DroidLogicTvUtils.ACTION_CHANNEL_CHANGED);
         filter.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
