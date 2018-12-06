@@ -27,7 +27,7 @@
         android:layout_width="1dp"
         android:layout_height="1dp"
         android:focusable="false"
-        android:focusableInTouchMode="true"
+        android:focusableInTouchMode="false"
         android:focusedByDefault="true"
         android:layout_gravity="center" />
 
