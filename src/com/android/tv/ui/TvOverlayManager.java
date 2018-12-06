@@ -886,7 +886,8 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
                     if (isChannelBannerViewActive()) {
                         mChannelBannerView.updateViews(mMainActivity.getTvView());
                     } else {
-                        showBanner();
+                        //When TvView is playing in cycle, do not automatically show info bar.
+                        //showBanner();
                     }
                 }
             } else {
