@@ -259,6 +259,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     private static final int MSG_CHANNEL_DOWN_PRESSED = 1000;
     private static final int MSG_CHANNEL_UP_PRESSED = 1001;
     private static final int MSG_FILTER_CEC_OTP_TIMEOUT = 1002;
+    private static final int MSG_TUNE_CHANNEL = 1003;
 
     private static final int TVVIEW_SET_MAIN_TIMEOUT_MS = 3000;
     private static final int DELAY_TIMEOUT_MS = 10000;
@@ -3110,13 +3111,15 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         }
         mHandler.removeMessages(MSG_CHANNEL_UP_PRESSED);
         mHandler.removeMessages(MSG_CHANNEL_DOWN_PRESSED);
+        mHandler.removeMessages(MSG_TUNE_CHANNEL);
         if (mChannelTuner.getBrowsableChannelCount() > 0) {
             if (!mTvView.isPlaying()) {
                 // We expect that mTvView is already played. But, it is sometimes not.
                 // TODO: we figure out the reason when mTvView is not played.
                 Log.w(TAG, "TV view isn't played in finishChannelChangeIfNeeded");
             }
-            tuneToChannel(mChannelTuner.getCurrentChannel());
+            //tuneToChannel(mChannelTuner.getCurrentChannel());
+            mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_TUNE_CHANNEL, mChannelTuner.getCurrentChannel()), CHANNEL_CHANGE_INITIAL_DELAY_MILLIS);
         } else {
             if (!USE_DROIDLOIC_CUSTOMIZATION) {
                 showSettingsFragment();
@@ -3541,6 +3544,10 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     mFilterOtpEnabled = false;
                     if (DEBUG) Log.d(TAG, "reset mFilterOtpEnabled to false");
                     break;
+                case MSG_TUNE_CHANNEL:
+                    Channel channel = (Channel) msg.obj;
+                    mainActivity.tuneToChannel(channel);
+                    if (DEBUG) Log.d(TAG, "MSG_CHANNEL_TUNE");
                 default: // fall out
             }
         }
