@@ -283,6 +283,41 @@
                         android:hint=""/>
                 </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/dtmb_select_frequency"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/ut_scan_icon_margin_right"
+                    android:paddingTop="@dimen/ut_scan_button_margin_top" >
+
+                    <Button
+                        android:id="@+id/button_left"
+                        android:accessibilityLiveRegion="polite"
+                        android:layout_width="@dimen/dtmb_select_frequency_array_width"
+                        android:layout_height="@dimen/dtmb_select_frequency_array_height"
+                        android:background="@drawable/dtmb_arrow_drop_down_selector"
+                        android:rotation="90" />
+
+                    <TextView
+                        android:id="@+id/textview_display"
+                        android:accessibilityLiveRegion="polite"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif"
+                        android:textColor="@color/ut_scan_description_text"
+                        android:textSize="@dimen/ut_scan_description_text_size"
+                        android:paddingLeft="@dimen/dtmb_select_frequency_array_padding"
+                        android:paddingRight="@dimen/dtmb_select_frequency_array_padding" />
+
+                    <Button
+                        android:id="@+id/button_right"
+                        android:accessibilityLiveRegion="polite"
+                        android:layout_width="@dimen/dtmb_select_frequency_array_width"
+                        android:layout_height="@dimen/dtmb_select_frequency_array_height"
+                        android:background="@drawable/dtmb_arrow_drop_down_selector"
+                        android:rotation="-90" />
+                </LinearLayout>
+
             </LinearLayout>
 
             <LinearLayout

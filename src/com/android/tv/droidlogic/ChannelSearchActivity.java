@@ -50,11 +50,13 @@ import com.droidlogic.app.tv.TvDataBaseManager;
 import com.droidlogic.app.tv.TvScanManager;
 import com.droidlogic.tvinput.services.TvMessage;
 import com.droidlogic.app.tv.TvControlDataManager;
+import vendor.amlogic.hardware.tvserver.V1_0.FreqList;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Iterator;
 
 public class ChannelSearchActivity extends Activity implements OnClickListener, TvScanManager.ScannerMessageListener {
     public static final String TAG = "ChannelSearchActivity";
@@ -95,6 +97,12 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
     private TextView mAtvColorSystemText;
     private TextView mAtvSoundSystemText;
     private TextView mDvbcQamModeText;
+    private ViewGroup mDtmbFrequencySelect;
+    private Button mDtmbSelectFrequencyLeft;
+    private TextView mDtmbFrequency;
+    private Button mDtmbSelectFrequencyRight;
+
+    private String[] mDtmbFrequencyName = null;
 
     private String mInputId;
     private Intent in;
@@ -118,6 +126,9 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
     public static final int SET_ATSC_T = 4;
     public static final int SET_ATSC_C= 5;
     public static final int SET_ISDB_T = 6;
+
+    private static final int DTV_TO_ATV = 5;
+    private List<String> mDtmbDisplayNameWithExtra = new ArrayList<String>();
 
     public static final String STRING_NAME = "name";
     public static final String STRING_STATUS = "status";
@@ -216,6 +227,7 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
         }
         isFinished = false;
         mATvAutoScanMode = mTvControlManager.GetAtvAutoScanMode();
+        mDtmbDisplayNameWithExtra = getDtmbFrequencyInfoAddExtra();
         handler.sendEmptyMessage(START_INIT);
 
         //start number search when service connected
@@ -245,6 +257,13 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
         mScanButton.requestFocus();
         mInputChannelFrom = (EditText) findViewById(R.id.input_channel_from);
         mInputChannelTo= (EditText) findViewById(R.id.input_channel_to);
+        mDtmbFrequencySelect = (ViewGroup) findViewById(R.id.dtmb_select_frequency);
+        mDtmbSelectFrequencyLeft = (Button) findViewById(R.id.button_left);
+        mDtmbSelectFrequencyRight = (Button) findViewById(R.id.button_right);
+        mDtmbFrequency = (TextView) findViewById(R.id.textview_display);
+        mDtmbFrequency.setText((mDtmbDisplayNameWithExtra.size() > 0 && getCurrentDtmbPhysicalNumber() < mDtmbDisplayNameWithExtra.size()) ? mDtmbDisplayNameWithExtra.get(getCurrentDtmbPhysicalNumber()) : "------");
+        mDtmbSelectFrequencyLeft.setOnClickListener(this);
+        mDtmbSelectFrequencyRight.setOnClickListener(this);
         initSpinner();
         startShowActivityTimer();
     }
@@ -559,6 +578,7 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
             mAtvSoundSystem.setEnabled(false);
             hideAtvRelatedOption(true);
         }
+
         if (SEARCH_MODE_LIST[TV_SEARCH_AUTO].equals(getSearchMode())) {
             hideInputChannel(true);
             mScanButton.setText(R.string.ut_auto_scan);
@@ -779,10 +799,32 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
             } else {
                 mToInputLayout.setVisibility(View.GONE);
             }
-
+            if (checkDtmbFrequencySelectDisplay()) {
+                mFromInputLayout.setVisibility(View.GONE);
+            } else {
+                mFromInputLayout.setVisibility(View.VISIBLE);
+            }
         }
         mInputChannelFrom.setText("");
         mInputChannelTo.setText("");
+    }
+
+    private boolean checkDtmbFrequencySelectDisplay() {
+        if (TvContract.Channels.TYPE_DTMB.equals(getDtvType()) && (getAtvDtvModeFlag() == SEARCH_DTV) && SEARCH_MODE_LIST[TV_SEARCH_MANUAL].equals(getSearchMode())) {
+            hideDtmbFrequencySelect(false);
+            return true;
+        } else {
+            hideDtmbFrequencySelect(true);
+            return false;
+        }
+    }
+
+    private void hideDtmbFrequencySelect(boolean value) {
+        if (value) {
+            mDtmbFrequencySelect.setVisibility(View.GONE);
+        } else {
+            mDtmbFrequencySelect.setVisibility(View.VISIBLE);
+        }
     }
 
     private void hideSearchOption(boolean value) {
@@ -1032,8 +1074,10 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
         String to = null;
 
         int[] freqPair = new int[2];
-
-        if (!isNumberSearchMode && mInputChannelFrom.getText() != null && mInputChannelFrom.getText().length() > 0) {
+        //extra frequency need to add in dtmb xml
+        if (TvContract.Channels.TYPE_DTMB.equals(getDtvType()) && (getAtvDtvModeFlag() == SEARCH_DTV) && SEARCH_MODE_LIST[TV_SEARCH_MANUAL].equals(getSearchMode())) {
+            from = String.valueOf(getCurrentDtmbPhysicalNumber() + 1);
+        } else if (!isNumberSearchMode && mInputChannelFrom.getText() != null && mInputChannelFrom.getText().length() > 0) {
             from = mInputChannelFrom.getText().toString();
         } else if (isNumberSearchMode) {
             from = String.valueOf(mNumber.split("-")[0]);
@@ -1069,7 +1113,7 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
         if (SEARCH_MODE_LIST[TV_SEARCH_MANUAL].equals(searchmode)) {
             manualsearch = true;
         }
-        if (manualsearch && mInputChannelFrom.getText() != null && mInputChannelFrom.getText().length() > 0) {
+        if (manualsearch && ((mInputChannelFrom.getText() != null && mInputChannelFrom.getText().length() > 0) || checkDtmbFrequencySelectDisplay())) {
             if (mATvAutoScanMode == TvControlManager.ScanType.SCAN_ATV_AUTO_ALL_BAND && getAtvDtvModeFlag() == SEARCH_ATV) {
                 mTvControlManager.ATVGetMinMaxFreq(freqPair);
 
@@ -1193,6 +1237,28 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
                     mAtscSearchTypeOption.setEnabled(false);
                 }
                 break;*/
+            case R.id.button_left:
+                int currentDtmbPhysicalNumber1 = getCurrentDtmbPhysicalNumber();
+                currentDtmbPhysicalNumber1--;
+                if (mDtmbDisplayNameWithExtra.size() == 0) {
+                    currentDtmbPhysicalNumber1 = 0;
+                } else if (currentDtmbPhysicalNumber1 < 0) {
+                    currentDtmbPhysicalNumber1 = mDtmbDisplayNameWithExtra.size() - 1;
+                }
+                mDtmbFrequency.setText(mDtmbDisplayNameWithExtra.size() > 0 ? mDtmbDisplayNameWithExtra.get(currentDtmbPhysicalNumber1) : "------");
+                setCurrentDtmbPhysicalNumber(currentDtmbPhysicalNumber1);
+                break;
+            case R.id.button_right:
+                int currentDtmbPhysicalNumber2 = getCurrentDtmbPhysicalNumber();
+                currentDtmbPhysicalNumber2++;
+                if (mDtmbDisplayNameWithExtra.size() == 0) {
+                    currentDtmbPhysicalNumber2 = 0;
+                } else if (currentDtmbPhysicalNumber2 > mDtmbDisplayNameWithExtra.size() - 1) {
+                    currentDtmbPhysicalNumber2 = 0;
+                }
+                mDtmbFrequency.setText(mDtmbDisplayNameWithExtra.size() > 0 ? mDtmbDisplayNameWithExtra.get(currentDtmbPhysicalNumber2) : "------");
+                setCurrentDtmbPhysicalNumber(currentDtmbPhysicalNumber2);
+                break;
             default:
                 break;
         }
@@ -1614,6 +1680,34 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
         int mode = mTvControlDataManager.getInt(ChannelSearchActivity.this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_DVBC_QAM, DroidLogicTvUtils.TV_SEARCH_DVBC_QAM16);
         Log.d(TAG, "getDvbcQamMode = " + mode);
         return mode;
+    }
+
+    private int getCurrentDtmbPhysicalNumber() {
+        int mode = DroidLogicTvUtils.getCurrentDtmbPhysicalNumber(ChannelSearchActivity.this);
+        Log.d(TAG, "getCurrentDtmbPhysicalNumber = " + mode);
+        return mode;
+    }
+
+    private void setCurrentDtmbPhysicalNumber(int number) {
+        Log.d(TAG, "setCurrentDtmbPhysicalNumber = " + number);
+        DroidLogicTvUtils.setCurrentDtmbPhysicalNumber(ChannelSearchActivity.this, number);
+    }
+
+    private List<String> getDtmbFrequencyInfoAddExtra() {
+        List<String> result = new ArrayList<String>();
+        TvControlManager.TvMode mode = new TvControlManager.TvMode(TvContract.Channels.TYPE_DTMB);
+        mode.setList(0 + DTV_TO_ATV);
+        ArrayList<FreqList> m_fList = mTvControlManager.DTVGetScanFreqList(mode.getMode());
+        if (m_fList != null && m_fList.size() > 0) {
+            Iterator it = m_fList.iterator();
+            while (it.hasNext()) {
+                FreqList tempFreqList = (FreqList)(it.next());
+                String display = tempFreqList.physicalNumDisplayName;
+                //Log.d(TAG, "getDtmbFrequencyInfoAddExtra = " + display + ", num = " + tempFreqList.channelNum + ", freq = " + tempFreqList.freq);
+                result.add(display);
+            }
+        }
+        return result;
     }
 
      //30s timeout, stop scan
