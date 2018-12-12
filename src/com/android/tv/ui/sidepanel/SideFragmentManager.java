@@ -59,7 +59,7 @@ public class SideFragmentManager implements AccessibilityStateChangeListener {
     private final Runnable mHideAllRunnable = new Runnable() {
         @Override
         public void run() {
-            sartedByDroid = false;
+            startedByDroid = false;
             hideAll(true);
         }
     };
@@ -110,12 +110,20 @@ public class SideFragmentManager implements AccessibilityStateChangeListener {
         show(sideFragment, true);
     }
 
+    public boolean getStartedByDroid() {
+        return startedByDroid;
+    }
+
+    public void setStartedByDroid(boolean showByDroid) {
+        startedByDroid = showByDroid;
+    }
+
     /** Shows the given {@link SideFragment}. */
     //add flag if started by droidsetting
-    private boolean sartedByDroid = false;
+    private boolean startedByDroid = false;
 
     public void showByDroid(SideFragment sideFragment, boolean showEnterAnimation) {
-        sartedByDroid = true;
+        startedByDroid = true;
         show(sideFragment, showEnterAnimation);
     }
 
@@ -168,8 +176,8 @@ public class SideFragmentManager implements AccessibilityStateChangeListener {
         } else if (mFragmentCount == 1) {
             // Show closing animation with the last fragment.
             hideAll(true);
-            if (MainActivity.USE_DROIDLOIC_CUSTOMIZATION && sartedByDroid) {
-                sartedByDroid = false;
+            if (MainActivity.USE_DROIDLOIC_CUSTOMIZATION && startedByDroid) {
+                startedByDroid = false;
                 ((MainActivity)mActivity).mQuickKeyInfo.startDroidSettings();
             }
             return;

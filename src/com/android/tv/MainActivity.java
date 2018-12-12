@@ -1437,6 +1437,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         unregisterReceiver(mBroadcastReceiver);
         mTracker.sendMainStop(mMainDurationTimer.reset());
         hdmi_cec.selectHdmiDevice(0, 0, 0);
+        if (mOverlayManager.getSideFragmentManager().getStartedByDroid()) {
+            mOverlayManager.getSideFragmentManager().setStartedByDroid(false);
+        }
         super.onStop();
     }
 
