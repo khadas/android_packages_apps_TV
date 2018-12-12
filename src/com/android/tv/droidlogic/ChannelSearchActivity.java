@@ -1204,7 +1204,8 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
         switch (keyCode) {
             case KeyEvent.KEYCODE_BACK:
                 if (isSearching()) {
-                    handler.post(StopScanRunnable);//prevent anr
+                    dtvStopScan();
+                    resetSearchStatus();
                 } else {
                     finish();
                 }
@@ -1221,17 +1222,6 @@ public class ChannelSearchActivity extends Activity implements OnClickListener, 
         }
         return super.onKeyDown(keyCode, event);
     }
-
-    //prevent anr when stop scan
-    Runnable StopScanRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (isSearching()) {
-                dtvStopScan();
-                resetSearchStatus();
-            }
-        }
-    };
 
     public void resetSearchTypeChanged() {
         int searchTypeChanged = mTvControlDataManager.getInt(this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0);
