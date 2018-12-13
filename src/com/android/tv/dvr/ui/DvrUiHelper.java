@@ -261,7 +261,9 @@ public class DvrUiHelper {
      */
     public static void requestRecordingCurrentProgram(
             Activity activity, Channel channel, Program program, boolean addProgramToSeries) {
-        if (program == null) {
+        //record after select a period
+        DvrUiHelper.showChannelRecordDurationOptions(activity, channel);
+        /*if (program == null) {
             DvrUiHelper.showChannelRecordDurationOptions(activity, channel);
         } else if (DvrUiHelper.handleCreateSchedule(activity, program, addProgramToSeries)) {
             String msg =
@@ -270,7 +272,7 @@ public class DvrUiHelper {
                             program.getTitle(),
                             Utils.toTimeString(program.getEndTimeUtcMillis(), false));
             Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show();
-        }
+        }*/
     }
 
     /**
