@@ -2914,6 +2914,11 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     mOverlayManager.getSideFragmentManager().show(new ClosedCaptionFragment());
                     return true;
                 case KeyEvent.KEYCODE_ZOOM_IN:
+                    if (!QuickKeyInfo.COUNTRY_GERMANY.equals(mQuickKeyInfo.getCountry())) {
+                        //teletext not needed
+                        Log.d(TAG, "teletext only needed in European country");
+                        return true;
+                    }
                     mOverlayManager.getSideFragmentManager().show(new TeleTextFragment());
                     return true;
                 case KeyEvent.KEYCODE_A:

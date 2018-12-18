@@ -1174,7 +1174,8 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
 
     /********start:add set country for quick key********/
 
-    public final String COUNTRY_CHINA = "CN";//dtmb mode
+    public static final String COUNTRY_CHINA = "CN";//dtmb mode
+    public static final String COUNTRY_GERMANY = "DE";//European country mode
 
     public String getCountry() {
         String country = TvSingletons.getSingletons(mContext).getTvControlDataManager().getString(mContext.getContentResolver(), DroidLogicTvUtils.KEY_SEARCH_COUNTRY);
@@ -1643,7 +1644,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         Map<String, String> parsedMap = DroidLogicTvUtils.stringToMap(trackid);
         int type = Integer.parseInt(parsedMap.get("type"));
         if (DEBUG) Log.d(TAG, "isTeletextSubtitleTrack type = " + type);
-        if (type == ChannelInfo.Subtitle.TYPE_DTV_TELETEXT || type == ChannelInfo.Subtitle.TYPE_DTV_TELETEXT_IMG) {
+        if (/*type == ChannelInfo.Subtitle.TYPE_DTV_TELETEXT || */type == ChannelInfo.Subtitle.TYPE_DTV_TELETEXT_IMG) {
             return true;
         }
         return false;
