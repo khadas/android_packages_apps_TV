@@ -142,6 +142,8 @@ public interface Channel {
 
     boolean isFavourite();
 
+    String getSignalType();
+
     String getContentRatings();
 
     int getFrequency();

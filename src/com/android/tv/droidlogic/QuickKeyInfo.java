@@ -411,20 +411,24 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
 
     public boolean isChannelMatchAtvDtvSource(final Channel channel) {
         boolean needatvdtvsource = !DroidLogicTvUtils.isAtscCountry(mContext);
-        long channelindex = mActivity.getChannelIdForAtvDtvMode();
-        if (needatvdtvsource && channel != null) {
-            if ((DroidLogicTvUtils.getSearchType(mContext) == 0 && channel.isAnalogChannel()) ||
-                    (DroidLogicTvUtils.getSearchType(mContext) > 0 && channel.isDigitalChannel()) ||
-                    channel.isOtherChannel()) {
-                Log.d(TAG, "isChannelMatchAtvDtvSource true");
+        //long channelindex = mActivity.getChannelIdForAtvDtvMode();
+        if (channel != null) {
+            if (channel.isOtherChannel()) {
+                Log.d(TAG, "isChannelMatchAtvDtvSource other type channel");
+                return true;
+            } else if (needatvdtvsource && ((DroidLogicTvUtils.getSearchType(mContext) == 0 && channel.isAnalogChannel()) || (DroidLogicTvUtils.getSearchType(mContext) > 0 && channel.isDigitalChannel()))) {
+                Log.d(TAG, "isChannelMatchAtvDtvSource not atsc channel matched");
+                return true;
+            } else if (!needatvdtvsource && TextUtils.equals(channel.getSignalType(), getDtvType())) {
+                Log.d(TAG, "isChannelMatchAtvDtvSource atsc channel matched");
                 return true;
             } else {
                 Log.d(TAG, "isChannelMatchAtvDtvSource false");
                 return false;
             }
         }
-        Log.d(TAG, "isChannelMatchAtvDtvSource do not need needatvdtvsource");
-        return true;
+        Log.d(TAG, "null channel not matched");
+        return false;
     }
 
     public void printCallBackTraceIfNeeded(String func) {

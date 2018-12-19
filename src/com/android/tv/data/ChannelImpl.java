@@ -49,6 +49,8 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import com.droidlogic.app.tv.DroidLogicTvUtils;
+
 /** A convenience class to create and insert channel entries into the database. */
 public final class ChannelImpl implements Channel {
     private static final String TAG = "ChannelImpl";
@@ -138,6 +140,7 @@ public final class ChannelImpl implements Channel {
             channel.mFrequency = Integer.parseInt(channel.mChannelInternalProviderDataMap.get(KEY_FREQUENCY));
             channel.mContentRatings = channel.mChannelInternalProviderDataMap.get(KEY_CONTENT_RATINGS);
             channel.mIsFavourite = TextUtils.equals(channel.mChannelInternalProviderDataMap.get(KEY_IS_FAVOURITE), "1");
+            channel.mSignalType = DroidLogicTvUtils.TvString.fromString(channel.mChannelInternalProviderDataMap.get(KEY_SIGNAL_TYPE));
         }
 
         return channel;
@@ -190,6 +193,7 @@ public final class ChannelImpl implements Channel {
     //add new variable
     private String mServiceType;
     private boolean mIsFavourite;
+    private String mSignalType;
 
     private ChannelImpl() {
         // Do nothing.
@@ -476,6 +480,7 @@ public final class ChannelImpl implements Channel {
         mFrequency = other.mFrequency;
         mContentRatings = other.mContentRatings;
         mIsFavourite = other.mIsFavourite;
+        mSignalType = other.mSignalType;
     }
 
     /** Creates a channel for a passthrough TV input. */
@@ -647,6 +652,11 @@ public final class ChannelImpl implements Channel {
 
         public Builder setFavourite(boolean value) {
             mChannel.mIsFavourite = value;
+            return this;
+        }
+
+        public Builder setSignalType(String value) {
+            mChannel.mSignalType = value;
             return this;
         }
 
@@ -865,6 +875,7 @@ public final class ChannelImpl implements Channel {
     public static final String KEY_FREQUENCY = "frequency";
     public static final String KEY_CONTENT_RATINGS = "content_ratings";
     public static final String KEY_IS_FAVOURITE = "is_favourite";
+    public static final String KEY_SIGNAL_TYPE = "signal_type";
 
     public Map<String, String> getChannelInternalProviderDataMap() {
         return mChannelInternalProviderDataMap;
@@ -962,6 +973,14 @@ public final class ChannelImpl implements Channel {
 
     public void setFavourite(boolean value) {
         mIsFavourite = value;
+    }
+
+    public String getSignalType() {
+        return mSignalType;
+    }
+
+    public void setSignalType(String value) {
+        mSignalType = value;
     }
     /********end: extend channel information ********/
 }
