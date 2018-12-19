@@ -492,6 +492,15 @@ public class RecordingTask extends RecordingCallback
         stop();
     }
 
+    @Override
+    public void onCancelRecording(ScheduledRecording recording) {
+        if (recording.getId() != mScheduledRecording.getId()) {
+            return;
+        }
+        if (DEBUG) Log.d(TAG, "onCancelRecording");
+        cancel();
+    }
+
     /** Starts the task. */
     public void start() {
         mHandler.sendEmptyMessage(MSG_INITIALIZE);

@@ -49,6 +49,7 @@ import com.android.tv.data.BaseProgram;
 import com.android.tv.data.Program;
 import com.android.tv.data.api.Channel;
 import com.android.tv.dialog.HalfSizedDialogFragment;
+import com.android.tv.dialog.SafeDismissDialogFragment;
 import com.android.tv.dvr.DvrManager;
 import com.android.tv.dvr.data.RecordedProgram;
 import com.android.tv.dvr.data.ScheduledRecording;
@@ -218,6 +219,21 @@ public class DvrUiHelper {
         args.putInt(DvrStopRecordingFragment.KEY_REASON, reason);
         DvrHalfSizedDialogFragment fragment = new DvrStopRecordingDialogFragment();
         fragment.setOnActionClickListener(listener);
+        showDialogFragment(activity, fragment, args);
+    }
+
+    /** Shows stop recording dialog. */
+    public static void showStopRecordingDialog(
+            Activity activity,
+            long channelId,
+            int reason,
+            HalfSizedDialogFragment.OnActionClickListener listener, SafeDismissDialogFragment.DismissListener dislistener) {
+        Bundle args = new Bundle();
+        args.putLong(DvrHalfSizedDialogFragment.KEY_CHANNEL_ID, channelId);
+        args.putInt(DvrStopRecordingFragment.KEY_REASON, reason);
+        DvrHalfSizedDialogFragment fragment = new DvrStopRecordingDialogFragment();
+        fragment.setOnActionClickListener(listener);
+        fragment.setDismissListener(dislistener);
         showDialogFragment(activity, fragment, args);
     }
 

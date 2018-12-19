@@ -66,7 +66,7 @@ import java.util.concurrent.TimeUnit;
 @MainThread
 public class RecordingScheduler extends TvInputCallback implements ScheduledRecordingListener {
     private static final String TAG = "RecordingScheduler";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     private static final String HANDLER_THREAD_NAME = "RecordingScheduler";
     private static final long SOON_DURATION_IN_MS = TimeUnit.MINUTES.toMillis(1);

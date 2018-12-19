@@ -75,6 +75,19 @@ public abstract class SafeDismissDialogFragment extends DialogFragment implement
             mDismissPending = true;
         } else {
             super.dismiss();
+            if (mDismissListener != null) {
+                mDismissListener.onDismiss();
+            }
         }
+    }
+
+    public void setDismissListener(DismissListener listener) {
+        mDismissListener = listener;
+    }
+
+    private DismissListener mDismissListener = null;
+
+    public interface DismissListener {
+        void onDismiss();
     }
 }

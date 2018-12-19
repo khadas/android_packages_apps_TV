@@ -67,6 +67,8 @@ import android.view.accessibility.AccessibilityManager;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import android.support.v17.leanback.widget.GuidedAction;
+
 import com.android.tv.analytics.SendChannelStatusRunnable;
 import com.android.tv.analytics.SendConfigInfoRunnable;
 import com.android.tv.analytics.Tracker;
@@ -2667,10 +2669,22 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         if (!mChannelTuner.areAllChannelsLoaded()) {
             return false;
         }
-        if (handleUpDownKeys(keyCode, event)) {
+        //dvr stop or cancel will be dealt in onkey up
+        if ((isChannelUpOrDown(event) && isCurrentChannelDvrRecording()) || handleUpDownKeys(keyCode, event)) {
             return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    private boolean isChannelUpOrDown(KeyEvent event) {
+        if (event != null) {
+            int keycode = event.getKeyCode();
+            if (keycode == KeyEvent.KEYCODE_CHANNEL_UP || keycode == KeyEvent.KEYCODE_DPAD_UP ||
+                    keycode == KeyEvent.KEYCODE_CHANNEL_DOWN || keycode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean handleUpDownKeys(int keyCode, @Nullable KeyEvent event) {
@@ -2740,7 +2754,11 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         }
 
         // If we are in the middle of channel change, finish it before showing overlays.
-        finishChannelChangeIfNeeded();
+        if (isChannelUpOrDown(event) && isCurrentChannelDvrRecording()) {
+            CheckNeedStopDvrFragment(event, false);
+        } else {
+            finishChannelChangeIfNeeded();
+        }
 
         //check no signal timeout status when any key press
         if (USE_DROIDLOIC_CUSTOMIZATION) {
@@ -2792,7 +2810,12 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             // When the event is from onUnhandledInputEvent, onBackPressed is not automatically
             // called. Therefore, we need to explicitly call onBackPressed().
-            onBackPressed();
+            if (isCurrentChannelDvrRecording()) {
+                Log.d(TAG, "onKeyUp back is record");
+                CheckNeedStopDvrFragment(event, true);
+            } else {
+                onBackPressed();
+            }
             return true;
         }
 
@@ -3008,6 +3031,13 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                                                 if (currentRecording != null) {
                                                     mDvrManager.stopRecording(currentRecording);
                                                 }
+                                            } else if (actionId == GuidedAction.ACTION_ID_CANCEL) {
+                                                ScheduledRecording currentRecording =
+                                                        mDvrManager.getCurrentRecording(
+                                                                currentChannel.getId());
+                                                if (currentRecording != null) {
+                                                    mDvrManager.cancelRecording(currentRecording);
+                                                }
                                             }
                                         }
                                     });
@@ -3135,7 +3165,8 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             if (prepareTuneChannel != null && prepareTuneChannel.isOtherChannel()) {
                 mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_TUNE_CHANNEL, mChannelTuner.getCurrentChannel()), CHANNEL_CHANGE_INITIAL_DELAY_MILLIS);
             } else {
-                tuneToChannel(mChannelTuner.getCurrentChannel());
+                //tuneToChannel(mChannelTuner.getCurrentChannel());
+                mHandler.sendMessage(mHandler.obtainMessage(MSG_TUNE_CHANNEL, mChannelTuner.getCurrentChannel()));
             }
         } else {
             if (!USE_DROIDLOIC_CUSTOMIZATION) {
@@ -3262,6 +3293,73 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 }
             }
         }
+    }
+
+    private boolean mIsCheckingNeedStopDvr = false;
+    private KeyEvent mKeyEvent = null;
+    private boolean mKeyeventExit = false;
+
+    private void CheckNeedStopDvrFragment(KeyEvent keyevent, boolean exit) {
+        long currentid = getCurrentChannelId();
+        if (currentid == -1) {
+            return;
+        }
+        mKeyEvent = keyevent;
+        mKeyeventExit = exit;
+        mIsCheckingNeedStopDvr = true;
+        DvrUiHelper.showStopRecordingDialog(
+                this,
+                getCurrentChannelId(),
+                DvrStopRecordingFragment.REASON_USER_STOP,
+                new HalfSizedDialogFragment.OnActionClickListener() {
+                    @Override
+                    public void onActionClick(long actionId) {
+                        Log.d(TAG, "onActionClick actionId = " + actionId);
+                        if (actionId == DvrStopRecordingFragment.ACTION_STOP) {
+                            ScheduledRecording currentRecording =
+                                    mDvrManager.getCurrentRecording(getCurrentChannelId());
+                            if (currentRecording != null) {
+                                 mIsCheckingNeedStopDvr = false;
+                                 mDvrManager.stopRecording(currentRecording);
+                            }
+                        } else if (actionId == GuidedAction.ACTION_ID_CANCEL) {
+                            ScheduledRecording currentRecording =
+                                    mDvrManager.getCurrentRecording(getCurrentChannelId());
+                            if (currentRecording != null) {
+                                 mIsCheckingNeedStopDvr = false;
+                                 mDvrManager.cancelRecording(currentRecording);
+                            }
+                        }
+                    }
+                },
+                new SafeDismissDialogFragment.DismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        Log.d(TAG, "DismissListener onDismiss");
+                        if (mIsCheckingNeedStopDvr) {
+                            mIsCheckingNeedStopDvr = false;
+                            ScheduledRecording currentRecording =
+                                    mDvrManager.getCurrentRecording(getCurrentChannelId());
+                            if (currentRecording != null) {
+                                 mIsCheckingNeedStopDvr = false;
+                                 mDvrManager.cancelRecording(currentRecording);
+                            }
+                        }
+                        if (mKeyEvent != null && !mKeyeventExit) {
+                            handleUpDownKeys(mKeyEvent.getKeyCode(), mKeyEvent);
+                            mKeyEvent = null;
+                            finishChannelChangeIfNeeded();
+                        } else if (mKeyEvent != null && mKeyeventExit) {
+                            onBackPressed();
+                        }
+                    }
+                });
+    }
+
+    private boolean isCurrentChannelDvrRecording() {
+        ScheduledRecording currentRecording =
+                mDvrManager.getCurrentRecording(getCurrentChannelId());
+        return currentRecording != null;
     }
 
     /**

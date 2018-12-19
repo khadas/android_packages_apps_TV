@@ -36,6 +36,8 @@ import android.support.annotation.VisibleForTesting;
 import android.support.annotation.WorkerThread;
 import android.util.Log;
 import android.util.Range;
+import android.database.Cursor;
+
 import com.android.tv.TvSingletons;
 import com.android.tv.common.SoftPreconditions;
 import com.android.tv.common.feature.CommonFeatures;
@@ -456,6 +458,24 @@ public class DvrManager {
         }
     }
 
+    /** Stops the currently recorded program */
+    public void cancelRecording(final ScheduledRecording recording) {
+        if (!SoftPreconditions.checkState(mDataManager.isDvrScheduleLoadFinished())) {
+            return;
+        }
+        synchronized (mListener) {
+            for (final Entry<Listener, Handler> entry : mListener.entrySet()) {
+                entry.getValue()
+                        .post(new Runnable() {
+                        @Override
+                        public void run() {
+                            entry.getKey().onCancelRecording(recording);
+                        }
+                });
+            }
+        }
+    }
+
     /** Removes scheduled recordings or an existing recordings. */
     public void removeScheduledRecording(ScheduledRecording... schedules) {
         Log.i(TAG, "Removing " + Arrays.asList(schedules));
@@ -502,6 +522,10 @@ public class DvrManager {
         RecordedProgram recordedProgram = mDataManager.getRecordedProgram(recordedProgramId);
         if (recordedProgram != null) {
             removeRecordedProgram(recordedProgram);
+        } else {
+            //livetv can't update on time, delete it in db
+            Log.d(TAG, "removeRecordedProgram from db directly");
+            removeRecordedProgramDirectlyByUri(TvContract.buildRecordedProgramUri(recordedProgramId));
         }
     }
 
@@ -524,6 +548,64 @@ public class DvrManager {
                         @Override
                         protected Void doInBackground(Void... params) {
                             removeRecordedData(recordedProgram.getDataUri());
+                            return null;
+                        }
+                    }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
+            }
+        }.executeOnDbThread();
+    }
+
+    public RecordedProgram getRecordedProgramFromDb(ContentResolver resolver, Uri recordedProgramUri) {
+        if (recordedProgramUri == null) {
+            return null;
+        }
+        Cursor cursor = null;
+        RecordedProgram recordedProgram = null;
+        try {
+            cursor = resolver.query(recordedProgramUri, RecordedProgram.PROJECTION, null, null, null);
+            if (cursor != null) {
+                cursor.moveToNext();
+                recordedProgram = RecordedProgram.fromCursor(cursor);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "getRecordedProgramFromDb failed from TvProvider.", e);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return recordedProgram;
+    }
+
+    /** Removes the recorded program. It deletes the file if possible. */
+    public void removeRecordedProgramDirectlyByUri(final Uri recordedProgramUri) {
+        if (!SoftPreconditions.checkState(mDataManager.isInitialized())) {
+            return;
+        }
+        new AsyncDbTask<Void, Void, HashMap<String, Object>>(mDbExecutor) {
+
+            @Override
+            protected HashMap<String, Object> doInBackground(Void... params) {
+                ContentResolver resolver = mAppContext.getContentResolver();
+                HashMap<String, Object> multiResult = new HashMap<String, Object>();
+                RecordedProgram recordedProgram = getRecordedProgramFromDb(resolver, recordedProgramUri);
+                multiResult.put("recorded_program", recordedProgram);
+                multiResult.put("number", resolver.delete(recordedProgramUri, null, null));
+                return multiResult;
+            }
+
+            @Override
+            protected void onPostExecute(HashMap<String, Object> content) {
+                int deletedCounts = (int)content.get("number");
+                RecordedProgram recordedProgram = (RecordedProgram)content.get("recorded_program");
+                if (deletedCounts > 0) {
+                    new AsyncTask<Void, Void, Void>() {
+                        @Override
+                        protected Void doInBackground(Void... params) {
+                            if (recordedProgram != null) {
+                                removeRecordedData(recordedProgram.getDataUri());
+                            }
                             return null;
                         }
                     }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -873,5 +955,6 @@ public class DvrManager {
      */
     public interface Listener {
         void onStopRecordingRequested(ScheduledRecording scheduledRecording);
+        void onCancelRecording(ScheduledRecording scheduledRecording);
     }
 }

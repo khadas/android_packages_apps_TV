@@ -45,6 +45,8 @@ import com.android.tv.dvr.ui.DvrUiHelper;
 import com.android.tv.menu.Menu.MenuShowReason;
 import com.android.tv.ui.TunableTvView;
 
+import android.support.v17.leanback.widget.GuidedAction;
+
 public class PlayControlsRowView extends MenuRowView {
     private static final String TAG = "PlayControlsRowView";
     private static final int NORMAL_WIDTH_MAX_BUTTON_COUNT = 5;
@@ -319,6 +321,12 @@ public class PlayControlsRowView extends MenuRowView {
                                         mDvrManager.getCurrentRecording(currentChannel.getId());
                                 if (currentRecording != null) {
                                     mDvrManager.stopRecording(currentRecording);
+                                }
+                            } else if (actionId == GuidedAction.ACTION_ID_CANCEL) {
+                                ScheduledRecording currentRecording =
+                                        mDvrManager.getCurrentRecording(currentChannel.getId());
+                                if (currentRecording != null) {
+                                    mDvrManager.cancelRecording(currentRecording);
                                 }
                             }
                         }
