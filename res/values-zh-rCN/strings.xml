@@ -406,6 +406,7 @@
     <string name="ut_stop_channel_scan">暂停搜索</string>
     <string name="ut_manual_scan">手动搜索</string>
     <string name="ut_auto_scan">自动搜索</string>
+    <string name="ut_nit_scan">网络搜索</string>
     <string name="ut_set_frequency_start">频道</string>
     <string name="ut_set_frequency_end">终止: </string>
     <string name="set_frquency_channel">请先设置频率和频道!</string>
@@ -413,27 +414,18 @@
     <string name="set_frequency">请设置频率!</string>
     <string name="tv_mode_option">模式选择:</string>
     <string name="tv_country">国家</string>
-    <string name="tv_america">美国</string>
-    <string name="tv_india">印度</string>
-    <string name="tv_indonesia">印度尼西亚</string>
-    <string name="tv_mexico">墨西哥</string>
-    <string name="tv_germany">德国</string>
-    <string name="tv_china">中国</string>
-    <string name="tv_brazil">巴西</string>
     <string name="tv_search_mode">模式</string>
-    <string name="tv_search_mode_manual">手动</string>
-    <string name="tv_search_mode_auto">自动</string>
     <string name="tv_search_type">搜台制式</string>
     <string name="tv_search_option">搜台选项:</string>
     <string name="tv_search_order">频率顺序</string>
     <string name="tv_search_atv_clolor">色彩制式</string>
     <string name="tv_search_atv_sound">伴音制式</string>
-    <string name="tv_search_atv_sound_auto">自动</string>
     <string name="tv_search_order_high">由高到低</string>
     <string name="tv_search_order_low">由低到高</string>
     <string name="tv_search_channel">频道</string>
     <string name="tv_search">搜索</string>
     <string name="tv_auto_option">自动搜台选项</string>
+    <string name="ut_tune_dvb_c_symbol">符号率</string>
 
     <!-- number search channel-->
     <string name="number_search_title">"搜台中"</string>
@@ -448,6 +440,8 @@
     <string name="radio_channel">广播频道</string>
     <string name="tv_search_channel_from">起始:</string>
     <string name="tv_search_channel_to">终止:</string>
+    <string name="tv_search_center_channel1">中心频道 1:</string>
+    <string name="tv_search_center_channel2">中心频道 2:</string>
     <string name="tv_search_channel_stopped">搜台终止了</string>
     <string name="shortcutactivity_not_found">找不到设置程序！</string>
 

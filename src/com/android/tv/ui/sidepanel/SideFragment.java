@@ -404,6 +404,8 @@ public abstract class SideFragment<T extends Item> extends Fragment implements H
         public void onFocusChange(View view, boolean focusGained) {
             if (focusGained) {
                 mItem.onFocused();
+            } else {
+                mItem.onDisFocused();
             }
         }
     }

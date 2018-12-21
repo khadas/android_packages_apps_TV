@@ -164,6 +164,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.Iterator;
 import android.hardware.hdmi.HdmiTvClient;
 import android.hardware.hdmi.HdmiTvClient.InputChangeListener;
 import android.hardware.hdmi.HdmiControlManager;
@@ -173,6 +174,7 @@ import com.droidlogic.app.tv.DroidLogicTvUtils;
 import com.droidlogic.app.tv.TvDataBaseManager;
 import com.droidlogic.app.tv.TvControlManager;
 import com.droidlogic.app.tv.ChannelInfo;
+import com.droidlogic.app.tv.TvScanConfig;
 import com.droidlogic.app.tv.DroidLogicHdmiCecManager;
 import android.provider.Settings;
 /**
@@ -260,12 +262,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
     private static final int MSG_CHANNEL_DOWN_PRESSED = 1000;
     private static final int MSG_CHANNEL_UP_PRESSED = 1001;
-    private static final int MSG_FILTER_CEC_OTP_TIMEOUT = 1002;
     private static final int MSG_TUNE_CHANNEL = 1003;
 
     private static final int TVVIEW_SET_MAIN_TIMEOUT_MS = 3000;
-    private static final int DELAY_TIMEOUT_MS = 10000;
-    private static boolean mFilterOtpEnabled = false;
 
     // Lazy initialization.
     // Delay 1 second in order not to interrupt the first tune.
@@ -323,7 +322,6 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     private boolean mIsInPIPMode;
     private boolean mIsFilmModeSet;
     private float mDefaultRefreshRate;
-    private int mSourceInputType;
 
     private TvOverlayManager mOverlayManager;
     private TvControlManager mTvControlManager = null ;
@@ -408,6 +406,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     if (DEBUG) Log.d(TAG, "**********BROADCAST_CHANGED_SEARCH_TYPE, channelIndex: " + channelIndex);
                     //Channel toChannel = mChannelTuner.getChannelByIndex(channelIndex);
                     Channel toChannel = mChannelTuner.getChannelById(channelIndex);
+                    if (toChannel == null) {
+                       toChannel = mChannelTuner.findNearestBrowsableChannel(0);
+                    }
                     tuneToChannel(toChannel);
                     break;
                 case BROADCAST_DELETE_ALL_CHANNELS:
@@ -572,6 +573,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     Channel currentChannel = mChannelTuner.getCurrentChannel();
                     if (!info.getId().equals(currentChannel != null ? currentChannel.getInputId() : null) && !info.getParentId().equals(currentChannel != null ? currentChannel.getInputId() : null)) {
                         if (DEBUG) Log.d(TAG, "tuneToCecDev by ParentId = " + info.getParentId());
+                        DroidLogicTvUtils.setCurrentInputId(MainActivity.this, info.getId());
                         tuneToChannel(ChannelImpl.createPassthroughChannel(info.getParentId()));
                     }
                 }
@@ -606,8 +608,22 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             Log.d(TAG, "checkNeedTuneWhenUpdated searchTypeChanged : " + searchTypeChanged);
             long channelIndex = getChannelIdForAtvDtvMode();
             Channel toChannel = mChannelTuner.getChannelById(channelIndex);
-            if (toChannel == null || (lastplayuri != null && TvContract.isChannelUriForPassthroughInput(lastplayuri))
-                    || (!toChannel.isPassthrough() && !mQuickKeyInfo.isChannelMatchAtvDtvSource(toChannel))) {
+            Channel preparechannel = null;
+            if (channelIndex == -1) {
+                /*List<Channel> channels = mChannelTuner.getBrowsableChannelList();
+                for (int i = 0; i < channels.size(); i++) {
+                    Log.d(TAG, "channels " + i + " = " + channels.get(i));
+                }*/
+                preparechannel = mChannelTuner.findNearestBrowsableChannel(0);
+                Log.d(TAG, "preparechannel=" + preparechannel);
+                if (preparechannel != null) {
+                    if (!mQuickKeyInfo.isChannelMatchAtvDtvSource(preparechannel)) {
+                        preparechannel = null;
+                    }
+                }
+            }
+            if (preparechannel == null && (toChannel == null || (lastplayuri != null && TvContract.isChannelUriForPassthroughInput(lastplayuri))
+                    || (!toChannel.isPassthrough() && !mQuickKeyInfo.isChannelMatchAtvDtvSource(toChannel)))) {
                 Log.d(TAG, "checkNeedTuneWhenUpdated channel has not prepared or is passthrough");
                 return;
             }
@@ -931,9 +947,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 Log.d(TAG,"onChanged:"+info);
                 if (info == null)
                     return ;
-                if (mIgnoreHdmiCecTvInput || mFilterOtpEnabled) {
+                if (mIgnoreHdmiCecTvInput) {
                     if (DEBUG)
-                        Log.d(TAG,"mIgnoreHdmiCecTvInput: " + mIgnoreHdmiCecTvInput + " mFilterOtpEnabled: " + mFilterOtpEnabled);
+                        Log.d(TAG,"mIgnoreHdmiCecTvInput: " + mIgnoreHdmiCecTvInput);
                     return;
                 }
                 if (info.isCecDevice() && mTvView.getEasStatus() == EAS_NOT_IN_PROGRESS)  {
@@ -1275,11 +1291,17 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     }
 
     public int getSearchTypeChangedStatus() {
-        return Settings.System.getInt(this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0);
+        int result = Settings.System.getInt(this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0) + Settings.System.getInt(this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_INPUTID_CHANGED, 0);
+        return result > 1 ? 1 : result;
+    }
+
+    public int getSearchInputIdChangeStatus() {
+        return DroidLogicTvUtils.getSearchInputIdChangeStatus(MainActivity.this);
     }
 
     public void resetSearchTypeChangedStatus() {
         Settings.System.putInt(MainActivity.this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE_CHANGED, 0);
+        Settings.System.putInt(MainActivity.this.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_INPUTID_CHANGED, 0);
     }
 
     /*private void saveChannelIndex(int channelIndex) {
@@ -1295,15 +1317,19 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     }*/
 
     public void saveChannelIdForAtvDtvMode(long channelid) {
-        if (DroidLogicTvUtils.isAtscCountry(this)) {
+        String inputid  = DroidLogicTvUtils.getSearchInputId(this);
+        if (!DroidLogicTvUtils.isDroidLogicInput(inputid)) {
+            Settings.System.putLong(this.getContentResolver(), inputid, channelid);
+            Log.d(TAG, "saveChannelIdForAtvDtvMode other type " + inputid + ", channelid = " + channelid);
+        } else if (DroidLogicTvUtils.isAtscCountry(this)) {
             String currentSignalType = DroidLogicTvUtils.getCurrentSignalType(this) == DroidLogicTvUtils.SIGNAL_TYPE_ERROR
                 ? TvContract.Channels.TYPE_ATSC_T : DroidLogicTvUtils.getCurrentSignalType(this);
             Settings.System.putLong(this.getContentResolver(), currentSignalType, channelid);
         } else {
-            Settings.System.putLong(this.getContentResolver(), DroidLogicTvUtils.getSearchType(this) == 0
+            Settings.System.putLong(this.getContentResolver(), DroidLogicTvUtils.getSearchType(this).equals(TvScanConfig.TV_SEARCH_TYPE.get(TvScanConfig.TV_SEARCH_TYPE_ATV_INDEX))
                 ? DroidLogicTvUtils.ATV_CHANNEL_INDEX : DroidLogicTvUtils.DTV_CHANNEL_INDEX,
                 channelid);
-            Log.d(TAG, "save atv = " + (DroidLogicTvUtils.getSearchType(this) == 0) + ", channelid = " + channelid);
+            Log.d(TAG, "save atv = " + (DroidLogicTvUtils.getSearchType(this).equals(TvScanConfig.TV_SEARCH_TYPE.get(TvScanConfig.TV_SEARCH_TYPE_ATV_INDEX))) + ", channelid = " + channelid);
         }
     }
 
@@ -1327,12 +1353,14 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         String currentSignalType = DroidLogicTvUtils.getCurrentSignalType(this) == DroidLogicTvUtils.SIGNAL_TYPE_ERROR
             ? TvContract.Channels.TYPE_ATSC_T : DroidLogicTvUtils.getCurrentSignalType(this);
         long index = 0;
-        if (DroidLogicTvUtils.isAtscCountry(this)) {
-            Settings.System.getLong(this.getContentResolver(), currentSignalType, -1);
+        if (!DroidLogicTvUtils.isDroidLogicInput(DroidLogicTvUtils.getSearchInputId(this))) {
+            index = Settings.System.getLong(this.getContentResolver(), DroidLogicTvUtils.getSearchInputId(this), -1);
+        } else if (DroidLogicTvUtils.isAtscCountry(this)) {
+            index = Settings.System.getLong(this.getContentResolver(), currentSignalType, -1);
         } else {
-            index = Settings.System.getLong(this.getContentResolver(), DroidLogicTvUtils.getSearchType(this) == 0
+            index = Settings.System.getLong(this.getContentResolver(), DroidLogicTvUtils.getSearchType(this).equals(TvScanConfig.TV_SEARCH_TYPE.get(TvScanConfig.TV_SEARCH_TYPE_ATV_INDEX))
                 ? DroidLogicTvUtils.ATV_CHANNEL_INDEX : DroidLogicTvUtils.DTV_CHANNEL_INDEX, -1);
-            Log.d(TAG, "atv = " + (DroidLogicTvUtils.getSearchType(this) == 0) + ", index = " + index);
+            Log.d(TAG, "atv = " + (DroidLogicTvUtils.getSearchType(this).equals(TvScanConfig.TV_SEARCH_TYPE.get(TvScanConfig.TV_SEARCH_TYPE_ATV_INDEX)) + ", index = " + index));
         }
         /*if (index == -1) {
             index = 0;
@@ -1442,6 +1470,11 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         if (mOverlayManager.getSideFragmentManager().getStartedByDroid()) {
             mOverlayManager.getSideFragmentManager().setStartedByDroid(false);
         }
+        mOverlayManager.resetChannelBannerViewLockType();
+        mOverlayManager.hideOverlays(TvOverlayManager.FLAG_HIDE_OVERLAYS_WITHOUT_ANIMATION);
+        if (mTvView != null) {
+           mTvView.resetBlockUiStatus();
+        }
         super.onStop();
     }
 
@@ -1482,9 +1515,23 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         return mTvInputManagerHelper;
     }
 
-    public Intent createDroidLogicSetupIntent(String inputId) {
-        Intent setupIntent = new Intent(this, ChannelSearchActivity.class);
-        setupIntent.putExtra(CommonConstants.EXTRA_INPUT_ID, inputId);
+    public Intent createDroidLogicSetupIntent(TvInputInfo input) {
+        Intent setupIntent = null;
+        if (input == null) {
+            return null;
+        }
+        if (DroidLogicTvUtils.getSearchInputId(this) == null) {
+            DroidLogicTvUtils.setSearchInputId(this, input.getId(), false);
+            DroidLogicTvUtils.setCurrentInputId(this, input.getId());
+        }
+        if (input != null && input.getServiceInfo().packageName.equals(DroidLogicTvUtils.TV_DROIDLOGIC_PACKAGE)) {
+            setupIntent = new Intent(this, ChannelSearchActivity.class);
+            setupIntent.putExtra(CommonConstants.EXTRA_INPUT_ID, input.getId());
+            return setupIntent;
+        }
+        Log.d(TAG, "createDroidLogicSetupIntent input = " + input);
+        setupIntent = input.createSetupIntent();
+        setupIntent.putExtra(CommonConstants.EXTRA_INPUT_ID, input.getId());
         return setupIntent;
     }
 
@@ -1495,7 +1542,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
      */
     public void startSetupActivity(TvInputInfo input, boolean calledByPopup) {
         //Intent intent = TvCommonUtils.createSetupIntent(input);
-        Intent intent = createDroidLogicSetupIntent(input.getId());
+        Intent intent = createDroidLogicSetupIntent(input);
         if (intent == null) {
             Toast.makeText(this, R.string.msg_no_setup_activity, Toast.LENGTH_SHORT).show();
             return;
@@ -1529,7 +1576,11 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
             stopTv("startSetupActivity()", false);
             startActivityForResult(intent, REQUEST_CODE_START_SETUP_ACTIVITY);
-            mQuickKeyInfo.setSearchedChannelFlag(true);
+            if (input != null && input.getServiceInfo().packageName.equals("com.droidlogic.tvinput")) {
+                mQuickKeyInfo.setSearchedChannelFlag(true);
+            } else {
+                Log.d(TAG, "other channel no need to set search flag!");
+            }
         } catch (ActivityNotFoundException e) {
             mInputIdUnderSetup = null;
             Toast.makeText(
@@ -1773,6 +1824,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     if (USE_DROIDLOIC_CUSTOMIZATION && mQuickKeyInfo.setSearchedChannelData(data)) {
                         Channel channel = mQuickKeyInfo.getFirstSearchedChannel();
                         Utils.setLastWatchedChannel(this, channel);
+                        if (channel != null) {
+                            saveChannelIdForAtvDtvMode(channel.getId());
+                        }
                     }
 
                     if (mTunePending) {
@@ -2138,6 +2192,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         }
 
         if (mQuickKeyInfo.hasSearchedChannel()) {
+            Log.d(TAG, "tune has searched channel");
             Channel searchedchannel = mQuickKeyInfo.getFirstSearchedChannel();
             if (searchedchannel == null) {
                 Log.e(TAG, "tune wait for channel update!");
@@ -2285,10 +2340,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
         // Explicitly make the TV view main to make the selected input an HDMI-CEC active source.
         mTvView.setMain();
-        /*filtered cec otp beging*/
-        mFilterOtpEnabled = true;
-        mHandler.removeMessages(MSG_FILTER_CEC_OTP_TIMEOUT);
-        mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_FILTER_CEC_OTP_TIMEOUT, 0, 0), DELAY_TIMEOUT_MS);
+
          /*filtered cec otp end*/
         scheduleRestoreMainTvView();
         if (!isUnderShrunkenTvView()) {
@@ -2406,6 +2458,16 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     }
 
     private void blockOrUnblockScreen(TunableTvView tvView, boolean blockOrUnblock) {
+        String valueStr = mQuickKeyInfo.getProperty(DroidLogicTvUtils.TV_CURRENT_CHANNELBLOCK_STATUS);
+        if (tvView != null && tvView.getResetBlockUiStatus() && !TextUtils.isEmpty(valueStr)) {
+            boolean lastBlockStatus = mQuickKeyInfo.getPropertyBoolean(DroidLogicTvUtils.TV_CURRENT_CHANNELBLOCK_STATUS, false);
+            long lastChannelId = getChannelIdForAtvDtvMode();
+            Channel currentOne = tvView.getCurrentChannel();
+            if (currentOne != null && currentOne.getId() == lastChannelId) {
+                Log.d(TAG, "blockOrUnblockScreen init last channel lastBlockStatus = " + lastBlockStatus + ", blockOrUnblock = " + blockOrUnblock);
+                blockOrUnblock = lastBlockStatus;
+            }
+        }
         tvView.blockOrUnblockScreen(blockOrUnblock);
         if (tvView == mTvView) {
             mOverlayManager.updateChannelBannerAndShowIfNeeded(
@@ -2849,13 +2911,11 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 if (!USE_DROIDLOIC_CUSTOMIZATION) {
                     mOverlayManager.showKeypadChannelSwitch(keyCode);
                 } else {
-                    mSourceInputType = mTvControlManager.GetCurrentSourceInput();
+                    Channel currentone = getCurrentChannel();
                     //deal DelimiterKey and number key
                     if (mChannelTuner.areAllChannelsLoaded()) {
-                        if (mSourceInputType == -1
-                            || mSourceInputType == DroidLogicTvUtils.DEVICE_ID_ADTV
-                            || mSourceInputType == DroidLogicTvUtils.DEVICE_ID_ATV
-                            || mSourceInputType == DroidLogicTvUtils.DEVICE_ID_DTV) {
+                        if (currentone == null
+                            || !currentone.isPassthrough()) {
                             mOverlayManager.showKeypadChannelSwitch(keyCode);
                         }
                     }
@@ -2898,7 +2958,6 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 case KeyEvent.KEYCODE_E:
                 case KeyEvent.KEYCODE_DPAD_CENTER:
                 case KeyEvent.KEYCODE_MENU:
-                    mSourceInputType = mTvControlManager.GetCurrentSourceInput();
                     if (event.isCanceled()) {
                         // Ignore canceled key.
                         // Note that if there's a TIS granted RECEIVE_INPUT_EVENT,
@@ -2910,14 +2969,11 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                         mOverlayManager.updateChannelBannerAndShowIfNeeded(
                                 TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_FORCE_SHOW);
                     }
+                    Channel currentone = getCurrentChannel();
                     if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER && isOKPressed) {
-                        if (mSourceInputType != -1) {
+                        if (currentone != null && !currentone.isPassthrough()) {
                             //if it is in TV channel
-                            if (mSourceInputType == DroidLogicTvUtils.DEVICE_ID_ADTV
-                                || mSourceInputType == DroidLogicTvUtils.DEVICE_ID_ATV
-                                || mSourceInputType == DroidLogicTvUtils.DEVICE_ID_DTV) {
-                                mOverlayManager.showMenu(Menu.REASON_NONE);
-                            }
+                            mOverlayManager.showMenu(Menu.REASON_NONE);
                         }
                         isOKPressed = false;
                     }
@@ -2937,9 +2993,22 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     mOverlayManager.getSideFragmentManager().show(new ClosedCaptionFragment());
                     return true;
                 case KeyEvent.KEYCODE_ZOOM_IN:
-                    if (!QuickKeyInfo.COUNTRY_GERMANY.equals(mQuickKeyInfo.getCountry())) {
+                    List<TvTrackInfo> tracks = getTracks(TvTrackInfo.TYPE_SUBTITLE);
+                    boolean hasTeletext = false;
+                    if (tracks != null) {
+                        Iterator<TvTrackInfo> iter = tracks.iterator();
+                        while (iter.hasNext()) {
+                            TvTrackInfo a = iter.next();
+                            if (a != null && mQuickKeyInfo.isTeletextSubtitleTrack(a.getId())) {
+                                hasTeletext = true;
+                                break;
+                            }
+                        }
+                    }
+                    boolean isGermany = QuickKeyInfo.COUNTRY_GERMANY.equals(mQuickKeyInfo.getCountry());
+                    if (!isGermany && !hasTeletext) {
                         //teletext not needed
-                        Log.d(TAG, "teletext only needed in European country");
+                        Log.d(TAG, "teletext only needed in European country or don't contain teletext");
                         return true;
                     }
                     mOverlayManager.getSideFragmentManager().show(new TeleTextFragment());
@@ -2968,7 +3037,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     return true;
                 case KeyEvent.KEYCODE_GUIDE:
                     final Channel channel3 = getCurrentChannel();
-                    if (channel3 != null && !channel3.isPassthrough() && channel3.isDigitalChannel()) {
+                    if (channel3 != null && !channel3.isPassthrough() && (channel3.isDigitalChannel() || channel3.isOtherChannel())) {
                         mQuickKeyInfo.QuickKeyAction(keyCode);
                     }
                     return true;
@@ -3225,9 +3294,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             }
             return true;
         }
-        if (handled && USE_DROIDLOIC_CUSTOMIZATION) {
+        /*if (handled && USE_DROIDLOIC_CUSTOMIZATION) {
             return false;//deal these key in activity
-        }
+        }*/
         return handled;
     }
 
@@ -3260,8 +3329,10 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                        channel = mQuickKeyInfo.getChannelFromDbById(channelId);
                     }
                     if (channelId != -1 && channel != null) {
-                       tuneToChannel(channel);
-                       return;
+                       if (getSearchInputIdChangeStatus() != 1) {
+                           tuneToChannel(channel);
+                           return;
+                       }
                     }
                 }
             } else {
@@ -3666,10 +3737,6 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     // existence of message to decide if users are switching channel.
                     sendMessageDelayed(Message.obtain(msg), getDelay(startTime));
                     mainActivity.moveToAdjacentChannel(true, true);
-                    break;
-                case MSG_FILTER_CEC_OTP_TIMEOUT:
-                    mFilterOtpEnabled = false;
-                    if (DEBUG) Log.d(TAG, "reset mFilterOtpEnabled to false");
                     break;
                 case MSG_TUNE_CHANNEL:
                     Channel channel = (Channel) msg.obj;

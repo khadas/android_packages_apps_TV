@@ -402,19 +402,22 @@ public class ChannelBannerView extends FrameLayout
                     info.hasClosedCaption() ? /*sClosedCaptionMark*/
                     (info.getSubtitleLabel() == null ? sClosedCaptionMark : info.getSubtitleLabel()) : EMPTY_STRING);
             updateText(
-                    mAspectRatioTextView,
-                    Utils.getAspectRatioString(info.getVideoDisplayAspectRatio()));
-            updateText(
-                    mResolutionTextView,
-                    Utils.getVideoDefinitionLevelString(
-                            mMainActivity, info.getVideoDefinitionLevel()));
-            updateText(
                     mAudioChannelTextView,
                     Utils.getAudioChannelString(mMainActivity, info.getAudioChannelCount()));
             updateText(mAspectRatioTextView, Utils.getAspectRatioString(info.getVideoDisplayAspectRatio()));
             //parse reslution from videoformat
             String videoformat = mCurrentChannel != null ? mCurrentChannel.getVideoFormat() : "";
-            updateText(mResolutionTextView, parseReslutionFromVideoFormat(videoformat)
+            String resolution = parseReslutionFromVideoFormat(videoformat);
+            if (TextUtils.isEmpty(resolution)) {
+                String piFormat = (!TextUtils.isEmpty(info.getVideoPiFormat())) ? info.getVideoPiFormat() : (info.getVideoHeight() > 0 ? (info.getVideoHeight() + " ") : "");
+                if (!TextUtils.isEmpty(piFormat)) {
+                    resolution = piFormat + " "   + Utils.getVideoDefinitionLevelString(
+                        mMainActivity, info.getVideoDefinitionLevel());
+                } else {
+                    resolution = "";
+                }
+            }
+            updateText(mResolutionTextView, resolution
                     /*Utils.getVideoDefinitionLevelString(
                             mMainActivity, info.getVideoDefinitionLevel())*/);
             if (mCurrentChannel != null && !mCurrentChannel.isPassthrough()) {
@@ -984,7 +987,10 @@ public class ChannelBannerView extends FrameLayout
         } else if (mMainActivity.mQuickKeyInfo.isAtvSource()) {
             String type = mCurrentChannel != null ? mCurrentChannel.getType() : null;
             if (TvContract.Channels.TYPE_PAL.equals(type)) {
-                int vfmt = mMainActivity.mQuickKeyInfo.getCurrentChannelInfo().getVfmt();
+                 int vfmt = 0;
+                 if (mMainActivity.mQuickKeyInfo.getCurrentChannelInfo() != null) {
+                    vfmt = mMainActivity.mQuickKeyInfo.getCurrentChannelInfo().getVfmt();
+                }
                 if ((vfmt & 0x00ffffff) == TvControlManager.V4L2_STD_PAL_M
                     || (vfmt & 0x00ffffff) == TvControlManager.V4L2_STD_PAL_60) {
                     resolution = ATVRESOLUTION_NTSC;

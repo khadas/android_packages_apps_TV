@@ -58,6 +58,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.provider.Settings;
+import android.content.ActivityNotFoundException;
 
 import com.android.tv.InputSessionManager;
 import com.android.tv.InputSessionManager.TvViewSession;
@@ -91,6 +92,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.HashMap;
 
 import com.droidlogic.app.tv.DroidLogicTvUtils;
 
@@ -116,6 +119,9 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
 
     private static final String PERMISSION_RECEIVE_INPUT_EVENT =
             CommonConstants.BASE_PACKAGE + ".permission.RECEIVE_INPUT_EVENT";
+
+    public static final String PI_FORMAT_KEY = "pi_format";
+    public static final String EVENT_STREAM_PI_FORMAT  = "event_pi_format";//add for dtvkit
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({
@@ -153,11 +159,13 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
     private int mVideoWidth;
     private int mVideoHeight;
     private int mVideoFormat = StreamInfo.VIDEO_DEFINITION_LEVEL_UNKNOWN;
+    private String mVideoPiFormat = "";
     private float mVideoFrameRate;
     private float mVideoDisplayAspectRatio;
     private int mAudioChannelCount = StreamInfo.AUDIO_CHANNEL_COUNT_UNKNOWN;
     private boolean mHasClosedCaption = false;
     private boolean mScreenBlocked;
+    private boolean mResetScreenBlocked = true;
     private OnScreenBlockingChangedListener mOnScreenBlockedListener;
     private TvContentRating mBlockedContentRating;
     private int mVideoUnavailableReason = VIDEO_UNAVAILABLE_REASON_NOT_TUNED;
@@ -252,6 +260,9 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
 
                 @Override
                 public void onTracksChanged(String inputId, List<TvTrackInfo> tracks) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onTracksChanged tracks = " + tracks);
+                    }
                     //mHasClosedCaption = false;
                     for (TvTrackInfo track : tracks) {
                         if (track.getType() == TvTrackInfo.TYPE_SUBTITLE) {
@@ -267,6 +278,17 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
 
                 @Override
                 public void onTrackSelected(String inputId, int type, String trackId) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onTrackSelected type = " + type + ", trackId = " + trackId);
+                    }
+
+                    if (type == TvTrackInfo.TYPE_VIDEO && !TextUtils.isEmpty(trackId)) {//receive resolution from trackid
+                        mVideoPiFormat = trackId;
+                        if (mMainActivity.getOverlayManager().isChannelBannerViewActive()) {
+                            mMainActivity.getOverlayManager().updateStreamInfo();
+                        }
+                    }
+
                     if (trackId == null) {
                         // A track is unselected.
                         if (type == TvTrackInfo.TYPE_VIDEO) {
@@ -301,14 +323,18 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                                                             * mVideoWidth
                                                             / mVideoHeight;
                                         }
+                                        trackFound = true;
+                                        break;
                                     } else if (type == TvTrackInfo.TYPE_AUDIO) {
                                         mAudioChannelCount = track.getAudioChannelCount();
+                                        trackFound = true;
+                                        break;
                                     } else if (type == TvTrackInfo.TYPE_SUBTITLE) {
                                         mMainActivity.updateCaptionSettings(track.getLanguage(), trackId);
                                         if (DEBUG) Log.d(TAG, "onTrackSelected subtitle language = " + track.getLanguage() + ", trackId = " + trackId);
+                                        trackFound = true;
+                                        break;
                                     }
-                                    trackFound = true;
-                                    break;
                                 }
                             }
                         }
@@ -376,7 +402,12 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                                             report.crashInfo = crash;
 
                                             intent.putExtra(Intent.EXTRA_BUG_REPORT, report);
-                                            getContext().startActivity(intent);
+                                            try {
+                                                getContext().startActivity(intent);
+                                            } catch (ActivityNotFoundException e) {
+                                                Log.d(TAG, "ActivityNotFoundException " + e.getMessage());
+                                                return;
+                                            }
                                         }
                                     })
                             .setNegativeButton(android.R.string.cancel, null)
@@ -425,6 +456,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                 @Override
                 public void onContentAllowed(String inputId) {
                     if (DEBUG) Log.d(TAG, "onContentAllowed");
+                    mMainActivity.mQuickKeyInfo.setProperty(DroidLogicTvUtils.TV_CURRENT_BLOCK_STATUS, false);
                     mBlockedContentRating = null;
                     updateBlockScreenAndMuting();
                     if (mOnTuneListener != null) {
@@ -435,6 +467,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                 @Override
                 public void onContentBlocked(String inputId, TvContentRating rating) {
                     if (DEBUG) Log.d(TAG, "onContentBlocked");
+                    mMainActivity.mQuickKeyInfo.setProperty(DroidLogicTvUtils.TV_CURRENT_BLOCK_STATUS, true);
                     if (rating != null && rating.equals(mBlockedContentRating)) {
                         return;
                     }
@@ -487,6 +520,19 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                                 mMainActivity.getOverlayManager().updateStreamInfo();
                             } else if (mMainActivity.getOverlayManager().isInputBannerActive()) {
                                 mMainActivity.getOverlayManager().updateInputBannerViewLabel();
+                            }
+                        }
+                    } else if (eventType.equals(EVENT_STREAM_PI_FORMAT)) {
+                        if (eventArgs != null) {
+                            String realtimeFormat = eventArgs.getString(PI_FORMAT_KEY, "");
+                            if (!TextUtils.isEmpty(realtimeFormat)) {
+                                mVideoPiFormat = realtimeFormat;
+                                if (mMainActivity.getOverlayManager().isChannelBannerViewActive()) {
+                                    mMainActivity.getOverlayManager().updateStreamInfo();
+                                }
+                                Log.d(TAG, "onEvent mVideoPiFormat = " + mVideoPiFormat);
+                            } else {
+                                Log.d(TAG, "onEvent realtimeFormat null");
                             }
                         }
                     }
@@ -745,14 +791,42 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
         mVideoFormat = StreamInfo.VIDEO_DEFINITION_LEVEL_UNKNOWN;
         mVideoFrameRate = 0f;
         mVideoDisplayAspectRatio = 0f;
+        mVideoPiFormat = "";
         mAudioChannelCount = StreamInfo.AUDIO_CHANNEL_COUNT_UNKNOWN;
         mHasClosedCaption = false;
         //keep last rating as may show previous video before next channel video display
         //mBlockedContentRating = null;
         TvContentRating[] ratings = mMainActivity.mQuickKeyInfo.getContentRatingsOfCurrentProgram();
-        if (ratings != null && ratings.length > 0) {
-            mBlockedContentRating = mParentalControlSettings.getBlockedRating(ratings);
+        boolean needSendStatus = false;
+        if (mMainActivity.mQuickKeyInfo.getPropertyBoolean(DroidLogicTvUtils.TV_CURRENT_BLOCK_STATUS, false)) {
+            //keep the rating if previous channel blocked
+            if (ratings != null && ratings.length > 0) {
+                mBlockedContentRating = mParentalControlSettings.getBlockedRating(ratings);
+            } else {
+                mBlockedContentRating = null;
+                needSendStatus = true;
+            }
+        } else {
+            mBlockedContentRating = null;
         }
+
+        if (mMainActivity.mQuickKeyInfo.getPropertyBoolean(DroidLogicTvUtils.TV_CURRENT_CHANNELBLOCK_STATUS, false)) {
+            if (mCurrentChannel != null && mCurrentChannel.isLocked()) {
+                mScreenBlocked = true;
+            } else {
+                mScreenBlocked = false;
+                needSendStatus = true;
+            }
+        } else {
+            mScreenBlocked = false;
+        }
+
+        if (needSendStatus) {
+            Bundle bundle = new Bundle();
+            bundle.putBoolean(DroidLogicTvUtils.ACTION_TIF_BEFORE_TUNE, true);
+            sendAppPrivateCommand(DroidLogicTvUtils.ACTION_TIF_BEFORE_TUNE, bundle);
+        }
+
         mTimeShiftCurrentPositionMs = TvInputManager.TIME_SHIFT_INVALID_TIME;
         // To reduce the IPCs, unregister the callback here and register it when necessary.
         mTvView.setTimeShiftPositionCallback(null);
@@ -768,6 +842,9 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
         } else {
             mTvView.tune(mInputInfo.getId(), mCurrentChannel.getUri(), params);
         }
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(DroidLogicTvUtils.ACTION_TIF_AFTER_TUNE, true);
+        sendAppPrivateCommand(DroidLogicTvUtils.ACTION_TIF_AFTER_TUNE, bundle);
         updateBlockScreenAndMuting();
         if (mOnTuneListener != null) {
             mOnTuneListener.onStreamInfoChanged(this);
@@ -890,6 +967,11 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
     @Override
     public float getVideoDisplayAspectRatio() {
         return mVideoDisplayAspectRatio;
+    }
+
+    @Override
+    public String getVideoPiFormat() {
+        return mVideoPiFormat;
     }
 
     @Override
@@ -1031,10 +1113,14 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
      * @param blockOrUnblock {@code true} to block the screen, or {@code false} to unblock.
      */
     public void blockOrUnblockScreen(boolean blockOrUnblock) {
-        if (mScreenBlocked == blockOrUnblock) {
+        if (!mResetScreenBlocked && mScreenBlocked == blockOrUnblock) {
+            Log.d(TAG, "blockOrUnblockScreen same block status");
             return;
         }
+        mResetScreenBlocked = false;
         mScreenBlocked = blockOrUnblock;
+        mMainActivity.mQuickKeyInfo.setProperty(DroidLogicTvUtils.TV_CURRENT_CHANNELBLOCK_STATUS, blockOrUnblock);
+
         if (closePipIfNeeded()) {
             return;
         }
@@ -1070,6 +1156,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
     }
 
     private void updateBlockScreen(boolean animation) {
+        animation = false;//force close animation which may cause ui exception
         mBlockScreenView.endAnimations();
         int blockReason =
                 (mScreenBlocked || mBlockedContentRating != null) && mParentControlEnabled
@@ -1614,5 +1701,18 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
             mBlockScreenView.setVisibility(INVISIBLE);
             mBlockScreenView.hideNoChannelTint();
         }
+    }
+
+    public void resetBlockUiStatus() {
+        if (mBlockScreenView != null) {
+            mBlockScreenView.fadeOut();
+            mBlockScreenView.endAnimations();
+        }
+        mScreenBlocked = false;
+        mResetScreenBlocked = true;
+    }
+
+    public boolean getResetBlockUiStatus() {
+        return mResetScreenBlocked;
     }
 }

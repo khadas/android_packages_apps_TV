@@ -57,11 +57,11 @@ public final class InternalDataUtils {
             builder.setSeriesId((String) in.readObject());
             builder.setCriticScores((List<CriticScore>) in.readObject());
         } catch (NullPointerException e) {
-            Log.e(TAG, "no bytes to deserialize");
+            if (DEBUG) Log.e(TAG, "no bytes to deserialize");
         } catch (IOException e) {
-            Log.e(TAG, "Could not deserialize internal provider contents");
+            if (DEBUG) Log.e(TAG, "Could not deserialize internal provider contents");
         } catch (ClassNotFoundException e) {
-            Log.e(TAG, "class not found in internal provider contents");
+            if (DEBUG) Log.e(TAG, "class not found in internal provider contents");
         }
     }
 

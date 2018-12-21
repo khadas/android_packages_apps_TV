@@ -198,15 +198,18 @@ public class ChannelSourceSettingFragment extends SideFragment {
                 }
             });
         }
-        mActionItems.add(new SubMenuItem(getString(R.string.channel_switch_channel),
+        if ((currentChannel == null) || ((currentChannel != null) && (!currentChannel.isRadioChannel()))) {
+            mActionItems.add(new SubMenuItem(getString(R.string.channel_switch_channel),
                 getString(SWITCH_CHANNEL[mChannelSettingsManager.getSwitchChannelStatus()]), getMainActivity().getOverlayManager().getSideFragmentManager()) {
-            @Override
-            protected SideFragment getFragment() {
-                SideFragment fragment = new ChannelSwitchFragment();
-                fragment.setListener(mSideFragmentListener);
-                return fragment;
-            }
-        });
+                @Override
+                protected SideFragment getFragment() {
+                    SideFragment fragment = new ChannelSwitchFragment();
+                    fragment.setListener(mSideFragmentListener);
+                    return fragment;
+                }
+            });
+        }
+
         if (mChannelSettingsManager.getCurentTvSource() == TvControlManager.SourceInput_Type.SOURCE_TYPE_TV) {
             final int[] stereostatus = {R.string.channel_audio_outmode_mono, R.string.channel_audio_outmode_stereo,
                 R.string.channel_audio_outmode_sap};

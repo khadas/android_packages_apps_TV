@@ -17,6 +17,7 @@
 package com.android.tv.droidlogic.quickkeyui;
 
 import android.util.Log;
+import android.media.tv.TvContract;
 import com.android.tv.ui.sidepanel.ActionItem;
 import com.android.tv.ui.sidepanel.Item;
 import com.android.tv.ui.sidepanel.SideFragment;
@@ -77,7 +78,9 @@ public class ListFragment extends SideFragment {
                     for (int i = 0; i <= tempVideoChannelList.size() - 1; i++) {
                         Log.d(TAG, "ChannelList:videochannels=============display number: " + tempVideoChannelList.get(i).getDisplayNumber()
                             + ", channel type: " + tempVideoChannelList.get(i).getType());
-                        if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
+                        if (TvContract.Channels.TYPE_OTHER.equals(tempVideoChannelList.get(i).getType())) {
+                            videoChannelsList.add(tempVideoChannelList.get(i));
+                        } else if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
                             ChannelInfo channelInfo = getMainActivity().convertToChannelInfo(tempVideoChannelList.get(i), getActivity());
                             if (channelInfo != null
                                 && channelInfo.getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(getActivity()))) {
@@ -102,7 +105,9 @@ public class ListFragment extends SideFragment {
                     for (int i = 0; i <= tempRadioChannelList.size() - 1; i++) {
                         Log.d(TAG, "ChannelList:radiochannels=============display number: " + tempRadioChannelList.get(i).getDisplayNumber()
                             + ", channel type: " + tempRadioChannelList.get(i).getType());
-                        if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
+                        if (TvContract.Channels.TYPE_OTHER.equals(tempRadioChannelList.get(i).getType())) {
+                            radioChannelsList.add(tempRadioChannelList.get(i));
+                        } else if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
                             ChannelInfo channelInfo = getMainActivity().convertToChannelInfo(tempRadioChannelList.get(i), getActivity());
                             if (channelInfo != null
                                 && channelInfo.getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(getActivity()))) {

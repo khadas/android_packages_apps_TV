@@ -46,6 +46,12 @@ public final class SystemProperties {
     public static final BooleanSystemProperty USE_DEBUG_TRACE =
             new BooleanSystemProperty("tv_use_debug_trace", false);
 
+    public static final BooleanSystemProperty USE_DEBUG_RATINGS =
+            new BooleanSystemProperty("tv_use_debug_ratings", false);
+
+    public static final BooleanSystemProperty USE_DEBUG_CHANNEL_UPDATE =
+            new BooleanSystemProperty("tv_use_debug_channel_update", false);
+
     static {
         updateSystemProperties();
     }

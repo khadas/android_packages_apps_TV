@@ -53,4 +53,6 @@ public interface StreamInfo {
     boolean isVideoOrAudioAvailable();
 
     int getVideoUnavailableReason();
+
+    String getVideoPiFormat();
 }

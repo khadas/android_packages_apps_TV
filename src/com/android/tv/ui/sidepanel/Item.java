@@ -78,6 +78,9 @@ public abstract class Item {
     protected abstract void onSelected();
 
     protected void onFocused() {}
+
+    protected void onDisFocused() {}
+
     //add seekbar item for fragment ui
     protected void onProgressChanged(SeekBar seekBar, int progress) {
     }

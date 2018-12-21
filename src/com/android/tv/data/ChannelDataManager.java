@@ -40,6 +40,7 @@ import android.support.annotation.VisibleForTesting;
 import android.util.ArraySet;
 import android.util.Log;
 import android.util.MutableInt;
+import android.text.TextUtils;
 import com.android.tv.TvSingletons;
 import com.android.tv.common.SoftPreconditions;
 import com.android.tv.common.WeakHandler;
@@ -50,6 +51,7 @@ import com.android.tv.data.ChannelImpl;
 import com.android.tv.util.AsyncDbTask;
 import com.android.tv.util.TvInputManagerHelper;
 import com.android.tv.util.Utils;
+import com.android.tv.common.util.SystemProperties;
 import com.android.tv.droidlogic.QuickKeyInfo;
 
 import com.droidlogic.app.tv.DroidLogicTvUtils;
@@ -218,7 +220,7 @@ public class ChannelDataManager {
         mContentResolver.registerContentObserver(
                 TvContract.Channels.CONTENT_URI, true, mChannelObserver);
         mInputManager.addCallback(mTvInputCallback);
-        mContentResolver.registerContentObserver(Settings.System.getUriFor(DroidLogicTvUtils.KEY_SEARCH_COUNTRY), true,
+        mContentResolver.registerContentObserver(Settings.System.getUriFor(DroidLogicTvUtils.TV_SEARCH_COUNTRY), true,
                 mChannelObserver);
         /*try {
             mContentResolver.registerContentObserver(QuickKeyInfo.getUriForKey(QuickKeyInfo.TABLE_SCAN_NAME_URI, DroidLogicTvUtils.TV_SEARCH_TYPE), true,
@@ -526,8 +528,16 @@ public class ChannelDataManager {
     private void addChannel(ChannelData data, Channel channel) {
         //[DroidLogic]
         //When add channels, filter the channels according to current type.
-        if (DEBUG) Log.d(TAG, "===== addChannel");
-        if (DroidLogicTvUtils.isAtscCountry(mContext)) {
+        if (DEBUG) Log.d(TAG, "===== addChannel channel=" + channel);
+        //add channel like google movie which is marked others
+        if (!TextUtils.equals(DroidLogicTvUtils.getSearchInputId(mContext), channel.getInputId())) {
+            if (DEBUG) Log.d(TAG, "channel is not from current source");
+            return;
+        }
+        if (channel.isOtherChannel()) {
+           if (DEBUG) Log.d(TAG, "===== addChannel other");
+           addChannelByType(data, channel);
+        } else if (DroidLogicTvUtils.isAtscCountry(mContext)) {
             Uri channelUri = null;
             if (channel.isPassthrough()) {
                 channelUri = TvContract.buildChannelUriForPassthroughInput(channel.getInputId());
@@ -536,18 +546,17 @@ public class ChannelDataManager {
             }
             ChannelInfo channelInfo = mTvDataBaseManager.getChannelInfo(channelUri);
             if (channelInfo != null && channelInfo.getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(mContext))) {
+                if (DEBUG) Log.d(TAG, "===== addChannel atsc");
                 addChannelByType(data, channel);
             }
         } else {
             if (DroidLogicTvUtils.isATV(mContext) && channel.isAnalogChannel()) {
+                if (DEBUG) Log.d(TAG, "===== addChannel atv");
                 addChannelByType(data, channel);
             } else if (DroidLogicTvUtils.isDTV(mContext) && channel.isDigitalChannel()) {
+                if (DEBUG) Log.d(TAG, "===== addChannel dtv");
                 addChannelByType(data, channel);
             }
-        }
-        //add channel like google movie which is marked others
-        if (channel.isOtherChannel()) {
-            addChannelByType(data, channel);
         }
     }
 
@@ -715,6 +724,9 @@ public class ChannelDataManager {
                     if (!channelWrapper.mInputRemoved) {
                         channelAdded = true;
                     }
+                    if (SystemProperties.USE_DEBUG_CHANNEL_UPDATE.getValue()) {
+                        Log.d(TAG, "onPostExecute add = " + channelWrapper.mChannel);
+                    }
                 } else {
                     channelWrapper = data.channelWrapperMap.get(channelId);
                     if (!channelWrapper.mChannel.hasSameReadOnlyInfo(channel) ||
@@ -722,6 +734,10 @@ public class ChannelDataManager {
                             !(channelWrapper.mChannel.isBrowsable() == channel.isBrowsable()) ||
                             !(channelWrapper.mChannel.isFavourite() == channel.isFavourite())) {
                         // Channel data updated
+                        if (SystemProperties.USE_DEBUG_CHANNEL_UPDATE.getValue()) {
+                            Log.d(TAG, "onPostExecute update old = " + channelWrapper.mChannel);
+                            Log.d(TAG, "onPostExecute update new = " + channel);
+                        }
                         Channel oldChannel = channelWrapper.mChannel;
                         // We assume that mBrowsable and mLocked are controlled by only TV app.
                         // The values for mBrowsable and mLocked are updated when

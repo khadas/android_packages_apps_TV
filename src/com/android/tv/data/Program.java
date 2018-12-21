@@ -130,8 +130,15 @@ public final class Program extends BaseProgram implements Comparable<Program>, P
         builder.setEndTimeUtcMillis(cursor.getLong(index++));
         builder.setVideoWidth((int) cursor.getLong(index++));
         builder.setVideoHeight((int) cursor.getLong(index++));
-        if (CommonUtils.isInBundledPackageSet(packageName)) {
-            InternalDataUtils.deserializeInternalProviderData(cursor.getBlob(index), builder);
+        if (true || CommonUtils.isInBundledPackageSet(packageName)) {
+            int type = cursor.getType(index);
+            if (type == Cursor.FIELD_TYPE_BLOB) {
+                //youtube iptv database in this column is blob. Add it for the future.
+                InternalDataUtils.deserializeInternalProviderData(cursor.getBlob(index), builder);
+                if (DEBUG) Log.i(TAG,"COLUMN_INTERNAL_PROVIDER_DATA is blob");
+            } else if (type == Cursor.FIELD_TYPE_STRING) {
+                builder.setSeriesId(cursor.getString(index));
+            }
         }
         index++;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

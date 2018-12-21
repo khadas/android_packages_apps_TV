@@ -98,7 +98,9 @@ public class ChannelModifyFragment extends SideFragment {
             for (int i = 0; i <= videochannels.size() - 1; i++) {
                 Log.d(TAG, "ChannelEdit:videochannels=============display number: " + videochannels.get(i).getDisplayNumber()
                     + ", channel type: " + videochannels.get(i).getType());
-                if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
+                if (TvContract.Channels.TYPE_OTHER.equals(videochannels.get(i).getType())) {
+                    videochannelslist.add(videochannels.get(i));
+                } else if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
                     if (videochannels.get(i).getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(getActivity()))) {
                         videochannelslist.add(videochannels.get(i));
                     }
@@ -115,7 +117,9 @@ public class ChannelModifyFragment extends SideFragment {
             for (int i = 0; i <= radiochannels.size() - 1; i++) {
                 Log.d(TAG, "ChannelEdit:radiochannels=============display number: " + radiochannels.get(i).getDisplayNumber()
                     + ", channel type: " + radiochannels.get(i).getType());
-                if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
+                if (TvContract.Channels.TYPE_OTHER.equals(videochannels.get(i).getType())) {
+                    videochannelslist.add(videochannels.get(i));
+                } else if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
                     if (radiochannels.get(i).getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(getActivity()))) {
                         radiochannelslist.add(radiochannels.get(i));
                     }
@@ -147,7 +151,10 @@ public class ChannelModifyFragment extends SideFragment {
                 }
                 if (mDebug) Log.d(TAG, "[getItemList] optionListData.get(i).isBrowsable() = " + optionListData.get(i).isBrowsable() +
                     ", optionListData.get(i).isFavourite() = " + optionListData.get(i).isFavourite() + ", info = " + info);
-                DynamicSubMenuItem item = new DynamicSubMenuItem(optionListData.get(i).getDisplayNumber() + "." + optionListData.get(i).getDisplayNameLocal(),
+                String displaynumber = optionListData.get(i).getDisplayNumber();
+                String localdisplay = optionListData.get(i).getDisplayNameLocal();
+                DynamicSubMenuItem item = new DynamicSubMenuItem(displaynumber + "." +
+                        (localdisplay != null ? localdisplay : displaynumber),
                 info, optionListData.get(i).getId(), getMainActivity().getOverlayManager().getSideFragmentManager()) {
                     @Override
                     protected SideFragment getFragment() {

@@ -82,7 +82,7 @@ public class ChannelSwitchFragment extends SideFragment {
             if (mChannelSettingsManager == null) {
                 mChannelSettingsManager = new ChannelSettingsManager(getMainActivity());
             }
-            mChannelSettingsManager.setBlackoutEnable(mTrackId);
+            mChannelSettingsManager.setBlackoutEnable(mTrackId, 1);
         }
 
         @Override

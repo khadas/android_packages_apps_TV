@@ -82,6 +82,7 @@ import com.droidlogic.app.tv.ChannelInfo;
 import com.droidlogic.app.tv.TvDataBaseManager;
 import com.droidlogic.app.tv.DroidLogicTvUtils;
 import com.droidlogic.app.tv.TvInSignalInfo;
+import com.droidlogic.app.tv.TvScanConfig;
 import com.droidlogic.app.tv.TvControlDataManager;
 import vendor.amlogic.hardware.tvserver.V1_0.FreqList;
 
@@ -187,7 +188,9 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
 
     public boolean isAvCurrentSourceInputType() {
         int currentsource = mTvControlManager.GetCurrentSourceInput();
-        return currentsource == DroidLogicTvUtils.DEVICE_ID_AV1 || currentsource == DroidLogicTvUtils.DEVICE_ID_AV2;
+        Channel currentone = mChannelTuner.getCurrentChannel();
+        boolean isPassthrough = (currentone != null ? currentone.isPassthrough() : false);
+        return isPassthrough && (currentsource == DroidLogicTvUtils.DEVICE_ID_AV1 || currentsource == DroidLogicTvUtils.DEVICE_ID_AV2);
     }
 
     public int getCurrentSourceInputType() {
@@ -272,7 +275,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
             List<TvInputInfo> inputList = mTvInputManagerHelper.getTvInputList();
             for (TvInputInfo input : inputList) {
                 if (intent.getStringExtra(TvInputInfo.EXTRA_INPUT_ID).equals(input.getId())) {
-                    if (input.getType() == TvInputInfo.TYPE_TUNER) {
+                    if (!input.isPassthroughInput()/*input.getType() == TvInputInfo.TYPE_TUNER*/) {
                         Channel currentChannel = mChannelTuner.getCurrentChannel();
                         Log.d(TAG,"onTunerInputSelected:" + input.getId() + ", currentChannel = " + currentChannel);
                         int searchTypeChanged = mActivity.getSearchTypeChangedStatus();
@@ -282,7 +285,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                             Log.d(TAG,"appointone id = " + appoint_channelid);
                             Channel appointone_fromlist = mChannelTuner.getChannelById(appoint_channelid);
                             Channel appointone_fromdb = null;
-                            if (!DroidLogicTvUtils.isAtscCountry(mContext) && DroidLogicTvUtils.getSearchType(mContext) == 0) {
+                            if (!DroidLogicTvUtils.isAtscCountry(mContext) && DroidLogicTvUtils.getSearchType(mContext).equals(TvScanConfig.TV_SEARCH_TYPE.get(TvScanConfig.TV_SEARCH_TYPE_ATV_INDEX))) {
                                 if (appointone_fromlist == null) {
                                     Log.d(TAG, "appoint channel not exist in current list and need to be updated");
                                     appointone_fromdb = getChannelFromDbById(appoint_channelid);
@@ -290,7 +293,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                                 if (appointone_fromlist == null && appointone_fromdb != null) {
                                     Log.d(TAG, "appoint channel found in db and update channel list");
                                     appointone_fromlist = appointone_fromdb;
-                                    DroidLogicTvUtils.setSearchType(mContext, 1);
+                                    DroidLogicTvUtils.setSearchType(mContext, TvScanConfig.TV_SEARCH_TYPE.get(TvScanConfig.TV_SEARCH_TYPE_DVBT_INDEX));
                                     Uri channelUri = TvContract.buildChannelUri(appoint_channelid);
                                     Utils.setLastWatchedChannelUri(mContext, channelUri.toString());
                                     mActivity.saveChannelIdForAtvDtvMode(appoint_channelid);
@@ -325,6 +328,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                             //[DroidLogic]
                             //when change search type, update the channel list at the same time.
                             Log.d(TAG, "handleUiCommand tuner searchTypeChanged : " + searchTypeChanged + ", useAtvDtvChannelIndex status = " + mActivity.useAtvDtvChannelIndex());
+                            mChannelTuner.setCurrentInputInfo(input);
                             if (searchTypeChanged == 1) {
                                 mActivity.getChannelDataManager().handleUpdateChannels();
                             }
@@ -400,26 +404,41 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
 
     public TvInputInfo getTunerInput() {
         TvInputInfo tunerinputinfo = null;
+        TvInputInfo othertunerinputinfo = null;
+        String searchedId = DroidLogicTvUtils.getSearchInputId(mContext);
+        TvInputInfo currentone = mChannelTuner.getCurrentInputInfo();
+        if (currentone != null && !currentone.isPassthroughInput()) {
+            tunerinputinfo = currentone;
+            return tunerinputinfo;
+        }
         for (TvInputInfo input : mTvInputManagerHelper.getTvInputInfos(true, true)) {
             if (!input.isPassthroughInput()) {
-                tunerinputinfo = input;
-                break;
+                if (TextUtils.equals(input.getId(), searchedId)) {
+                    tunerinputinfo = input;
+                    break;
+                } else if (tunerinputinfo == null && input.getServiceInfo().packageName.equals(DroidLogicTvUtils.TV_DROIDLOGIC_PACKAGE)) {
+                    tunerinputinfo = input;
+                } else if (othertunerinputinfo == null) {
+                    othertunerinputinfo = input;
+                }
             }
         }
-        return tunerinputinfo;
+        return tunerinputinfo != null ? tunerinputinfo : othertunerinputinfo;
     }
 
     public boolean isChannelMatchAtvDtvSource(final Channel channel) {
         boolean needatvdtvsource = !DroidLogicTvUtils.isAtscCountry(mContext);
         //long channelindex = mActivity.getChannelIdForAtvDtvMode();
         if (channel != null) {
-            if (channel.isOtherChannel()) {
+            boolean isAtvSearch = DroidLogicTvUtils.getSearchType(mContext).equals(TvScanConfig.TV_SEARCH_TYPE.get(TvScanConfig.TV_SEARCH_TYPE_ATV_INDEX));
+            boolean hassameinputid = TextUtils.equals(DroidLogicTvUtils.getSearchInputId(mContext), channel.getInputId());
+            if (channel.isOtherChannel() && hassameinputid) {
                 Log.d(TAG, "isChannelMatchAtvDtvSource other type channel");
                 return true;
-            } else if (needatvdtvsource && ((DroidLogicTvUtils.getSearchType(mContext) == 0 && channel.isAnalogChannel()) || (DroidLogicTvUtils.getSearchType(mContext) > 0 && channel.isDigitalChannel()))) {
+            } else if (hassameinputid && needatvdtvsource && ((isAtvSearch && channel.isAnalogChannel()) || (!isAtvSearch && channel.isDigitalChannel()))) {
                 Log.d(TAG, "isChannelMatchAtvDtvSource not atsc channel matched");
                 return true;
-            } else if (!needatvdtvsource && TextUtils.equals(channel.getSignalType(), getDtvType())) {
+            } else if (hassameinputid && !needatvdtvsource && TextUtils.equals(channel.getSignalType(), getDtvType())) {
                 Log.d(TAG, "isChannelMatchAtvDtvSource atsc channel matched");
                 return true;
             } else {
@@ -464,6 +483,18 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                 ratingString = channel.getContentRatings();
                 channelratings = Program.stringToContentRatings(ratingString);
             }
+            if (SystemProperties.USE_DEBUG_RATINGS.getValue()) {
+                if (currentprogram != null) {
+                    Log.d(TAG, "currentprogram InternalProviderData:" + currentprogram.getSeriesId());
+                } else {
+                    Log.d(TAG, "currentprogram = null");
+                }
+                if (channel != null) {
+                    Log.d(TAG, "currentchannel InternalProviderData:" + (channel.getChannelInternalProviderDataMap() != null ? DroidLogicTvUtils.mapToJson(channel.getChannelInternalProviderDataMap()) : null));
+                } else {
+                    Log.d(TAG, "currentprogram = null");
+                }
+            }
             //if program donnot have ratings, relplace it with channel ratings
             return programratings != null ? programratings : channelratings;
         }
@@ -475,6 +506,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         if (current != null && current.length > 0) {
             for (TvContentRating rating : current) {
                 String display = mActivity.getContentRatingsManager().getDisplayNameForRating(rating);
+                Log.d(TAG, "getCurrentRatingsString display = " + display);
                 if (display == null) {
                     continue;
                 }
@@ -1061,7 +1093,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                 Log.d(TAG, "found atv channel = " + foundchannel);
                 return foundchannel;
             } else if (newradiochannels.size() > 0 && (newradiochannels.size() >= mSearchedRadioChannelNumber - 1 || mSearchedRadioChannelNumber >= newradiochannels.size() || newradiochannels.size() > 10)) {
-                foundchannel = newatvchannels.get(0);
+                foundchannel = newradiochannels.get(0);
                 Log.d(TAG, "found radio channel = " + foundchannel);
                 return foundchannel;
             } else {
@@ -1182,7 +1214,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
     public static final String COUNTRY_GERMANY = "DE";//European country mode
 
     public String getCountry() {
-        String country = TvSingletons.getSingletons(mContext).getTvControlDataManager().getString(mContext.getContentResolver(), DroidLogicTvUtils.KEY_SEARCH_COUNTRY);
+        String country = TvSingletons.getSingletons(mContext).getTvControlDataManager().getString(mContext.getContentResolver(), DroidLogicTvUtils.TV_SEARCH_COUNTRY);
         if (TextUtils.isEmpty(country)) {
             country = getSupportCountry().get(0);
         }
@@ -1243,7 +1275,11 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
 
     public void setNoSingalTimeout() {
         Log.d(TAG, "setNoSingalTimeout");
-        enableNosignalTimeout(true);
+        if (!getPropertyBoolean(DroidLogicTvUtils.PROP_DISABLE_NOSIGNAL_TIMEOUT_FUNCTION, false)) {
+            enableNosignalTimeout(true);
+        } else {
+           Log.d(TAG, "setNoSingalTimeout force diabled");
+        }
     }
 
     public void cancelNoSingalTimeout() {
@@ -1646,11 +1682,40 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
 
     public boolean isTeletextSubtitleTrack(String trackid) {
         Map<String, String> parsedMap = DroidLogicTvUtils.stringToMap(trackid);
-        int type = Integer.parseInt(parsedMap.get("type"));
+        int type = -1;
+        String typeStr = parsedMap.get("type");
+        if (typeStr != null && TextUtils.isDigitsOnly(typeStr)) {
+            type = Integer.parseInt(typeStr);
+        }
         if (DEBUG) Log.d(TAG, "isTeletextSubtitleTrack type = " + type);
         if (/*type == ChannelInfo.Subtitle.TYPE_DTV_TELETEXT || */type == ChannelInfo.Subtitle.TYPE_DTV_TELETEXT_IMG) {
             return true;
         }
         return false;
     }
+
+    /********start: set prop by system control********/
+    public void setProperty(String key, boolean value) {
+        if (DEBUG) {
+            Log.d(TAG, "setProperty key = " + key + ", value = " + value);
+        }
+        TvSingletons.getSingletons(mActivity).getSystemControlManager().setProperty(key, value ? "true" : "false");
+    }
+
+    public boolean getPropertyBoolean(String key, boolean defValue) {
+        boolean getValue = TvSingletons.getSingletons(mActivity).getSystemControlManager().getPropertyBoolean(key, defValue);
+        if (DEBUG) {
+            Log.d(TAG, "getPropertyBoolean key = " + key + ", defValue = " + defValue + ", getValue = " + getValue);
+        }
+        return getValue;
+    }
+
+    public String getProperty(String key) {
+        String getValue = TvSingletons.getSingletons(mActivity).getSystemControlManager().getProperty(key);
+        if (DEBUG) {
+            Log.d(TAG, "getProperty key = " + key + ", getValue = " + getValue);
+        }
+        return getValue;
+    }
+    /********end: set prop by system control********/
 }

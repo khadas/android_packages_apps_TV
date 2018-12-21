@@ -20,7 +20,7 @@
         <item name="android:colorAccent">@color/accent_color</item>
         <item name="android:colorControlActivated">@color/control_activated_color</item>
         <item name="android:colorPrimary">@color/primary_color</item>
-        <item name="android:windowBackground">@color/common_tv_background</item>
+        <item name="android:windowBackground">@android:color/black</item>
 
         <!-- From Theme.Leanback to use Leanback library without applying Theme. -->
         <!-- For SearchFragment -->

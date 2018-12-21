@@ -21,6 +21,8 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 import com.android.tv.R;
 
+import com.android.tv.droidlogic.channelui.MarqueeTextView;
+
 public abstract class CompoundButtonItem extends Item {
     private static int sDefaultMaxLine = 0;
 
@@ -30,6 +32,7 @@ public abstract class CompoundButtonItem extends Item {
     private final int mMaxLine;
     private boolean mChecked;
     private TextView mTextView;
+    private MarqueeTextView mMarqueeTextView;
     private CompoundButton mCompoundButton;
 
     public CompoundButtonItem(String title, String description) {
@@ -66,6 +69,9 @@ public abstract class CompoundButtonItem extends Item {
         super.onBind(view);
         mCompoundButton = (CompoundButton) view.findViewById(getCompoundButtonId());
         mTextView = (TextView) view.findViewById(getTitleViewId());
+        if (view.findViewById(getTitleViewId()) instanceof MarqueeTextView) {
+            mMarqueeTextView = (MarqueeTextView) view.findViewById(getTitleViewId());
+        }
         TextView descriptionView = (TextView) view.findViewById(getDescriptionViewId());
         if (mDescription != null) {
             if (mMaxLine != 0) {
@@ -90,6 +96,7 @@ public abstract class CompoundButtonItem extends Item {
     protected void onUnbind() {
         super.onUnbind();
         mTextView = null;
+        mMarqueeTextView = null;
         mCompoundButton = null;
     }
 
@@ -114,6 +121,22 @@ public abstract class CompoundButtonItem extends Item {
         if (isBound()) {
             mTextView.setText(mChecked ? mCheckedTitle : mUncheckedTitle);
             mCompoundButton.setChecked(mChecked);
+        }
+    }
+
+    @Override
+    protected void onFocused() {
+        super.onFocused();
+        if (mMarqueeTextView != null) {
+            mMarqueeTextView.setFocused(true);
+        }
+    }
+
+    @Override
+    protected void onDisFocused() {
+        super.onDisFocused();
+        if (mMarqueeTextView != null) {
+            mMarqueeTextView.setFocused(false);
         }
     }
 }

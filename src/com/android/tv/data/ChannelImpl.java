@@ -54,6 +54,7 @@ import com.droidlogic.app.tv.DroidLogicTvUtils;
 /** A convenience class to create and insert channel entries into the database. */
 public final class ChannelImpl implements Channel {
     private static final String TAG = "ChannelImpl";
+    private static final boolean DEBUG = false;
 
     /** Compares the channel numbers of channels which belong to the same input. */
     public static final Comparator<Channel> CHANNEL_NUMBER_COMPARATOR =
@@ -129,9 +130,15 @@ public final class ChannelImpl implements Channel {
         String value = null;
         if (index >= 0) {
             try {
-                value = cursor.getString(index);
+                if (cursor.getType(index) == Cursor.FIELD_TYPE_STRING) {
+                    value = cursor.getString(index);
+                } else if (cursor.getType(index) == Cursor.FIELD_TYPE_BLOB) {
+                    if (DEBUG) Log.i(TAG, "blob = " + cursor.getBlob(index));
+                } else {
+                    if (DEBUG) Log.i(TAG, "COLUMN_INTERNAL_PROVIDER_DATA other type");
+                }
             } catch (RuntimeException e) {//google channel data may be blob, but droidlogic is string
-                Log.e(TAG, "get internal provider data erro: " + e.getMessage());
+                if (DEBUG) Log.e(TAG, "get internal provider data erro: " + e.getMessage());
             }
         }
         //init from internal provider data

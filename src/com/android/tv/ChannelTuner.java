@@ -34,6 +34,7 @@ import com.android.tv.data.ChannelDataManager;
 import com.android.tv.data.api.Channel;
 import com.android.tv.util.TvInputManagerHelper;
 import com.android.tv.util.Utils;
+import com.android.tv.common.util.SystemProperties;
 import com.android.tv.data.ChannelNumber;
 import com.droidlogic.app.tv.DroidLogicTvUtils;
 
@@ -286,7 +287,7 @@ public class ChannelTuner {
         if (mCurrentChannel == null) {
             channelIndex = 0;
             Channel channel = mChannels.get(channelIndex);
-            if (channel.isBrowsable() && ((MainActivity)mContext).mQuickKeyInfo.isChannelMatchAtvDtvSource(channel)) {
+            if ((channel.isBrowsable() || channel.isOtherChannel()) && ((MainActivity)mContext).mQuickKeyInfo.isChannelMatchAtvDtvSource(channel)) {
                 return channel;
             }
         } else {
@@ -299,7 +300,7 @@ public class ChannelTuner {
                 nextChannelIndex -= size;
             }
             Channel channel = mChannels.get(nextChannelIndex);
-            if (channel.isBrowsable() && ((MainActivity)mContext).mQuickKeyInfo.isChannelMatchAtvDtvSource(channel)) {
+            if ((channel.isBrowsable() || channel.isOtherChannel()) && ((MainActivity)mContext).mQuickKeyInfo.isChannelMatchAtvDtvSource(channel)) {
                 return channel;
             }
         }
@@ -318,18 +319,18 @@ public class ChannelTuner {
         Channel channel = mChannelMap.get(channelId);
         if (channel == null) {
             return mBrowsableChannels.get(0);
-        } else if (channel.isBrowsable()) {
+        } else if (channel.isBrowsable() || channel.isOtherChannel()) {
             return channel;
         }
         int index = mChannelIndexMap.get(channelId);
         int size = mChannels.size();
         for (int i = 1; i <= size / 2; ++i) {
             Channel upChannel = mChannels.get((index + i) % size);
-            if (upChannel.isBrowsable()) {
+            if (upChannel.isBrowsable() || channel.isOtherChannel()) {
                 return upChannel;
             }
             Channel downChannel = mChannels.get((index - i + size) % size);
-            if (downChannel.isBrowsable()) {
+            if (downChannel.isBrowsable() || channel.isOtherChannel()) {
                 return downChannel;
             }
         }
@@ -406,7 +407,7 @@ public class ChannelTuner {
         }
     }
 
-    private void updateChannelData(List<Channel> channels) {
+    private synchronized void updateChannelData(List<Channel> channels) {
         if (mContext != null) {
             //[DroidLogic]
             //when updateChannelData,save the channel counts in Settings.
@@ -430,6 +431,9 @@ public class ChannelTuner {
             } else if (channel.isRadioChannel()) {
                 mRadioChannels.add(channel);
             }
+            if (SystemProperties.USE_DEBUG_CHANNEL_UPDATE.getValue()) {
+                Log.d(TAG, "updateChannelData no." + i + "->" + channel);
+            }
         }
         updateBrowsableChannels();
 
@@ -450,10 +454,12 @@ public class ChannelTuner {
         }
     }
 
-    private void updateBrowsableChannels() {
+    private synchronized void updateBrowsableChannels() {
         mBrowsableChannels.clear();
+        int i = 0;
         for (Channel channel : mChannels) {
-            if (channel.isBrowsable()) {
+            if (SystemProperties.USE_DEBUG_CHANNEL_UPDATE.getValue()) Log.d(TAG, "updateBrowsableChannels no." + (i++) + "->" + channel);
+            if (channel.isBrowsable() || channel.isOtherChannel()) {//other source may not have permissions to write browse
                 mBrowsableChannels.add(channel);
             }
         }
@@ -506,6 +512,18 @@ public class ChannelTuner {
                 return -1;
             } else if (!b1 && b2) {
                 return 1;
+            }
+            b1 = object1.isOtherChannel();
+            b2 = object2.isOtherChannel();
+            //add other channel before analog channel
+            if (b1 && !b2) {
+                if (object2.isAnalogChannel()) {
+                   return -1;
+                }
+            } else if (!b1 && b2) {
+                if (object1.isAnalogChannel()) {
+                   return 1;
+                }
             }
             String p1 = object1.getDisplayNumber();
             String p2 = object2.getDisplayNumber();

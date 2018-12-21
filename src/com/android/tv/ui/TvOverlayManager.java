@@ -733,6 +733,12 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
         }
     }
 
+    public void resetChannelBannerViewLockType() {
+        if (mChannelBannerView != null) {
+            mChannelBannerView.setLockType(ChannelBannerView.LOCK_NONE);
+        }
+    }
+
     public boolean isOverlayOpened() {
         return mOpenedOverlays != OVERLAY_TYPE_NONE;
     }
