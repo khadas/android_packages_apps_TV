@@ -1281,7 +1281,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         }
         if (mFactoryKeyCount == 4) {
             mFactoryKeyCount = 0;
-            startFactoryMenu();
+            //startFactoryMenu();
             return true;
         } else {
             return false;
