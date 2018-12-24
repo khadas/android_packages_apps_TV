@@ -747,7 +747,8 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
         mVideoDisplayAspectRatio = 0f;
         mAudioChannelCount = StreamInfo.AUDIO_CHANNEL_COUNT_UNKNOWN;
         mHasClosedCaption = false;
-        mBlockedContentRating = null;
+        //keep last rating as may show previous video before next channel video display
+        //mBlockedContentRating = null;
         TvContentRating[] ratings = mMainActivity.mQuickKeyInfo.getContentRatingsOfCurrentProgram();
         if (ratings != null && ratings.length > 0) {
             mBlockedContentRating = mParentalControlSettings.getBlockedRating(ratings);
