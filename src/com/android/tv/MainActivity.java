@@ -3105,6 +3105,18 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     }
 
     @Override
+    public void onBackPressed() {
+        if (!TextUtils.isEmpty(SystemPropertiesProxy.getString("ro.com.google.gmsversion", ""))) {
+            Log.d(TAG, "onBackPressed:  start Home intent");
+            Intent startMain = new Intent(Intent.ACTION_MAIN);
+            startMain.addCategory(Intent.CATEGORY_HOME);
+            startActivity(startMain);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     public void onUserInteraction() {
         super.onUserInteraction();
         if (mOverlayManager != null) {
