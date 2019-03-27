@@ -21,8 +21,8 @@
     <set>
         <objectAnimator
             android:propertyName="translationX"
-            android:valueFrom="@dimen/side_panel_fragment_pop_enter_offset_x"
-            android:valueTo="@dimen/side_panel_fragment_pop_enter_offset_x"
+            android:valueFrom="0dp"
+            android:valueTo="0dp"
             android:duration="@integer/side_panel_anim_duration" />
         <objectAnimator
             android:propertyName="alpha"

@@ -22,7 +22,6 @@
     android:layout_gravity="end"
     android:elevation="@dimen/side_panel_elevation"
     android:background="@color/side_panel_background"
-    android:translationX="@dimen/side_panel_enter_offset_x"
     android:alpha="0.0"
     android:visibility="gone">
 

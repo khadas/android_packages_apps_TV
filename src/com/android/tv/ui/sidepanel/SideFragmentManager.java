@@ -27,6 +27,7 @@ import android.view.ViewTreeObserver;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.provider.Settings;
 import android.os.Handler;
+import android.util.Log;
 
 import com.android.tv.common.util.SystemProperties;
 import com.android.tv.MainActivity;
@@ -38,7 +39,7 @@ import com.droidlogic.app.tv.DroidLogicTvUtils;
 /** Manages {@link SideFragment}s. */
 public class SideFragmentManager implements AccessibilityStateChangeListener {
     private static final String FIRST_BACKSTACK_RECORD_NAME = "0";
-
+    private static final String TAG = "SideFragmentManager";
     private final Activity mActivity;
     private final FragmentManager mFragmentManager;
     private final Runnable mPreShowRunnable;
@@ -136,6 +137,7 @@ public class SideFragmentManager implements AccessibilityStateChangeListener {
         }
         boolean isFirst = (mFragmentCount == 0);
         FragmentTransaction ft = mFragmentManager.beginTransaction();
+        Log.d(TAG, "show isFirst = " + isFirst);
         if (!isFirst) {
             ft.setCustomAnimations(
                     showEnterAnimation ? R.animator.side_panel_fragment_enter : 0,
@@ -163,6 +165,7 @@ public class SideFragmentManager implements AccessibilityStateChangeListener {
                                 mPreShowRunnable.run();
                             }
                             mShowAnimator.start();
+                            Log.d(TAG, "show onGlobalLayout");
                         }
                     };
             mPanel.getViewTreeObserver().addOnGlobalLayoutListener(mShowOnGlobalLayoutListener);
