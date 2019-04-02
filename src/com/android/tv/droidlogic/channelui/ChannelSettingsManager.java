@@ -575,9 +575,7 @@ public class ChannelSettingsManager {
         int level = getADMixStatus() + step;
         if (level <= 100 && level >= 0) {
             TvSingletons.getSingletons(mContext).getTvControlDataManager().putInt(mContext.getContentResolver(), DroidLogicTvUtils.TV_KEY_AD_MIX, level);
-            Intent intent = new Intent(DroidLogicTvUtils.ACTION_AD_MIXING_LEVEL);
-            intent.putExtra(DroidLogicTvUtils.PARA_VALUE1, level);
-            mContext.sendBroadcast(intent);
+            mMainActivity.getTvView().applyAudioADMixLevel(level);
         }
     }
 

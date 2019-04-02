@@ -158,7 +158,8 @@ public class ChannelSourceSettingFragment extends SideFragment {
             });
         }
         if (currentChannel == null || (currentChannel != null && !currentChannel.getType().equals(TvContract.Channels.TYPE_DTMB))) {
-            final int[] switchstatus = {R.string.channel_audio_ad_switch_off, R.string.channel_audio_ad_switch_on};
+            //add in droidtvsetting to act as a product prop
+            /*final int[] switchstatus = {R.string.channel_audio_ad_switch_off, R.string.channel_audio_ad_switch_on};
             mActionItems.add(new SubMenuItem(getString(R.string.channel_audio_ad_switch),
                     getMainActivity().getResources().getString(switchstatus[mChannelSettingsManager.getADSwitchStatus()]), getMainActivity().getOverlayManager().getSideFragmentManager()) {
                 @Override
@@ -167,16 +168,18 @@ public class ChannelSourceSettingFragment extends SideFragment {
                     fragment.setListener(mSideFragmentListener);
                     return fragment;
                 }
-            });
-            mActionItems.add(new SubMenuItem(getString(R.string.channel_audio_ad_mix_level),
-                    (mChannelSettingsManager.getADMixStatus() + "%"), getMainActivity().getOverlayManager().getSideFragmentManager()) {
-                @Override
-                protected SideFragment getFragment() {
-                    SideFragment fragment = new AudioAdMixLevelFragment();
-                    fragment.setListener(mSideFragmentListener);
-                    return fragment;
-                }
-            });
+            });*/
+            if (mChannelSettingsManager.getADSwitchStatus() > 0) {
+                mActionItems.add(new SubMenuItem(getString(R.string.channel_audio_ad_mix_level),
+                        (mChannelSettingsManager.getADMixStatus() + "%"), getMainActivity().getOverlayManager().getSideFragmentManager()) {
+                    @Override
+                    protected SideFragment getFragment() {
+                        SideFragment fragment = new AudioAdMixLevelFragment();
+                        fragment.setListener(mSideFragmentListener);
+                        return fragment;
+                    }
+                });
+            }
         }
         mActionItems.add(new SubMenuItem(getString(R.string.channel_volume_compensate),
                 String.valueOf(mChannelSettingsManager.getVolumeCompensateStatus() * 5)  + "%", getMainActivity().getOverlayManager().getSideFragmentManager()) {

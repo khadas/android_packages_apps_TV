@@ -262,14 +262,17 @@ public class MultiAudioFragment extends SideFragment {
     protected List<Item> getDefaultTrackList() {
         List<TvTrackInfo> tracks = getMainActivity().getTracks(TvTrackInfo.TYPE_AUDIO);
         mSelectedTrackId = getMainActivity().getSelectedTrack(TvTrackInfo.TYPE_AUDIO);
+        final String AD_AUDIO_DISCRIPTION = "ad";
+        final String AD_AUDIO_SUF = " ad";
 
         List<Item> items = new ArrayList<>();
         if (tracks != null) {
             boolean needToShowSampleRate = Utils.needToShowSampleRate(getActivity(), tracks);
             int pos = 0;
             for (final TvTrackInfo track : tracks) {
+                boolean isAdAudio = AD_AUDIO_DISCRIPTION.equals(track.getDescription());
                 RadioButtonItem item = new MultiAudioOptionItem(
-                    Utils.getMultiAudioWithFormat(getMainActivity(), track), track.getId());
+                    Utils.getMultiAudioWithFormat(getMainActivity(), track) + (isAdAudio ? AD_AUDIO_SUF : ""), track.getId());
                 if (track.getId().equals(mSelectedTrackId)) {
                     item.setChecked(true);
                     mInitialSelectedPosition = pos;

@@ -2990,6 +2990,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     }
                     // fall through.
                 case KeyEvent.KEYCODE_CAPTIONS:
+                    mOverlayManager.getSideFragmentManager().setStartedByDroid(false);
                     mOverlayManager.getSideFragmentManager().show(new ClosedCaptionFragment());
                     return true;
                 case KeyEvent.KEYCODE_ZOOM_IN:
@@ -3019,6 +3020,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     }
                     // fall through.
                 case KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK:
+                    mOverlayManager.getSideFragmentManager().setStartedByDroid(false);
                     mOverlayManager.getSideFragmentManager().show(new MultiAudioFragment());
                     return true;
                 case KeyEvent.KEYCODE_INFO:

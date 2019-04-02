@@ -1683,6 +1683,12 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
         sendAppPrivateCommand(DroidLogicTvUtils.ACTION_DTV_ENABLE_AUDIO_AD, data);
     }
 
+    public void applyAudioADMixLevel(int level) {
+        Bundle data = new Bundle();
+        data.putInt(DroidLogicTvUtils.PARA_VALUE1, level);
+        sendAppPrivateCommand(DroidLogicTvUtils.ACTION_AD_MIXING_LEVEL, data);
+    }
+
     //show no channel hint
     private boolean mHasShowNoChannel = false;
 
