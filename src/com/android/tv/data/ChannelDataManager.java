@@ -189,11 +189,6 @@ public class ChannelDataManager {
                 if (!mHandler.hasMessages(MSG_UPDATE_CHANNELS)) {
                     mHandler.sendEmptyMessage(MSG_UPDATE_CHANNELS);
                 }
-                String mUri = uri.toString();
-                if (mUri.equals(URI_TV_COUNTRY)) {
-                    if (DEBUG) Log.d(TAG, "===== tv_country was changed, so delete all channels");
-                    mTvDataBaseManager.deleteChannels(DroidLogicTvUtils.getInputId(context));
-                }
             }
         };
         mStoreBrowsableInSharedPreferences = !PermissionUtils.hasAccessAllEpg(mContext);
@@ -220,8 +215,6 @@ public class ChannelDataManager {
         mContentResolver.registerContentObserver(
                 TvContract.Channels.CONTENT_URI, true, mChannelObserver);
         mInputManager.addCallback(mTvInputCallback);
-        mContentResolver.registerContentObserver(Settings.System.getUriFor(DroidLogicTvUtils.TV_SEARCH_COUNTRY), true,
-                mChannelObserver);
         /*try {
             mContentResolver.registerContentObserver(QuickKeyInfo.getUriForKey(QuickKeyInfo.TABLE_SCAN_NAME_URI, DroidLogicTvUtils.TV_SEARCH_TYPE), true,
                     mChannelObserver);
