@@ -51,7 +51,7 @@ import com.droidlogic.app.tv.TvScanManager;
 import com.droidlogic.app.tv.TvScanConfig;
 import com.droidlogic.tvinput.services.TvMessage;
 import com.droidlogic.app.tv.TvControlDataManager;
-import vendor.amlogic.hardware.tvserver.V1_0.FreqList;
+import com.droidlogic.app.tv.TvControlManager.FreqList;
 
 import java.util.ArrayList;
 import java.util.HashMap;

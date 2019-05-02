@@ -84,7 +84,7 @@ import com.droidlogic.app.tv.DroidLogicTvUtils;
 import com.droidlogic.app.tv.TvInSignalInfo;
 import com.droidlogic.app.tv.TvScanConfig;
 import com.droidlogic.app.tv.TvControlDataManager;
-import vendor.amlogic.hardware.tvserver.V1_0.FreqList;
+import com.droidlogic.app.tv.TvControlManager.FreqList;
 
 import com.droidlogic.app.DroidLogicKeyEvent;
 
