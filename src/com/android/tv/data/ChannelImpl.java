@@ -37,6 +37,7 @@ import com.android.tv.util.images.ImageLoader;
 import com.android.tv.util.TvInputManagerHelper;
 import com.android.tv.util.Utils;
 import com.android.tv.util.images.ImageLoader;
+import com.android.tv.data.InternalDataUtils;
 import java.net.URISyntaxException;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -128,12 +129,16 @@ public final class ChannelImpl implements Channel {
             channel.mServiceType = Utils.intern(cursor.getString(index));
         index = cursor.getColumnIndex(TvContract.Channels.COLUMN_INTERNAL_PROVIDER_DATA);
         String value = null;
+        int type = Cursor.FIELD_TYPE_STRING;
         if (index >= 0) {
+            type = cursor.getType(index);
             try {
-                if (cursor.getType(index) == Cursor.FIELD_TYPE_STRING) {
+                if (type == Cursor.FIELD_TYPE_STRING) {
                     value = cursor.getString(index);
-                } else if (cursor.getType(index) == Cursor.FIELD_TYPE_BLOB) {
-                    if (DEBUG) Log.i(TAG, "blob = " + cursor.getBlob(index));
+                } else if (type == Cursor.FIELD_TYPE_BLOB) {
+                    byte[] blob = cursor.getBlob(index);
+                    value = InternalDataUtils.getInternalProviderDataString(blob);
+                    if (DEBUG) Log.i(TAG, "value = " + value);
                 } else {
                     if (DEBUG) Log.i(TAG, "COLUMN_INTERNAL_PROVIDER_DATA other type");
                 }
@@ -142,12 +147,20 @@ public final class ChannelImpl implements Channel {
             }
         }
         //init from internal provider data
-        channel.mChannelInternalProviderDataMap = jsonToMap(value);
+        if (type == Cursor.FIELD_TYPE_BLOB) {
+            channel.mChannelInternalProviderDataMap = multiJsonToMap(value);
+        } else {
+            channel.mChannelInternalProviderDataMap = jsonToMap(value);
+        }
         if (channel.mChannelInternalProviderDataMap != null) {
-            channel.mFrequency = Integer.parseInt(channel.mChannelInternalProviderDataMap.get(KEY_FREQUENCY));
+            String frequency = channel.mChannelInternalProviderDataMap.get(KEY_FREQUENCY);
+            if (!TextUtils.isEmpty(frequency) && TextUtils.isDigitsOnly(frequency)) {
+                channel.mFrequency = Integer.parseInt(channel.mChannelInternalProviderDataMap.get(KEY_FREQUENCY));
+            }
             channel.mContentRatings = channel.mChannelInternalProviderDataMap.get(KEY_CONTENT_RATINGS);
             channel.mIsFavourite = TextUtils.equals(channel.mChannelInternalProviderDataMap.get(KEY_IS_FAVOURITE), "1");
             channel.mSignalType = DroidLogicTvUtils.TvString.fromString(channel.mChannelInternalProviderDataMap.get(KEY_SIGNAL_TYPE));
+            channel.mIsHidden = "true".equals(channel.mChannelInternalProviderDataMap.get(KEY_HIDDEN));
         }
 
         return channel;
@@ -415,6 +428,8 @@ public final class ChannelImpl implements Channel {
                 + mIsPassthrough
                 + ", browsable="
                 + mBrowsable
+                + ", mIsHidden="
+                + mIsHidden
                 + ", searchable="
                 + mSearchable
                 + ", locked="
@@ -488,6 +503,7 @@ public final class ChannelImpl implements Channel {
         mContentRatings = other.mContentRatings;
         mIsFavourite = other.mIsFavourite;
         mSignalType = other.mSignalType;
+        mIsHidden = other.mIsHidden;
     }
 
     /** Creates a channel for a passthrough TV input. */
@@ -664,6 +680,11 @@ public final class ChannelImpl implements Channel {
 
         public Builder setSignalType(String value) {
             mChannel.mSignalType = value;
+            return this;
+        }
+
+        public Builder setIsHidden(boolean value) {
+            mChannel.mIsHidden = value;
             return this;
         }
 
@@ -877,12 +898,14 @@ public final class ChannelImpl implements Channel {
     private Map<String, String> mChannelInternalProviderDataMap = new HashMap<String, String>();
     private int mFrequency;
     private String mContentRatings;
+    private boolean mIsHidden = false;
 
     //sync with droidlogic channelinfo
     public static final String KEY_FREQUENCY = "frequency";
     public static final String KEY_CONTENT_RATINGS = "content_ratings";
     public static final String KEY_IS_FAVOURITE = "is_favourite";
     public static final String KEY_SIGNAL_TYPE = "signal_type";
+    public static final String KEY_HIDDEN = "hidden";
 
     public Map<String, String> getChannelInternalProviderDataMap() {
         return mChannelInternalProviderDataMap;
@@ -902,6 +925,10 @@ public final class ChannelImpl implements Channel {
 
     public String getContentRatings() {
         return mContentRatings;
+    }
+
+    public boolean IsHidden() {
+        return mIsHidden;
     }
 
     public boolean hasSameReadWriteInfo(Channel other) {
@@ -941,6 +968,39 @@ public final class ChannelImpl implements Channel {
             } catch (JSONException e) {
                 Log.e(TAG, "jsonObject get fail: ["+k+"]" + e.getMessage());
                 return map;
+            }
+        }
+        return map;
+    }
+
+    public static Map<String, String> multiJsonToMap(String jsonString) {
+        if (jsonString == null || jsonString.length() == 0)
+            return null;
+        Map<String, String> map = new HashMap<String, String>();
+
+        JSONObject jsonObject;
+        try {
+            jsonObject = new JSONObject(jsonString);
+        } catch (JSONException e) {
+            Log.e(TAG, "Json parse fail: ["+jsonString+"]" + e.getMessage());
+            return null;
+        }
+        Iterator it = jsonObject.keys();
+        while (it.hasNext()) {
+            String k = (String)it.next();
+            String v;
+            try {
+                String childStr = jsonObject.get(k).toString();
+                map.put(k, childStr);
+                JSONObject childJsonObject = new JSONObject(childStr);
+                if (childJsonObject != null) {
+                    Map<String, String> childMap = multiJsonToMap(childJsonObject.toString());
+                    if (childMap != null) {
+                        map.putAll(childMap);
+                    }
+                }
+            } catch (JSONException e) {
+                //Log.e(TAG, "Json get fail: ["+ k +"]" + e.getMessage());
             }
         }
         return map;

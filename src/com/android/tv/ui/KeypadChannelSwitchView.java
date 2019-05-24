@@ -239,6 +239,7 @@ public class KeypadChannelSwitchView extends LinearLayout
         mAdapter.notifyDataSetChanged();*/
     }
 
+    //need all channel and has skipped onBrowsableChannelsUpdated
     public void setChannels(@Nullable List<Channel> channels) {
         mChannels = channels;
     }

@@ -134,4 +134,60 @@ public final class InternalDataUtils {
         }
         return null;
     }
+
+    @Nullable
+    public static byte[] serializeInternalProviderData(String data) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try (ObjectOutputStream out = new ObjectOutputStream(bos)) {
+            if (!TextUtils.isEmpty(data)) {
+                out.writeObject(data);
+                return bos.toByteArray();
+            }
+        } catch (IOException e) {
+            Log.e(
+                    TAG,
+                    "Could not serialize internal provider contents for data: "
+                            + data);
+        }
+        return null;
+    }
+
+    public static String deserializeInternalProviderData(byte[] bytes) {
+        if (bytes == null || bytes.length == 0) {
+            return null;
+        }
+        String result = null;
+        try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
+            result = (String) in.readObject();
+        } catch (Exception e) {
+            Log.e(TAG, "Exception deserializeInternalProviderData Exception = " + e.getMessage());
+        }
+        return result;
+    }
+
+    public static byte[] getInternalProviderDataByte(String data) {
+        if (data == null) {
+            return null;
+        }
+        byte[] result = null;
+        try {
+            result = data.getBytes();
+        } catch (Exception e) {
+            Log.e(TAG, "getInternalProviderDataByte Exception = " + e.getMessage());
+        }
+        return result;
+    }
+
+    public static String getInternalProviderDataString(byte[] bytes) {
+        if (bytes == null || bytes.length == 0) {
+            return null;
+        }
+        String result = null;
+        try {
+            result = new String(bytes);
+        } catch (Exception e) {
+            Log.e(TAG, "getInternalProviderDataString Exception = " + e.getMessage());
+        }
+        return result;
+    }
 }

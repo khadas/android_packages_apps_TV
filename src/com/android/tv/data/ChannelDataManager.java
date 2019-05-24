@@ -732,7 +732,8 @@ public class ChannelDataManager {
                     if (!channelWrapper.mChannel.hasSameReadOnlyInfo(channel) ||
                             !channelWrapper.mChannel.hasSameReadWriteInfo(channel) ||
                             !(channelWrapper.mChannel.isBrowsable() == channel.isBrowsable()) ||
-                            !(channelWrapper.mChannel.isFavourite() == channel.isFavourite())) {
+                            !(channelWrapper.mChannel.isFavourite() == channel.isFavourite()) ||
+                            !(channelWrapper.mChannel.IsHidden() == channel.IsHidden())) {
                         // Channel data updated
                         if (SystemProperties.USE_DEBUG_CHANNEL_UPDATE.getValue()) {
                             Log.d(TAG, "onPostExecute update old = " + channelWrapper.mChannel);

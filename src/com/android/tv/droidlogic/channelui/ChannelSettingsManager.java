@@ -94,8 +94,8 @@ public class ChannelSettingsManager {
     }
 
     public void loadChannelInfoList() {
-        videoChannelList = mTvDataBaseManager.getChannelList(mInputId, TvContract.Channels.SERVICE_TYPE_AUDIO_VIDEO);
-        radioChannelList = mTvDataBaseManager.getChannelList(mInputId, TvContract.Channels.SERVICE_TYPE_AUDIO);
+        videoChannelList = mTvDataBaseManager.getChannelList(mInputId, TvContract.Channels.SERVICE_TYPE_AUDIO_VIDEO, false);
+        radioChannelList = mTvDataBaseManager.getChannelList(mInputId, TvContract.Channels.SERVICE_TYPE_AUDIO, false);
     }
 
     public ArrayList<ChannelInfo> getVideoChannelList() {

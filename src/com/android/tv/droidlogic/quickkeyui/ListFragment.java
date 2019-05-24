@@ -79,7 +79,11 @@ public class ListFragment extends SideFragment {
                         Log.d(TAG, "ChannelList:videochannels=============display number: " + tempVideoChannelList.get(i).getDisplayNumber()
                             + ", channel type: " + tempVideoChannelList.get(i).getType());
                         if (TvContract.Channels.TYPE_OTHER.equals(tempVideoChannelList.get(i).getType())) {
-                            videoChannelsList.add(tempVideoChannelList.get(i));
+                            if (!tempVideoChannelList.get(i).IsHidden()) {
+                                videoChannelsList.add(tempVideoChannelList.get(i));
+                            } else {
+                                Log.d(TAG, "skip hidden channels");
+                            }
                         } else if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
                             ChannelInfo channelInfo = getMainActivity().convertToChannelInfo(tempVideoChannelList.get(i), getActivity());
                             if (channelInfo != null

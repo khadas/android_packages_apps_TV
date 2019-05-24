@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import com.android.tv.util.images.ImageLoader.ImageLoaderCallback;
+import com.android.tv.data.InternalDataUtils;
 
 import java.util.Map;
 
@@ -153,4 +154,6 @@ public interface Channel {
     Map<String, String> getChannelInternalProviderDataMap();
 
     boolean hasSameReadWriteInfo(Channel other);
+
+    boolean IsHidden();
 }
