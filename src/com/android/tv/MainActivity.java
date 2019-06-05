@@ -2712,6 +2712,11 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             mChannelTuner.removeListener(mChannelTunerListener);
             mChannelTuner.stop();
         }
+
+        if (mInputListener != null && mHdmiTvClient != null) {
+            mHdmiTvClient.removeInputChangeListener();
+        }
+
         TvApplication application = ((TvApplication) getApplication());
         if (mProgramDataManager != null) {
             mProgramDataManager.removeOnCurrentProgramUpdatedListener(
