@@ -1520,7 +1520,8 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         if (input == null) {
             return null;
         }
-        if (DroidLogicTvUtils.getSearchInputId(this) == null) {
+        String searchedInputId = DroidLogicTvUtils.getSearchInputId(this);
+        if (!TextUtils.equals(searchedInputId, input.getId())) {
             DroidLogicTvUtils.setSearchInputId(this, input.getId(), false);
             DroidLogicTvUtils.setCurrentInputId(this, input.getId());
         }
