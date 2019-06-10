@@ -1529,6 +1529,10 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             setupIntent = new Intent(this, ChannelSearchActivity.class);
             setupIntent.putExtra(CommonConstants.EXTRA_INPUT_ID, input.getId());
             return setupIntent;
+        } else if (input != null && !input.isPassthroughInput()) {
+            saveChannelIdForAtvDtvMode(-1);//reset channel id if searched
+            Uri channelUri = TvContract.buildChannelUri(-1);
+            Utils.setLastWatchedChannelUri(this, channelUri.toString());
         }
         Log.d(TAG, "createDroidLogicSetupIntent input = " + input);
         setupIntent = input.createSetupIntent();
