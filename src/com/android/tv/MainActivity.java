@@ -3804,7 +3804,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             applyDisplayRefreshRate(info.getVideoFrameRate());
             mTvViewUiManager.updateTvAspectRatio();
             applyMultiAudio();
-            applyClosedCaption();
+            if (info.getCurrentChannel() != null && !info.getCurrentChannel().isOtherChannel()) {
+                applyClosedCaption();//only applay it when use select a track for other type channel
+            }
             mOverlayManager.getMenu().onStreamInfoChanged();
             if (mTvView.isVideoAvailable()) {
                 mTvViewUiManager.fadeInTvView();
