@@ -879,6 +879,13 @@ public class TimeShiftManager {
             mProgramDataManager = programDataManager;
         }
 
+        private ProgramDataManager.Listener mProgramUpdateListener = new ProgramDataManager.Listener() {
+            @Override
+            public void onProgramUpdated() {
+                updateWhenProgramChanage();
+            }
+        };
+
         void onAvailabilityChanged(boolean available, Channel channel, long currentPositionMs) {
             if (DEBUG) {
                 Log.d(
@@ -920,6 +927,10 @@ public class TimeShiftManager {
                                 currentPositionMs + PREFETCH_DURATION_FOR_NEXT));
                 schedulePrefetchPrograms();
                 TimeShiftManager.this.onProgramInfoChanged();
+                if (mProgramDataManager != null) {
+                    mProgramDataManager.removeListener(mProgramUpdateListener);
+                    mProgramDataManager.addListener(mProgramUpdateListener);
+                }
             }
         }
 
@@ -1168,6 +1179,13 @@ public class TimeShiftManager {
             return null;
         }
 
+        private void updateWhenProgramChanage() {
+            if (mHandler.hasMessages(MSG_PREFETCH_PROGRAM)) {
+                mHandler.removeMessages(MSG_PREFETCH_PROGRAM);
+            }
+            mHandler.sendEmptyMessage(MSG_PREFETCH_PROGRAM);
+        }
+
         private void schedulePrefetchPrograms() {
             if (DEBUG) Log.d(TAG, "Scheduling prefetching programs.");
             if (mHandler.hasMessages(MSG_PREFETCH_PROGRAM)) {
@@ -1212,17 +1230,30 @@ public class TimeShiftManager {
         private void prefetchPrograms() {
             long startTimeMs;
             Program lastValidProgram = getLastValidProgram();
+            long currentMills = mTvClock.currentTimeMillis();
             if (lastValidProgram == null) {
-                startTimeMs = mTvClock.currentTimeMillis();//System.currentTimeMillis();
+                startTimeMs = currentMills;//System.currentTimeMillis();
             } else {
                 startTimeMs = lastValidProgram.getEndTimeUtcMillis();
             }
-            long endTimeMs = mTvClock.currentTimeMillis()/*System.currentTimeMillis()*/ + PREFETCH_DURATION_FOR_NEXT;
-            if (startTimeMs <= endTimeMs) {
+            long endTimeMs = currentMills/*System.currentTimeMillis()*/ + PREFETCH_DURATION_FOR_NEXT;
+            if (startTimeMs <= currentMills/*endTimeMs*/) {
                 if (DEBUG) {
                     Log.d(
                             TAG,
-                            "Prefetch task starts: {startTime="
+                            "Prefetch1 task starts: {startTime="
+                                    + Utils.toTimeString(startTimeMs)
+                                    + ", endTime="
+                                    + Utils.toTimeString(endTimeMs)
+                                    + "}");
+                }
+                mProgramLoadQueue.add(Range.create(startTimeMs, endTimeMs));
+            } else {
+                startTimeMs = currentMills - MAX_DUMMY_PROGRAM_DURATION;
+                if (DEBUG) {
+                    Log.d(
+                            TAG,
+                            "Prefetch2 task starts: {startTime="
                                     + Utils.toTimeString(startTimeMs)
                                     + ", endTime="
                                     + Utils.toTimeString(endTimeMs)

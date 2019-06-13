@@ -170,7 +170,8 @@ public class ProgramDataManager implements MemoryManageable {
                             // message
                             // and send MSG_UPDATE_PREFETCH_PROGRAM again.
                             mHandler.removeMessages(MSG_UPDATE_PREFETCH_PROGRAM);
-                            mHandler.sendEmptyMessage(MSG_UPDATE_PREFETCH_PROGRAM);
+                            //mHandler.sendEmptyMessage(MSG_UPDATE_PREFETCH_PROGRAM);
+                            mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_PREFETCH_PROGRAM, 1, 0));//need to refresh forcibly
                         }
                     }
                 };
@@ -758,11 +759,15 @@ public class ProgramDataManager implements MemoryManageable {
                                     msg.what, mProgramPrefetchUpdateWaitMs);
                             return;
                         }
+                        long currentMills = mClock.currentTimeMillis();
                         long delayMillis =
                                 mLastPrefetchTaskRunMs
-                                        + mProgramPrefetchUpdateWaitMs
-                                        - mClock.currentTimeMillis();
-                        if (delayMillis > 0) {
+                                        /*+ mProgramPrefetchUpdateWaitMs*/
+                                        - currentMills/*mClock.currentTimeMillis()*/;
+                        if (msg.arg1 == 1) {
+                            mLastPrefetchTaskRunMs = currentMills/*mClock.currentTimeMillis()*/;
+                            mHandler.sendEmptyMessageDelayed(MSG_UPDATE_PREFETCH_PROGRAM, 1000);
+                        } else if (delayMillis > 0) {
                             mHandler.sendEmptyMessageDelayed(
                                     MSG_UPDATE_PREFETCH_PROGRAM, delayMillis);
                         } else {
