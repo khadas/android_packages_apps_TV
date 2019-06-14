@@ -281,14 +281,6 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                     if (DEBUG) {
                         Log.d(TAG, "onTrackSelected type = " + type + ", trackId = " + trackId);
                     }
-
-                    if (type == TvTrackInfo.TYPE_VIDEO && !TextUtils.isEmpty(trackId)) {//receive resolution from trackid
-                        mVideoPiFormat = trackId;
-                        if (mMainActivity.getOverlayManager().isChannelBannerViewActive()) {
-                            mMainActivity.getOverlayManager().updateStreamInfo();
-                        }
-                    }
-
                     if (trackId == null) {
                         // A track is unselected.
                         if (type == TvTrackInfo.TYPE_VIDEO) {
