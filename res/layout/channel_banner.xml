@@ -94,7 +94,7 @@
             android:layout_toEndOf="@id/tvinput_logo"
             android:singleLine="true"
             android:ellipsize="end"
-            android:maxWidth="@dimen/channel_name_max_width"
+            android:maxEms="@dimen/channel_banner_channel_name_max_length"
             android:textColor="@color/channel_banner_text_color"
             android:fontFamily="@string/condensed_font"
             android:textSize="@dimen/channel_banner_small_text_size" />

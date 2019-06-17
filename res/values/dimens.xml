@@ -251,7 +251,7 @@
 
     <!-- Channel banner -->
     <dimen name="channel_banner_width">696dp</dimen>
-    <dimen name="channel_banner_maxwidth">880dp</dimen>
+    <dimen name="channel_banner_maxwidth">1000dp</dimen>
     <dimen name="channel_banner_channel_number_large_text_size">54sp</dimen>
     <dimen name="channel_banner_channel_number_medium_text_size">44sp</dimen>
     <dimen name="channel_banner_channel_number_small_text_size">34sp</dimen>
@@ -276,6 +276,7 @@
     <dimen name="channel_banner_enter_offset_y">16dp</dimen>
     <dimen name="channel_banner_exit_offset_y">16dp</dimen>
     <dimen name="channel_banner_recording_icon_padding">4sp</dimen>
+    <item name="channel_banner_channel_name_max_length" type="dimen" format="integer">10</item>
 
     <!-- Input banner -->
     <dimen name="input_banner_item_height">48dp</dimen>

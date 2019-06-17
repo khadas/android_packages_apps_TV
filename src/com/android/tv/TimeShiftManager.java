@@ -882,7 +882,9 @@ public class TimeShiftManager {
         private ProgramDataManager.Listener mProgramUpdateListener = new ProgramDataManager.Listener() {
             @Override
             public void onProgramUpdated() {
-                updateWhenProgramChanage();
+                if (isAvailable()) {
+                    updateWhenProgramChanage();
+                }
             }
         };
 
