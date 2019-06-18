@@ -503,6 +503,15 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                         stopTv("onCurrentChannelUnavailable()", false);
                     }*/
                     //[Droidlogic END]
+                    //play next channel for other source
+                    if (channel != null && channel.isOtherChannel()) {
+                        Channel newChannel = mChannelTuner.getAdjacentBrowsableChannel(true);
+                        if (newChannel != null && newChannel.isOtherChannel()) {
+                            if (mChannelTuner.moveToAdjacentBrowsableChannel(true)) {
+                                tune(true);
+                            }
+                        }
+                    }
                 }
 
                 @Override
