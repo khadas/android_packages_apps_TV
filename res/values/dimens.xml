@@ -435,4 +435,8 @@
     <dimen name="dtmb_select_frequency_array_height">30dp</dimen>
     <dimen name="dtmb_select_frequency_array_start_padding">30dp</dimen>
     <dimen name="dtmb_select_frequency_array_padding">8dp</dimen>
+
+    <!-- add teletext size define -->
+    <dimen name="teletext_ui_button_text_size">8sp</dimen>
+    <dimen name="teletext_advanced_ui_width">280dp</dimen>
 </resources>

@@ -33,6 +33,10 @@ import android.widget.EditText;
 import android.widget.Button;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
+import android.text.TextUtils;
+import android.widget.LinearLayout;
+import android.graphics.drawable.ColorDrawable;
+import android.view.Gravity;
 
 import com.android.tv.ui.sidepanel.SwitchItem;
 import com.android.tv.ui.sidepanel.SideFragment;
@@ -44,6 +48,8 @@ import com.android.tv.ui.sidepanel.RadioButtonItem;
 import com.android.tv.ui.sidepanel.SubMenuItem;
 import com.android.tv.ui.sidepanel.ActionItem;
 import com.android.tv.util.CaptionSettings;
+import com.android.tv.data.api.Channel;
+import com.android.tv.MainActivity;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -116,10 +122,33 @@ public class TeleTextSettingFragment extends SideFragment {
                 createEditDialogUi(-1);
             }
         });
-
-        mItems.add(new DividerItem(getString(R.string.subtitle_teletext_page_cuntry)));
-        for (int i = 0; i < COUNTRY_LIST_RES.length; i++) {
-            mItems.add(new PageTurningItem(getString(COUNTRY_LIST_RES[i]), i));
+        final MainActivity mainActivity = getMainActivity();
+        boolean isDtvKit = false;
+        if (mainActivity != null) {
+            Channel channel = mainActivity.getCurrentChannel();
+            if (channel != null) {
+                String inputId = channel.getPackageName();
+                if (TextUtils.equals(TeleTextAdvancedSettings.DTVKIT_PACKAGE, inputId)) {
+                    isDtvKit = true;
+                }
+            }
+        }
+        if (isDtvKit) {
+            mItems.add(new DividerItem(getString(R.string.subtitle_teletext_advanced_function)));
+            mItems.add(new ActionItem(getString(R.string.subtitle_teletext_advanced_settings)) {
+                @Override
+                protected void onSelected() {
+                    if (mainActivity != null) {
+                        mainActivity.getOverlayManager().getSideFragmentManager().hideAll(false);
+                        mainActivity.showTeleTextAdvancedSettings();
+                    }
+                }
+            });
+        } else {
+            mItems.add(new DividerItem(getString(R.string.subtitle_teletext_page_cuntry)));
+            for (int i = 0; i < COUNTRY_LIST_RES.length; i++) {
+                mItems.add(new PageTurningItem(getString(COUNTRY_LIST_RES[i]), i));
+            }
         }
 
         return mItems;

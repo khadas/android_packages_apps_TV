@@ -153,6 +153,7 @@ import com.android.tv.droidlogic.QuickKeyInfo;
 import com.android.tv.droidlogic.quickkeyui.MultiOptionFragment;
 import com.android.tv.droidlogic.subtitleui.SubtitleFragment;
 import com.android.tv.droidlogic.subtitleui.TeleTextFragment;
+import com.android.tv.droidlogic.subtitleui.TeleTextAdvancedSettings;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -363,6 +364,8 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     //private long channelIndex = 0;
     private boolean isOKPressed = false;
     DroidLogicHdmiCecManager hdmi_cec = null;
+
+    private TeleTextAdvancedSettings mTeleTextAdvancedSettings;
 
     private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -1001,6 +1004,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         mPerformanceMonitor.stopTimer(timer, EventNames.MAIN_ACTIVITY_ONCREATE);
 
         mClock = new TvClock(this);
+        mTeleTextAdvancedSettings = new TeleTextAdvancedSettings(this);
     }
 
     private void startOnboardingActivity() {
@@ -1725,6 +1729,14 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
     public TunableTvView getTvView() {
         return mTvView;
+    }
+
+    public void showTeleTextAdvancedSettings() {
+        mTeleTextAdvancedSettings.creatTeletextAdvancedDialog();
+    }
+
+    public void hideTeleTextAdvancedSettings() {
+        mTeleTextAdvancedSettings.hideTeletextAdvancedDialog();
     }
 
     /**
@@ -2739,6 +2751,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         //new add release
         mQuickKeyInfo.unregisterCommandReceiver();
         mQuickKeyInfo.cancelNoSingalTimeout();
+        hideTeleTextAdvancedSettings();
 
         super.onDestroy();
     }
@@ -3051,6 +3064,12 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                         return true;
                     }
                     mOverlayManager.getSideFragmentManager().show(new TeleTextFragment());
+                    return true;
+                case KeyEvent.KEYCODE_ZOOM_OUT:
+                    String trackId = getSelectedTrack(TvTrackInfo.TYPE_SUBTITLE);
+                    if (!TextUtils.isEmpty(trackId) && mQuickKeyInfo.isTeletextSubtitleTrack(trackId)) {
+                        showTeleTextAdvancedSettings();
+                    }
                     return true;
                 case KeyEvent.KEYCODE_A:
                     if (!SystemProperties.USE_DEBUG_KEYS.getValue()) {
