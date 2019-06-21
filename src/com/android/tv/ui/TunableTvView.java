@@ -438,7 +438,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                         default:
                             // do nothing
                     }
-                    if (reason == TvInputManager.VIDEO_UNAVAILABLE_REASON_AUDIO_ONLY) {
+                    if (reason == TvInputManager.VIDEO_UNAVAILABLE_REASON_AUDIO_ONLY || reason == TvInputManager.VIDEO_UNAVAILABLE_REASON_TUNING) {
                         mMainActivity.mQuickKeyInfo.cancelNoSingalTimeout();
                     } else {
                         mMainActivity.mQuickKeyInfo.setNoSingalTimeout();

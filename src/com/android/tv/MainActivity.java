@@ -2839,10 +2839,11 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         //check no signal timeout status when any key press
         if (USE_DROIDLOIC_CUSTOMIZATION) {
             mQuickKeyInfo.cancelNoSingalTimeout();
-            /*if (!mTvView.isVideoOrAudioAvailable()) {
+            if (mTvView.getVideoUnavailableReason() == TvInputManager.VIDEO_UNAVAILABLE_REASON_WEAK_SIGNAL ||
+                    mTvView.getVideoUnavailableReason() == TvInputManager.VIDEO_UNAVAILABLE_REASON_UNKNOWN/*!mTvView.isVideoOrAudioAvailable()*/) {
                 //cancel it if set, then init it again
                 mQuickKeyInfo.setNoSingalTimeout();
-            }*/
+            }
             //check factory menu command
             if (mQuickKeyInfo.checkFactoryMenuStatus(keyCode)) {
                 return true;
