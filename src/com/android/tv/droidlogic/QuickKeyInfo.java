@@ -53,6 +53,7 @@ import java.util.Comparator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
+import java.util.Iterator;
 
 import com.android.tv.util.TvInputManagerHelper;
 import com.android.tv.ChannelTuner;
@@ -998,6 +999,9 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
     private int mSearchedRadioChannelNumber = 0;
     private int mFirstAutoSearchedFrequency = 0;
 
+    public static final String SEARCH_FOUND_SERVICE_NUMBER = "service_number";
+    public static final String SEARCH_FOUND_FIRST_SERVICE = "first_service";
+
     public boolean setSearchedChannelData(Intent data) {
         if (data != null) {
             if (data.getIntExtra(DroidLogicTvUtils.DTVPROGRAM, 0) != 0) {
@@ -1031,6 +1035,30 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         }
     }
 
+    public long getDtvKitSearchedChannelId(Intent data) {
+        long result = -1;
+        if (data != null) {
+            //Log.d(TAG, "getDtvKitSearchedChannelId data = " + data);
+            int serviceNumber = data.getIntExtra(SEARCH_FOUND_SERVICE_NUMBER, 0);
+            String firstService = data.getStringExtra(SEARCH_FOUND_FIRST_SERVICE);
+            if (serviceNumber > 0) {
+                List<Channel> channelList = mChannelTuner.getBrowsableChannelList();
+                Channel channel = null;
+                if (channelList != null && channelList.size() > 0) {
+                    Iterator<Channel> iterator = channelList.iterator();
+                    while (iterator.hasNext()) {
+                        channel = (Channel)iterator.next();
+                        if (channel != null && TextUtils.equals(firstService, channel.getDisplayName())) {
+                            result = channel.getId();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     public void setSearchedChannelFlag(boolean value) {
         mStartSearch = value;
         //reset number search parameters
@@ -1047,6 +1075,10 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         if (!value) {
             resetNumberSearch();
         }
+    }
+
+    public boolean hasStartedSearch() {
+        return mStartSearch;
     }
 
     public boolean hasSearchedChannel() {

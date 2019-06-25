@@ -487,6 +487,19 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                         mTvView.hideNoDataBaseHint();
                         mOverlayManager.updateChannelBannerAndShowIfNeeded(TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE);
                         mQuickKeyInfo.resetReturnedChannel();
+                    } else if (USE_DROIDLOIC_CUSTOMIZATION && mQuickKeyInfo.hasStartedSearch()) {//reset other source saved channel id
+                        /*String searchedInputId = DroidLogicTvUtils.getSearchInputId(MainActivity.this);
+                        String lastUri = Utils.getLastWatchedChannelUri(MainActivity.this);
+                        Uri uri = null;
+                        if (lastUri != null) {
+                            uri = Uri.parse(lastUri);
+                        }
+                        long channelId = uri != null ? ContentUris.parseId(uri) : -1;
+                        if (searchedInputId != null && !searchedInputId.startsWith(DroidLogicTvUtils.TV_DROIDLOGIC_PACKAGE) && channelId != -1) {
+                            saveChannelIdForAtvDtvMode(-1);//reset channel id if searched
+                            Uri channelUri = TvContract.buildChannelUri(-1);
+                            Utils.setLastWatchedChannelUri(MainActivity.this, channelUri.toString());
+                        }*/
                     }
                     //When browselist updated, send broadcast to tune to specific channel.
                     Log.d(TAG, "onBrowsableChannelListChanged");
@@ -1539,9 +1552,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             setupIntent.putExtra(CommonConstants.EXTRA_INPUT_ID, input.getId());
             return setupIntent;
         } else if (input != null && !input.isPassthroughInput()) {
-            saveChannelIdForAtvDtvMode(-1);//reset channel id if searched
+            /*saveChannelIdForAtvDtvMode(-1);//reset channel id if searched
             Uri channelUri = TvContract.buildChannelUri(-1);
-            Utils.setLastWatchedChannelUri(this, channelUri.toString());
+            Utils.setLastWatchedChannelUri(this, channelUri.toString());*/
         }
         Log.d(TAG, "createDroidLogicSetupIntent input = " + input);
         setupIntent = input.createSetupIntent();
@@ -1590,11 +1603,12 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
             stopTv("startSetupActivity()", false);
             startActivityForResult(intent, REQUEST_CODE_START_SETUP_ACTIVITY);
-            if (input != null && input.getServiceInfo().packageName.equals("com.droidlogic.tvinput")) {
+            /*if (input != null && input.getServiceInfo().packageName.equals("com.droidlogic.tvinput")) {
                 mQuickKeyInfo.setSearchedChannelFlag(true);
             } else {
                 Log.d(TAG, "other channel no need to set search flag!");
-            }
+            }*/
+            mQuickKeyInfo.setSearchedChannelFlag(true);//set flag for all source
         } catch (ActivityNotFoundException e) {
             mInputIdUnderSetup = null;
             Toast.makeText(
@@ -1832,6 +1846,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     mInputIdUnderSetup = null;
                     if (mChannelTuner.getCurrentChannel() == null) {
                         mChannelTuner.moveToAdjacentBrowsableChannel(true);
+                        //Log.d(TAG, "onActivityResult mChannelTuner.getCurrentChannel() = " + mChannelTuner.getCurrentChannel());
                     }
 
                     //save first found channel to ensure tune to it
@@ -1840,6 +1855,14 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                         Utils.setLastWatchedChannel(this, channel);
                         if (channel != null) {
                             saveChannelIdForAtvDtvMode(channel.getId());
+                        }
+                    } else if (mQuickKeyInfo.hasStartedSearch()) {//update dtvkit first searched channel
+                        long id = mQuickKeyInfo.getDtvKitSearchedChannelId(data);
+                        String searchedInputId = DroidLogicTvUtils.getSearchInputId(MainActivity.this);
+                        if (searchedInputId != null && !searchedInputId.startsWith(DroidLogicTvUtils.TV_DROIDLOGIC_PACKAGE) && id != -1) {
+                            saveChannelIdForAtvDtvMode(id);//reset channel id if searched
+                            Uri channelUri = TvContract.buildChannelUri(id);
+                            Utils.setLastWatchedChannelUri(MainActivity.this, channelUri.toString());
                         }
                     }
 
