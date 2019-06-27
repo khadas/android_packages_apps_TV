@@ -109,6 +109,8 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
     private static final int REQUEST_CODE_START_TV_SOURCE = 3;
     private static final int REQUEST_CODE_START_DROID_SETTINGS = 4;
 
+    public static final String DTVKIT_PACKAGE = "org.dtvkit.inputsource";
+
     public QuickKeyInfo(MainActivity mainactivity, TvInputManagerHelper tvinputmanagerhelper, ChannelTuner channeltuner) {
         this.mChannelTuner = channeltuner;
         this.mTvInputManagerHelper = tvinputmanagerhelper;
@@ -418,6 +420,8 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                     tunerinputinfo = input;
                     break;
                 } else if (tunerinputinfo == null && input.getServiceInfo().packageName.equals(DroidLogicTvUtils.TV_DROIDLOGIC_PACKAGE)) {
+                    tunerinputinfo = input;
+                } else if (tunerinputinfo == null && input.getServiceInfo().packageName.equals(DTVKIT_PACKAGE)) {
                     tunerinputinfo = input;
                 } else if (othertunerinputinfo == null) {
                     othertunerinputinfo = input;
