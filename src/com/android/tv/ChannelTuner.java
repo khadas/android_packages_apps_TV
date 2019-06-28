@@ -408,6 +408,9 @@ public class ChannelTuner {
     }
 
     private synchronized void updateChannelData(List<Channel> channels) {
+        if (SystemProperties.USE_DEBUG_CHANNEL_UPDATE.getValue()) {
+            Log.d(TAG, "updateChannelData channels = " + (channels != null ? channels.size() : 0));
+        }
         if (mContext != null) {
             //[DroidLogic]
             //when updateChannelData,save the channel counts in Settings.
@@ -455,6 +458,9 @@ public class ChannelTuner {
     }
 
     private synchronized void updateBrowsableChannels() {
+        if (SystemProperties.USE_DEBUG_CHANNEL_UPDATE.getValue()) {
+            Log.d(TAG, "updateBrowsableChannels");
+        }
         mBrowsableChannels.clear();
         int i = 0;
         for (Channel channel : mChannels) {

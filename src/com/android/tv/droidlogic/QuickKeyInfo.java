@@ -1028,6 +1028,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
     private int mSearchedAtvChannelNumber = 0;
     private int mSearchedRadioChannelNumber = 0;
     private int mFirstAutoSearchedFrequency = 0;
+    private String mFirstChannelName = null;
 
     public static final String SEARCH_FOUND_SERVICE_NUMBER = "service_number";
     public static final String SEARCH_FOUND_FIRST_SERVICE = "first_service";
@@ -1071,6 +1072,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
             //Log.d(TAG, "getDtvKitSearchedChannelId data = " + data);
             int serviceNumber = data.getIntExtra(SEARCH_FOUND_SERVICE_NUMBER, 0);
             String firstService = data.getStringExtra(SEARCH_FOUND_FIRST_SERVICE);
+            mFirstChannelName = firstService;
             if (serviceNumber > 0) {
                 List<Channel> channelList = mChannelTuner.getBrowsableChannelList();
                 Channel channel = null;
@@ -1102,6 +1104,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         mSearchedAtvChannelNumber = 0;
         mSearchedRadioChannelNumber = 0;
         mFirstAutoSearchedFrequency = 0;
+        mFirstChannelName = null;
         if (!value) {
             resetNumberSearch();
         }
@@ -1112,7 +1115,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
     }
 
     public boolean hasSearchedChannel() {
-        return mStartSearch && mFirstSearchedFrequency > 0;
+        return mStartSearch && (mFirstSearchedFrequency > 0/* || !TextUtils.isEmpty(mFirstChannelName)*/);
     }
 
     public Channel getFirstSearchedChannel() {
@@ -1128,6 +1131,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         ArrayList<Channel> newdtvchannels = new ArrayList<Channel>();
         ArrayList<Channel> newatvchannels = new ArrayList<Channel>();
         ArrayList<Channel> newradiochannels = new ArrayList<Channel>();
+        ArrayList<Channel> otherchannels = new ArrayList<Channel>();
         Channel foundchannel = null;
         if (channellist != null && channellist.size() > 0) {
             for (Channel channel : channellist) {
@@ -1143,6 +1147,8 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                 } else if (channel != null && channel.getFrequency() == mFirstSearchedRadioFrequency && channel.isRadioChannel()) {
                     Log.d(TAG, "radio fre = " + mFirstSearchedRadioFrequency + ", name = " + channel.getDisplayNumber());
                     newradiochannels.add(channel);
+                } else if (!TextUtils.isEmpty(mFirstChannelName) && TextUtils.equals(mFirstChannelName, channel.getDisplayName())) {
+                    otherchannels.add(channel);
                 }
             }
             //ensure most channels have stored
@@ -1157,6 +1163,10 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
             } else if (newradiochannels.size() > 0 && (newradiochannels.size() >= mSearchedRadioChannelNumber - 1 || mSearchedRadioChannelNumber >= newradiochannels.size() || newradiochannels.size() > 10)) {
                 foundchannel = newradiochannels.get(0);
                 Log.d(TAG, "found radio channel = " + foundchannel);
+                return foundchannel;
+            } else if (otherchannels.size() > 0) {
+                foundchannel = otherchannels.get(0);
+                Log.d(TAG, "found other channel = " + foundchannel);
                 return foundchannel;
             } else {
                 return null;

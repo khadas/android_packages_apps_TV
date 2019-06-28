@@ -490,19 +490,6 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                         mTvView.hideNoDataBaseHint();
                         mOverlayManager.updateChannelBannerAndShowIfNeeded(TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE);
                         mQuickKeyInfo.resetReturnedChannel();
-                    } else if (USE_DROIDLOIC_CUSTOMIZATION && mQuickKeyInfo.hasStartedSearch()) {//reset other source saved channel id
-                        /*String searchedInputId = DroidLogicTvUtils.getSearchInputId(MainActivity.this);
-                        String lastUri = Utils.getLastWatchedChannelUri(MainActivity.this);
-                        Uri uri = null;
-                        if (lastUri != null) {
-                            uri = Uri.parse(lastUri);
-                        }
-                        long channelId = uri != null ? ContentUris.parseId(uri) : -1;
-                        if (searchedInputId != null && !searchedInputId.startsWith(DroidLogicTvUtils.TV_DROIDLOGIC_PACKAGE) && channelId != -1) {
-                            saveChannelIdForAtvDtvMode(-1);//reset channel id if searched
-                            Uri channelUri = TvContract.buildChannelUri(-1);
-                            Utils.setLastWatchedChannelUri(MainActivity.this, channelUri.toString());
-                        }*/
                     }
                     //When browselist updated, send broadcast to tune to specific channel.
                     Log.d(TAG, "onBrowsableChannelListChanged");
