@@ -42,6 +42,7 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.os.Handler;
 import android.net.Uri;
+import android.media.AudioManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -100,6 +101,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
 
     private TvControlManager mTvControlManager;
     protected TvDataBaseManager mTvDataBaseManager;
+    private AudioManager mAudioManager;
     private boolean mShowResolution = false;
 
     public static final String SEPARATOR = "/";
@@ -110,6 +112,8 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
     private static final int REQUEST_CODE_START_DROID_SETTINGS = 4;
 
     public static final String DTVKIT_PACKAGE = "org.dtvkit.inputsource";
+    public static final String DRA_VARSION = "stream_dra_channel";
+    public static final String AUDIO_DRA = "DRA";
 
     public QuickKeyInfo(MainActivity mainactivity, TvInputManagerHelper tvinputmanagerhelper, ChannelTuner channeltuner) {
         this.mChannelTuner = channeltuner;
@@ -119,6 +123,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         //init droidlogic
         mTvControlManager = TvControlManager.getInstance();
         mTvDataBaseManager = new TvDataBaseManager(mContext);
+        mAudioManager = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
     }
 
     //start droidtvsettings
@@ -902,6 +907,9 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
                 String audioformatstring = null;
                 if (audioformats != null) {
                     audioformatstring = getAudioMap().get(audioformats[index]);
+                    if (AUDIO_DRA.equals(audioformatstring)) {
+                        audioformatstring += getDRAVersion();
+                    }
                 }
                 if (TextUtils.isEmpty(audioformatstring)) {
                     return "";
@@ -928,6 +936,24 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         } else {
             return false;
         }
+    }
+
+    private String getDRAVersion() {
+        String result = "";
+        if (mAudioManager != null) {
+            result = mAudioManager.getParameters(DRA_VARSION);
+            if (!TextUtils.isEmpty(result)) {
+                String[] splitResult = result.split("=");
+                if (splitResult != null && splitResult.length == 2) {
+                    result = splitResult[1];
+                } else {
+                    result = "";
+                }
+            } else {
+                result = "";
+            }
+        }
+        return result;
     }
 
     public static final Map<Integer, String> getVideoMap(){
