@@ -287,7 +287,7 @@ public class ChannelTuner {
         if (mCurrentChannel == null) {
             channelIndex = 0;
             Channel channel = mChannels.get(channelIndex);
-            if ((channel.isBrowsable() || (channel.isOtherChannel() && !channel.IsHidden())) && ((MainActivity)mContext).mQuickKeyInfo.isChannelMatchAtvDtvSource(channel)) {
+            if (((!channel.isOtherChannel() && channel.isBrowsable()) || (channel.isOtherChannel() && !channel.IsHidden())) && ((MainActivity)mContext).mQuickKeyInfo.isChannelMatchAtvDtvSource(channel)) {
                 return channel;
             }
         } else {
@@ -300,7 +300,7 @@ public class ChannelTuner {
                 nextChannelIndex -= size;
             }
             Channel channel = mChannels.get(nextChannelIndex);
-            if ((channel.isBrowsable() || (channel.isOtherChannel() && !channel.IsHidden())) && ((MainActivity)mContext).mQuickKeyInfo.isChannelMatchAtvDtvSource(channel)) {
+            if (((!channel.isOtherChannel() && channel.isBrowsable()) || (channel.isOtherChannel() && !channel.IsHidden())) && ((MainActivity)mContext).mQuickKeyInfo.isChannelMatchAtvDtvSource(channel)) {
                 return channel;
             }
         }
@@ -319,18 +319,18 @@ public class ChannelTuner {
         Channel channel = mChannelMap.get(channelId);
         if (channel == null) {
             return mBrowsableChannels.get(0);
-        } else if (channel.isBrowsable() || (channel.isOtherChannel() && !channel.IsHidden())) {
+        } else if ((!channel.isOtherChannel() && channel.isBrowsable()) || (channel.isOtherChannel() && !channel.IsHidden())) {
             return channel;
         }
         int index = mChannelIndexMap.get(channelId);
         int size = mChannels.size();
         for (int i = 1; i <= size / 2; ++i) {
             Channel upChannel = mChannels.get((index + i) % size);
-            if (upChannel.isBrowsable() || (channel.isOtherChannel() && !channel.IsHidden())) {
+            if ((!upChannel.isOtherChannel() && upChannel.isBrowsable()) || (upChannel.isOtherChannel() && !upChannel.IsHidden())) {
                 return upChannel;
             }
             Channel downChannel = mChannels.get((index - i + size) % size);
-            if (downChannel.isBrowsable() || (channel.isOtherChannel() && !channel.IsHidden())) {
+            if ((!downChannel.isOtherChannel() && downChannel.isBrowsable()) || (downChannel.isOtherChannel() && !downChannel.IsHidden())) {
                 return downChannel;
             }
         }
@@ -466,7 +466,7 @@ public class ChannelTuner {
         for (Channel channel : mChannels) {
             if (SystemProperties.USE_DEBUG_CHANNEL_UPDATE.getValue()) Log.d(TAG, "updateBrowsableChannels no." + (i++) + "->" + channel);
             //also delete hidden channel
-            if (channel.isBrowsable() || (channel.isOtherChannel() && !channel.IsHidden())) {//other source may not have permissions to write browse
+            if ((!channel.isOtherChannel() && channel.isBrowsable()) || (channel.isOtherChannel() && !channel.IsHidden())) {//other source may not have permissions to write browse
                 mBrowsableChannels.add(channel);
             }
         }

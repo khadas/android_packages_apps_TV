@@ -144,7 +144,9 @@ public class ChannelModifyFragment extends SideFragment {
         if (optionListData != null) {
             for (int i = 0; i < optionListData.size(); i++) {
                 String info = null;
-                if (!optionListData.get(i).isBrowsable()) {
+                if (optionListData.get(i).isOtherChannel() && optionListData.get(i).getHidden() == 1) {
+                    info = getString(R.string.channel_edit_skip);//for other channel
+                } else if (!optionListData.get(i).isOtherChannel() && !optionListData.get(i).isBrowsable()) {
                     info = getString(R.string.channel_edit_skip);
                 } else if (optionListData.get(i).isFavourite()) {
                     info = getString(R.string.channel_edit_favourite);

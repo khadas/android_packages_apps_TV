@@ -430,6 +430,8 @@ public final class ChannelImpl implements Channel {
                 + mBrowsable
                 + ", mIsHidden="
                 + mIsHidden
+                + ", mIsFavourite="
+                + mIsFavourite
                 + ", searchable="
                 + mSearchable
                 + ", locked="

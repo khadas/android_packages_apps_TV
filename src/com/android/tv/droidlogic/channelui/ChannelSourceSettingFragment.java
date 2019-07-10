@@ -201,7 +201,7 @@ public class ChannelSourceSettingFragment extends SideFragment {
                 }
             });
         }
-        if ((currentChannel == null) || ((currentChannel != null) && (!currentChannel.isRadioChannel()))) {
+        if (currentChannel != null && (!currentChannel.isRadioChannel() && !currentChannel.isOtherChannel())) {
             mActionItems.add(new SubMenuItem(getString(R.string.channel_switch_channel),
                 getString(SWITCH_CHANNEL[mChannelSettingsManager.getSwitchChannelStatus()]), getMainActivity().getOverlayManager().getSideFragmentManager()) {
                 @Override

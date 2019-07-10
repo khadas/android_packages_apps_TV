@@ -135,7 +135,9 @@ public class ListFragment extends SideFragment {
                 List<Channel> all = getMainActivity().mQuickKeyInfo.getChannelTuner().getVideoChannelList();
                 for (Channel one : all) {
                     if (one.isFavourite()) {
-                        if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
+                        if (TvContract.Channels.TYPE_OTHER.equals(one.getType())) {
+                            need.add(one);
+                        } else if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
                             ChannelInfo channelInfo = getMainActivity().convertToChannelInfo(one, getActivity());
                             if (channelInfo != null
                                 && channelInfo.getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(getActivity()))) {
@@ -155,7 +157,9 @@ public class ListFragment extends SideFragment {
                 List<Channel> all = getMainActivity().mQuickKeyInfo.getChannelTuner().getRadioChannelList();
                 for (Channel one : all) {
                     if (one.isFavourite()) {
-                        if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
+                        if (TvContract.Channels.TYPE_OTHER.equals(one.getType())) {
+                            need.add(one);
+                        } else if (DroidLogicTvUtils.isAtscCountry(getActivity())) {
                             ChannelInfo channelInfo = getMainActivity().convertToChannelInfo(one, getActivity());
                             if (channelInfo != null
                                 && channelInfo.getSignalType().equals(DroidLogicTvUtils.getCurrentSignalType(getActivity()))) {

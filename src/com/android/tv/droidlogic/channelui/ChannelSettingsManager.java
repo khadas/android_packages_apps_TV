@@ -459,8 +459,16 @@ public class ChannelSettingsManager {
         ChannelInfo channel = getChannelInfoById(channelid);
         //if (ChannelInfo.isSameChannel(currentChannel, channel))
         //setActivityResult(DroidLogicTvUtils.RESULT_UPDATE);
-
-        mTvDataBaseManager.skipChannel(channel);
+        if (channel != null && channel.isOtherChannel()) {
+            int isHidden = channel.getHidden();
+            boolean isFav = channel.isFavourite();
+            mTvDataBaseManager.updateSingleChannelInternalProviderData(channelid, ChannelInfo.KEY_HIDDEN, isHidden == 1 ? "false" : "true");
+            if (isHidden == 0 && isFav) {
+                mTvDataBaseManager.updateSingleChannelInternalProviderData(channelid, ChannelInfo.KEY_IS_FAVOURITE, "0");
+            }
+        } else {
+            mTvDataBaseManager.skipChannel(channel);
+        }
     }
 
     public  void deleteChannel (long channelid) {
@@ -477,7 +485,16 @@ public class ChannelSettingsManager {
 
     public void setFavouriteChannel (long channelid) {
         ChannelInfo channel = getChannelInfoById(channelid);
-        mTvDataBaseManager.setFavouriteChannel(channel);
+        if (channel != null && channel.isOtherChannel()) {
+            boolean isFav = channel.isFavourite();
+            int isHidden = channel.getHidden();
+            mTvDataBaseManager.updateSingleChannelInternalProviderData(channelid, ChannelInfo.KEY_IS_FAVOURITE, isFav ? "0" : "1");
+            if (!isFav && isHidden == 1) {
+                mTvDataBaseManager.updateSingleChannelInternalProviderData(channelid, ChannelInfo.KEY_HIDDEN, "false");
+            }
+        } else {
+            mTvDataBaseManager.setFavouriteChannel(channel);
+        }
     }
 
     public ChannelInfo getChannelInfoById(long id) {
