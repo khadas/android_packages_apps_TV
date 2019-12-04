@@ -1169,7 +1169,7 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
     }
 
     public boolean hasSearchedChannel() {
-        return mStartSearch && (mFirstSearchedFrequency > 0/* || !TextUtils.isEmpty(mFirstChannelName)*/);
+        return mStartSearch && (mFirstSearchedFrequency > 0 || !TextUtils.isEmpty(mFirstChannelName));
     }
 
     public Channel getFirstSearchedChannel() {

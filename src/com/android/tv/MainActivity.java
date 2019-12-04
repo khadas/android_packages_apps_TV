@@ -487,7 +487,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                     //need both browse channels and skipped channels
                     //mOverlayManager.onBrowsableChannelsUpdated();
                     //in case that channel cannot update on time
-                    if (USE_DROIDLOIC_CUSTOMIZATION && mQuickKeyInfo.hasSearchedChannel()) {
+                    if (USE_DROIDLOIC_CUSTOMIZATION && mQuickKeyInfo.hasSearchedChannel() && isActivityResumed()) {
                         Channel channel = mQuickKeyInfo.getFirstSearchedChannel();
                         List<Channel> channellist = mChannelTuner.getBrowsableChannelList();
                         if (channel != null && channellist != null && channellist.size() > 0) {
