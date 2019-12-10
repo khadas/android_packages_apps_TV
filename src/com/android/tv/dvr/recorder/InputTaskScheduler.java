@@ -53,6 +53,7 @@ import org.json.JSONObject;
 public class InputTaskScheduler {
     private static final String TAG = "InputTaskScheduler";
     private static final boolean DEBUG = true;
+    private static final boolean DISABLE_STREAM_TIME_FOR_DIRECT_RECORD = true;
 
     private static final int MSG_ADD_SCHEDULED_RECORDING = 1;
     private static final int MSG_REMOVE_SCHEDULED_RECORDING = 2;
@@ -340,7 +341,9 @@ public class InputTaskScheduler {
         for (Iterator<ScheduledRecording> iter = mWaitingSchedules.values().iterator();
                 iter.hasNext(); ) {
             ScheduledRecording schedule = iter.next();
-            if (schedule.getEndTimeMs() - currentTimeMs
+            if (DISABLE_STREAM_TIME_FOR_DIRECT_RECORD && schedule.getType() == ScheduledRecording.TYPE_TIMED) {
+                Log.d(TAG, "handleBuildSchedule directly");
+            } else if (schedule.getEndTimeMs() - currentTimeMs
                     <= MIN_REMAIN_DURATION_PERCENT * schedule.getDuration()) {
                 Log.e(TAG, "Error! Program ended before recording started:" + schedule);
                 fail(schedule,
@@ -354,7 +357,10 @@ public class InputTaskScheduler {
         // Record the schedules which should start now.
         List<ScheduledRecording> schedulesToStart = new ArrayList<>();
         for (ScheduledRecording schedule : mWaitingSchedules.values()) {
-            if (schedule.getState() != ScheduledRecording.STATE_RECORDING_CANCELED
+            if (DISABLE_STREAM_TIME_FOR_DIRECT_RECORD && schedule.getType() == ScheduledRecording.TYPE_TIMED) {
+                Log.d(TAG, "handleBuildSchedule add schedulesToStart directly");
+                schedulesToStart.add(schedule);
+            } else if (schedule.getState() != ScheduledRecording.STATE_RECORDING_CANCELED
                     && schedule.getStartTimeMs() - RecordingTask.RECORDING_EARLY_START_OFFSET_MS
                             <= currentTimeMs
                     && schedule.getEndTimeMs() > currentTimeMs) {

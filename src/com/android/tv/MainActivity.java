@@ -4163,6 +4163,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
             if (channel == null) {
                 return;
             }
+            Log.d(TAG, "onChannelRetuned " + channel);
             Channel currentChannel =
                     mChannelDataManager.getChannel(ContentUriUtils.safeParseId(channel));
             saveChannelIdForAtvDtvMode(DroidLogicTvUtils.getChannelId(channel));

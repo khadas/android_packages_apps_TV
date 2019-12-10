@@ -99,7 +99,7 @@ public abstract class AsyncDvrDbTask<Params, Progress, Result>
 
         @Override
         protected final Void doInDvrBackground(ScheduledRecording... params) {
-            Log.d(TAG, "AsyncAddScheduleTask updateSchedules");
+            Log.d(TAG, "AsyncUpdateScheduleTask updateSchedules");
             sDbHelper.updateSchedules(params);
             return null;
         }
@@ -114,7 +114,7 @@ public abstract class AsyncDvrDbTask<Params, Progress, Result>
 
         @Override
         protected final Void doInDvrBackground(ScheduledRecording... params) {
-            Log.d(TAG, "AsyncAddScheduleTask deleteSchedules");
+            Log.d(TAG, "AsyncDeleteScheduleTask deleteSchedules");
             sDbHelper.deleteSchedules(params);
             return null;
         }
@@ -139,7 +139,7 @@ public abstract class AsyncDvrDbTask<Params, Progress, Result>
                     scheduledRecordings.add(ScheduledRecording.fromCursor(c));
                 }
             }
-            Log.d(TAG, "AsyncAddScheduleTask AsyncDvrQueryScheduleTask");
+            Log.d(TAG, "AsyncDvrQueryScheduleTask " + scheduledRecordings.size());
             return scheduledRecordings;
         }
     }
@@ -153,7 +153,7 @@ public abstract class AsyncDvrDbTask<Params, Progress, Result>
 
         @Override
         protected final Void doInDvrBackground(SeriesRecording... params) {
-            Log.d(TAG, "AsyncAddScheduleTask insertSeriesRecordings");
+            Log.d(TAG, "AsyncAddSeriesRecordingTask insertSeriesRecordings");
             sDbHelper.insertSeriesRecordings(params);
             return null;
         }
@@ -168,7 +168,7 @@ public abstract class AsyncDvrDbTask<Params, Progress, Result>
 
         @Override
         protected final Void doInDvrBackground(SeriesRecording... params) {
-            Log.d(TAG, "AsyncAddScheduleTask updateSeriesRecordings");
+            Log.d(TAG, "AsyncUpdateSeriesRecordingTask updateSeriesRecordings");
             sDbHelper.updateSeriesRecordings(params);
             return null;
         }
@@ -183,7 +183,7 @@ public abstract class AsyncDvrDbTask<Params, Progress, Result>
 
         @Override
         protected final Void doInDvrBackground(SeriesRecording... params) {
-            Log.d(TAG, "AsyncAddScheduleTask deleteSeriesRecordings");
+            Log.d(TAG, "AsyncDeleteSeriesRecordingTask deleteSeriesRecordings");
             sDbHelper.deleteSeriesRecordings(params);
             return null;
         }
@@ -209,7 +209,7 @@ public abstract class AsyncDvrDbTask<Params, Progress, Result>
                     scheduledRecordings.add(SeriesRecording.fromCursor(c));
                 }
             }
-            Log.d(TAG, "AsyncAddScheduleTask AsyncDvrQuerySeriesRecordingTask");
+            Log.d(TAG, "AsyncDvrQuerySeriesRecordingTask scheduledRecordings " + scheduledRecordings.size());
             return scheduledRecordings;
         }
     }

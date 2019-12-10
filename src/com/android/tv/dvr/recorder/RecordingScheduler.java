@@ -72,6 +72,7 @@ import java.util.concurrent.TimeUnit;
 public class RecordingScheduler extends TvInputCallback implements ScheduledRecordingListener {
     private static final String TAG = "RecordingScheduler";
     private static final boolean DEBUG = true;
+    private static final boolean DISABLE_STREAM_TIME_FOR_DIRECT_RECORD = true;
 
     private static final String HANDLER_THREAD_NAME = "RecordingScheduler";
     private static final long SOON_DURATION_IN_MS = TimeUnit.MINUTES.toMillis(1);
@@ -280,7 +281,10 @@ public class RecordingScheduler extends TvInputCallback implements ScheduledReco
         boolean needToUpdateAlarm = false;
         for (ScheduledRecording schedule : schedules) {
             if (schedule.getState() == ScheduledRecording.STATE_RECORDING_NOT_STARTED) {
-                if (startsWithin(schedule, SOON_DURATION_IN_MS)) {
+                if (DISABLE_STREAM_TIME_FOR_DIRECT_RECORD && schedule.getType() == ScheduledRecording.TYPE_TIMED) {
+                    Log.d(TAG, "handleScheduleChange record directly");
+                    scheduleRecordingSoon(schedule);
+                } else if (startsWithin(schedule, SOON_DURATION_IN_MS)) {
                     scheduleRecordingSoon(schedule);
                 } else {
                     needToUpdateAlarm = true;

@@ -510,7 +510,7 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
         List<ScheduledRecording> result = new ArrayList<>();
         for (ScheduledRecording r : mScheduledRecordings.values()) {
             if (DEBUG) {
-                Log.d(TAG, "getRecordingsWithState " + r.toString());
+                 Log.d(TAG, "getRecordingsWithState " + r.toString());
             }
             for (int state : states) {
                 if (DEBUG) {
@@ -522,6 +522,7 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
                 }
             }
         }
+        Log.d(TAG, "getRecordingsWithState mScheduledRecordings = " + mScheduledRecordings.size() + ", result = " + result.size());
         return result;
     }
 
@@ -628,38 +629,58 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
     @Nullable
     @Override
     public ScheduledRecording getScheduledRecording(long recordingId) {
-        return mScheduledRecordings.get(recordingId);
+        ScheduledRecording scheduledRecording = mScheduledRecordings.get(recordingId);
+        if (DEBUG) {
+            Log.d(TAG, "getScheduledRecording " + scheduledRecording);
+        }
+        return scheduledRecording;
     }
 
     @Nullable
     @Override
     public ScheduledRecording getScheduledRecordingForProgramId(long programId) {
-        return mProgramId2ScheduledRecordings.get(programId);
+        ScheduledRecording scheduledRecording = mProgramId2ScheduledRecordings.get(programId);;
+        if (DEBUG) {
+            Log.d(TAG, "getScheduledRecordingForProgramId " + scheduledRecording);
+        }
+        return scheduledRecording;
     }
 
     @Nullable
     @Override
     public RecordedProgram getRecordedProgram(long recordingId) {
-        return mRecordedPrograms.get(recordingId);
+        RecordedProgram recordedProgram = mRecordedPrograms.get(recordingId);;
+        if (DEBUG) {
+            Log.d(TAG, "getRecordedProgram " + recordedProgram);
+        }
+        return recordedProgram;
     }
 
     @Nullable
     @Override
     public SeriesRecording getSeriesRecording(long seriesRecordingId) {
-        return mSeriesRecordings.get(seriesRecordingId);
+        SeriesRecording seriesRecording = mSeriesRecordings.get(seriesRecordingId);
+        if (DEBUG) {
+            Log.d(TAG, "getSeriesRecording seriesRecordingId = " + seriesRecordingId + "->" + seriesRecording);
+        }
+        return seriesRecording;
     }
 
     @Nullable
     @Override
     public SeriesRecording getSeriesRecording(String seriesId) {
-        return mSeriesId2SeriesRecordings.get(seriesId);
+        SeriesRecording seriesRecording = mSeriesId2SeriesRecordings.get(seriesId);
+        if (DEBUG) {
+            Log.d(TAG, "getSeriesRecording seriesId = " + seriesId + "->" + seriesRecording);
+        }
+        return seriesRecording;
     }
 
     @Override
     public void addScheduledRecording(ScheduledRecording... schedules) {
         for (ScheduledRecording r : schedules) {
             if (DEBUG) {
-                Log.d(TAG, "addScheduledRecording = " + r.toString());
+                Log.d(TAG, "addScheduledRecording = " + r);
             }
             if (r.getId() == ScheduledRecording.ID_NOT_SET) {
                 r.setId(IdGenerator.SCHEDULED_RECORDING.newId());
@@ -680,7 +701,7 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
     public void addSeriesRecording(SeriesRecording... seriesRecordings) {
         for (SeriesRecording r : seriesRecordings) {
             if (DEBUG) {
-                Log.d(TAG, "addSeriesRecording = " + r.toString());
+                Log.d(TAG, "addSeriesRecording = " + r);
             }
             r.setId(IdGenerator.SERIES_RECORDING.newId());
             mSeriesRecordings.put(r.getId(), r);
@@ -754,10 +775,12 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
             }
         }
         if (!schedulesToDelete.isEmpty()) {
+            Log.d(TAG, "removeScheduledRecording schedulesToDelete " + schedulesToDelete.size());
             new AsyncDeleteScheduleTask(mContext)
                     .executeOnDbThread(ScheduledRecording.toArray(schedulesToDelete));
         }
         if (!schedulesNotToDelete.isEmpty()) {
+            Log.d(TAG, "removeScheduledRecording schedulesNotToDelete " + schedulesNotToDelete.size());
             new AsyncUpdateScheduleTask(mContext)
                     .executeOnDbThread(ScheduledRecording.toArray(schedulesNotToDelete));
         }
@@ -814,7 +837,7 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
         Set<Long> seriesRecordingIdsToCheck = new HashSet<>();
         for (ScheduledRecording r : schedules) {
             if (DEBUG) {
-                Log.d(TAG, "updateScheduledRecording = " + r.toString());
+                Log.d(TAG, "updateScheduledRecording = " + r);
             }
             if (!SoftPreconditions.checkState(
                     mScheduledRecordings.containsKey(r.getId()),
@@ -865,7 +888,7 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
     public void updateSeriesRecording(final SeriesRecording... seriesRecordings) {
         for (SeriesRecording r : seriesRecordings) {
             if (DEBUG) {
-                Log.d(TAG, "updateSeriesRecording = " + r.toString());
+                Log.d(TAG, "updateSeriesRecording = " + r);
             }
             if (!SoftPreconditions.checkArgument(
                     mSeriesRecordings.containsKey(r.getId()),
@@ -895,7 +918,7 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
         List<ScheduledRecording> schedulesToDelete = new ArrayList<>();
         for (ScheduledRecording r : addedSchedules) {
             if (DEBUG) {
-                Log.d(TAG, "removeDeletedSchedules1 = " + r.toString());
+                Log.d(TAG, "removeDeletedSchedules1 = " + r);
             }
             ScheduledRecording deleted = getDeletedScheduleMap().remove(r.getProgramId());
             if (deleted != null) {
@@ -912,7 +935,7 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
         Set<Long> seriesRecordingIds = new HashSet<>();
         for (SeriesRecording r : removedSeriesRecordings) {
             if (DEBUG) {
-                Log.d(TAG, "removeDeletedSchedules2 = " + r.toString());
+                Log.d(TAG, "removeDeletedSchedules2 = " + r);
             }
             seriesRecordingIds.add(r.getId());
         }

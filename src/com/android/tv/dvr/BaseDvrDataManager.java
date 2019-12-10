@@ -274,12 +274,14 @@ public abstract class BaseDvrDataManager implements WritableDvrDataManager {
 
     @Override
     public Collection<ScheduledRecording> getDeletedSchedules() {
+        Log.d(TAG, "getDeletedSchedules" + (mDeletedScheduleMap != null ? mDeletedScheduleMap.size() : null));
         return mDeletedScheduleMap.values();
     }
 
     @NonNull
     @Override
     public Collection<Long> getDisallowedProgramIds() {
+        Log.d(TAG, "getDisallowedProgramIds");
         return mDeletedScheduleMap.keySet();
     }
 
@@ -287,6 +289,7 @@ public abstract class BaseDvrDataManager implements WritableDvrDataManager {
      * Returns the map which contains the deleted schedules which are mapped from the program ID.
      */
     protected Map<Long, ScheduledRecording> getDeletedScheduleMap() {
+        Log.d(TAG, "getDeletedScheduleMap " + (mDeletedScheduleMap != null ? mDeletedScheduleMap.size() : null));
         return mDeletedScheduleMap;
     }
 
@@ -301,6 +304,9 @@ public abstract class BaseDvrDataManager implements WritableDvrDataManager {
         }
         List<RecordedProgram> result = new ArrayList<>();
         for (RecordedProgram r : getRecordedPrograms()) {
+            if (DEBUG) {
+                Log.d(TAG, "getRecordedPrograms = " + r);
+            }
             if (seriesRecording.getSeriesId().equals(r.getSeriesId())) {
                 result.add(r);
             }
@@ -313,6 +319,9 @@ public abstract class BaseDvrDataManager implements WritableDvrDataManager {
         List<SeriesRecording> toRemove = new ArrayList<>();
         for (long rId : seriesRecordingIds) {
             SeriesRecording seriesRecording = getSeriesRecording(rId);
+            if (DEBUG) {
+                Log.d(TAG, "checkAndRemoveEmptySeriesRecording = " + seriesRecording);
+            }
             if (seriesRecording != null && isEmptySeriesRecording(seriesRecording)) {
                 toRemove.add(seriesRecording);
             }
@@ -331,15 +340,24 @@ public abstract class BaseDvrDataManager implements WritableDvrDataManager {
         }
         long seriesRecordingId = seriesRecording.getId();
         for (ScheduledRecording r : getAvailableScheduledRecordings()) {
+            if (DEBUG) {
+                Log.d(TAG, "isEmptySeriesRecording " + r.getSeriesRecordingId() + ", seriesRecordingId = " + seriesRecordingId);
+            }
             if (r.getSeriesRecordingId() == seriesRecordingId) {
                 return false;
             }
         }
         String seriesId = seriesRecording.getSeriesId();
         for (RecordedProgram r : getRecordedPrograms()) {
+            if (DEBUG) {
+                Log.d(TAG, "isEmptySeriesRecording " + r.getSeriesId() + ", seriesId = " + seriesId);
+            }
             if (seriesId.equals(r.getSeriesId())) {
                 return false;
             }
+        }
+        if (DEBUG) {
+            Log.d(TAG, "isEmptySeriesRecording return true");
         }
         return true;
     }

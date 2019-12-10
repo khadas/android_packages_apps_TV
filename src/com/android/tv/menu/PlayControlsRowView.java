@@ -320,18 +320,25 @@ public class PlayControlsRowView extends MenuRowView {
                     new HalfSizedDialogFragment.OnActionClickListener() {
                         @Override
                         public void onActionClick(long actionId) {
+                            Log.d(TAG, "showStopRecordingDialog onActionClick " + actionId);
                             if (actionId == DvrStopRecordingFragment.ACTION_STOP) {
                                 ScheduledRecording currentRecording =
                                         mDvrManager.getCurrentRecording(currentChannel.getId());
                                 if (currentRecording != null) {
                                     mDvrManager.stopRecording(currentRecording);
+                                } else {
+                                    Log.d(TAG, "showStopRecordingDialog ACTION_STOP currentRecording null");
                                 }
                             } else if (actionId == GuidedAction.ACTION_ID_CANCEL) {
                                 ScheduledRecording currentRecording =
                                         mDvrManager.getCurrentRecording(currentChannel.getId());
                                 if (currentRecording != null) {
                                     mDvrManager.cancelRecording(currentRecording);
+                                } else {
+                                    Log.d(TAG, "showStopRecordingDialog ACTION_ID_CANCEL currentRecording null");
                                 }
+                            } else {
+                                Log.d(TAG, "showStopRecordingDialog ukown action");
                             }
                         }
                     });

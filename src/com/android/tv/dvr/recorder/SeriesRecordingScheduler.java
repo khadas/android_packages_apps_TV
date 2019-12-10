@@ -44,6 +44,8 @@ import com.android.tv.dvr.data.SeasonEpisodeNumber;
 import com.android.tv.dvr.data.SeriesInfo;
 import com.android.tv.dvr.data.SeriesRecording;
 import com.android.tv.dvr.provider.EpisodicProgramLoadTask;
+import com.android.tv.common.util.SystemProperties;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -68,7 +70,7 @@ import javax.inject.Provider;
 @TargetApi(Build.VERSION_CODES.N)
 public class SeriesRecordingScheduler {
     private static final String TAG = "SeriesRecordingSchd";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = false || SystemProperties.USE_DEBUG_PVR.getValue();;
 
     private static final String KEY_FETCHED_SERIES_IDS =
             "SeriesRecordingScheduler.fetched_series_ids";

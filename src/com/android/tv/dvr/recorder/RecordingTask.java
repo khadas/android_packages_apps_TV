@@ -65,6 +65,7 @@ public class RecordingTask extends RecordingCallback
         implements Handler.Callback, DvrManager.Listener {
     private static final String TAG = "RecordingTask";
     private static final boolean DEBUG = true;
+    private static final boolean DISABLE_STREAM_TIME_FOR_DIRECT_RECORD = true;
 
     /** Compares the end time in ascending order. */
     public static final Comparator<RecordingTask> END_TIME_COMPARATOR =
@@ -221,11 +222,21 @@ public class RecordingTask extends RecordingCallback
             return;
         }
         mState = State.CONNECTED;
-        if (mHandler == null
-                || !sendEmptyMessageAtAbsoluteTime(
-                        MSG_START_RECORDING,
-                        mScheduledRecording.getStartTimeMs() - RECORDING_EARLY_START_OFFSET_MS)) {
-            failAndQuit(ScheduledRecording.FAILED_REASON_MESSAGE_NOT_SENT);
+        if (DISABLE_STREAM_TIME_FOR_DIRECT_RECORD && mScheduledRecording.getType() == ScheduledRecording.TYPE_TIMED) {
+            Log.d(TAG, "onTuned direct record");
+            if (mHandler == null
+                    || !sendEmptyMessageDelayed(
+                            MSG_START_RECORDING,
+                            0)) {
+                failAndQuit(ScheduledRecording.FAILED_REASON_MESSAGE_NOT_SENT);
+            }
+        } else {
+            if (mHandler == null
+                    || !sendEmptyMessageAtAbsoluteTime(
+                            MSG_START_RECORDING,
+                            mScheduledRecording.getStartTimeMs() - RECORDING_EARLY_START_OFFSET_MS)) {
+                failAndQuit(ScheduledRecording.FAILED_REASON_MESSAGE_NOT_SENT);
+            }
         }
     }
 
@@ -343,7 +354,9 @@ public class RecordingTask extends RecordingCallback
 
     private void handleInit() {
         if (DEBUG) Log.d(TAG, "handleInit " + mScheduledRecording);
-        if (mScheduledRecording.getEndTimeMs() < mClock.currentTimeMillis()) {
+        if (DISABLE_STREAM_TIME_FOR_DIRECT_RECORD && mScheduledRecording.getType() == ScheduledRecording.TYPE_TIMED) {
+            Log.w(TAG, "handleInit direct record");
+        } else if (mScheduledRecording.getEndTimeMs() < mClock.currentTimeMillis()) {
             Log.w(TAG, "End time already past, not recording " + mScheduledRecording);
             failAndQuit(ScheduledRecording.FAILED_REASON_PROGRAM_ENDED_BEFORE_RECORDING_STARTED);
             return;
@@ -417,7 +430,14 @@ public class RecordingTask extends RecordingCallback
             updateProgramRecordStatusToDb(programId, com.droidlogic.app.tv.Program.RECORD_STATUS_IN_PROGRESS);
         }
 
-        if (!sendEmptyMessageAtAbsoluteTime(
+        if (DISABLE_STREAM_TIME_FOR_DIRECT_RECORD && mScheduledRecording != null && mScheduledRecording.getType() == ScheduledRecording.TYPE_TIMED) {
+            Log.d(TAG, "handleStartRecording direct record");
+            if (!sendEmptyMessageDelayed(
+                            MSG_STOP_RECORDING,
+                            mScheduledRecording.getDuration())) {
+                failAndQuit(ScheduledRecording.FAILED_REASON_MESSAGE_NOT_SENT);
+            }
+        } else if (!sendEmptyMessageAtAbsoluteTime(
                 MSG_STOP_RECORDING, mScheduledRecording.getEndTimeMs())) {
             failAndQuit(ScheduledRecording.FAILED_REASON_MESSAGE_NOT_SENT);
         }
@@ -441,8 +461,14 @@ public class RecordingTask extends RecordingCallback
                 mRecordingSession.setEndTimeMs(schedule.getEndTimeMs());
             }
             if (mState == State.RECORDING_STARTED) {
-                mHandler.removeMessages(MSG_STOP_RECORDING);
-                if (!sendEmptyMessageAtAbsoluteTime(MSG_STOP_RECORDING, schedule.getEndTimeMs())) {
+                if (DISABLE_STREAM_TIME_FOR_DIRECT_RECORD && !(mScheduledRecording != null && mScheduledRecording.getType() == ScheduledRecording.TYPE_TIMED)) {
+                    Log.d(TAG, "handleUpdateSchedule not direct record");
+                    mHandler.removeMessages(MSG_STOP_RECORDING);
+                }
+                //diffrent stream card may have diffrent program time and current time
+                if (DISABLE_STREAM_TIME_FOR_DIRECT_RECORD && mScheduledRecording != null && mScheduledRecording.getType() == ScheduledRecording.TYPE_TIMED) {
+                    Log.d(TAG, "handleUpdateSchedule wait stop by itself");
+                } else if (!sendEmptyMessageAtAbsoluteTime(MSG_STOP_RECORDING, schedule.getEndTimeMs())) {
                     failAndQuit(ScheduledRecording.FAILED_REASON_MESSAGE_NOT_SENT);
                 }
             }
@@ -493,6 +519,18 @@ public class RecordingTask extends RecordingCallback
                             + delay / 1000
                             + " seconds to arrive at "
                             + CommonUtils.toIsoDateTimeString(when));
+        }
+        return mHandler.sendEmptyMessageDelayed(what, delay);
+    }
+
+    private boolean sendEmptyMessageDelayed(int what, long delayPeriod) {
+        long delay = Math.max(0L, delayPeriod);
+        if (DEBUG) {
+            Log.d(TAG,
+                    "sendEmptyMessageDelayed "
+                            + what
+                            + " with a delay of "
+                            + delay / 1000);
         }
         return mHandler.sendEmptyMessageDelayed(what, delay);
     }
@@ -567,6 +605,7 @@ public class RecordingTask extends RecordingCallback
     @Override
     public void onStopRecordingRequested(ScheduledRecording recording) {
         if (recording.getId() != mScheduledRecording.getId()) {
+            Log.d(TAG, "onStopRecordingRequested currentId = " + mScheduledRecording.getId() + "not current " + recording);
             return;
         }
         stop();
@@ -575,6 +614,7 @@ public class RecordingTask extends RecordingCallback
     @Override
     public void onCancelRecording(ScheduledRecording recording) {
         if (recording.getId() != mScheduledRecording.getId()) {
+            Log.d(TAG, "onCancelRecording currentId = " + mScheduledRecording.getId() + "not current " + recording);
             return;
         }
         if (DEBUG) Log.d(TAG, "onCancelRecording");
@@ -588,7 +628,7 @@ public class RecordingTask extends RecordingCallback
 
     /** Stops the task. */
     public void stop() {
-        if (DEBUG) Log.d(TAG, "stop");
+        if (DEBUG) Log.d(TAG, "stop mState = " + mState);
         switch (mState) {
             case RECORDING_STARTED:
                 mHandler.removeMessages(MSG_STOP_RECORDING);

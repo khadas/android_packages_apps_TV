@@ -359,6 +359,7 @@ public class ChannelBannerView extends FrameLayout
             }
             mBlockingContentRating = null;
             mCurrentChannel = mMainActivity.getCurrentChannel();
+            Log.d(TAG, "updateViews updateOnTune " + mCurrentChannel);
             mCurrentChannelLogoExists =
                     mCurrentChannel != null && mCurrentChannel.channelLogoExists();
             updateStreamInfo(null);
@@ -389,6 +390,7 @@ public class ChannelBannerView extends FrameLayout
          updateStreamInfo(info);
          updateChannelInfo();
          updateProgramInfo(mMainActivity.getCurrentProgram());
+         Log.d(TAG, "updateViews StreamInfo " + mCurrentChannel);
     }
 
     /**
@@ -840,9 +842,13 @@ public class ChannelBannerView extends FrameLayout
     }
 
     private void updateRecordingStatus(Program program) {
+        Log.d(TAG, "updateRecordingStatus " + mDvrManager);
         if (mDvrManager == null) {
             updateProgressBarAndRecIcon(program, null);
             return;
+        }
+        if (DEBUG) {
+            Log.d(TAG, "updateRecordingStatus program = " + program + ", mCurrentChannel = " + mCurrentChannel);
         }
         ScheduledRecording currentRecording =
                 (mCurrentChannel == null)

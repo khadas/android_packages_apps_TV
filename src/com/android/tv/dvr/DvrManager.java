@@ -600,8 +600,12 @@ public class DvrManager {
         if (!SoftPreconditions.checkState(mDataManager.isDvrScheduleLoadFinished())) {
             return;
         }
+        Log.d(TAG, "stopRecording " + recording);
         synchronized (mListener) {
             for (final Entry<Listener, Handler> entry : mListener.entrySet()) {
+                if (DEBUG) {
+                    Log.d(TAG, "stopRecording " + entry.getKey());
+                }
                 entry.getValue()
                         .post(
                                 new Runnable() {
@@ -619,8 +623,12 @@ public class DvrManager {
         if (!SoftPreconditions.checkState(mDataManager.isDvrScheduleLoadFinished())) {
             return;
         }
+        Log.d(TAG, "cancelRecording " + recording);
         synchronized (mListener) {
             for (final Entry<Listener, Handler> entry : mListener.entrySet()) {
+                if (DEBUG) {
+                    Log.d(TAG, "cancelRecording " + entry.getKey());
+                }
                 entry.getValue()
                         .post(new Runnable() {
                         @Override
