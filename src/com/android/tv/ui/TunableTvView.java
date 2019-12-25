@@ -127,6 +127,8 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
     public static final String EVENT_STREAM_PI_FORMAT  = "event_pi_format";//add for dtvkit
     public static final String EVENT_RESOURCE_BUSY = "event_resource_busy";
     public static final String EVENT_SIGNAL_INFO = "event_signal_info";
+    public static final String EVENT_RECORD_PROGRAM_URI = "event_record_program_uri";
+    public static final String EVENT_RECORD_DATA_URI = "event_record_data_uri";
     public static final String KEY_INFO = "info";
     public static final String KEY_SIGNAL_STRENGTH = "signal_strength";
     public static final String KEY_SIGNAL_QUALITY = "signal_quality";

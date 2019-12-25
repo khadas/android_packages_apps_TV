@@ -319,7 +319,8 @@ public final class ScheduledRecording implements Parcelable {
                 .setProgramThumbnailUri(orig.getProgramThumbnailUri())
                 .setState(orig.mState)
                 .setFailedReason(orig.getFailedReason())
-                .setType(orig.mType);
+                .setType(orig.mType)
+                .setRecordedProgramId(orig.getRecordedProgramId());
     }
 
     @Retention(RetentionPolicy.SOURCE)
@@ -939,6 +940,8 @@ public final class ScheduledRecording implements Parcelable {
                 + mPriority
                 + ",seriesRecordingId="
                 + mSeriesRecordingId
+                + ",RecordedProgramId="
+                + mRecordedProgramId
                 + ")";
     }
 

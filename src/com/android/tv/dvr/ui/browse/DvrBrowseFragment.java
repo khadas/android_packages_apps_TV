@@ -47,6 +47,7 @@ import com.android.tv.dvr.data.RecordedProgram;
 import com.android.tv.dvr.data.ScheduledRecording;
 import com.android.tv.dvr.data.SeriesRecording;
 import com.android.tv.dvr.ui.SortedArrayAdapter;
+import com.android.tv.common.util.SystemProperties;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,7 +65,7 @@ public class DvrBrowseFragment extends BrowseFragment
                 OnDvrScheduleLoadFinishedListener,
                 OnRecordedProgramLoadFinishedListener {
     private static final String TAG = "DvrBrowseFragment";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false || SystemProperties.USE_DEBUG_PVR.getValue();
 
     private static final int MAX_RECENT_ITEM_COUNT = 10;
     private static final int MAX_SCHEDULED_ITEM_COUNT = 4;
@@ -446,7 +447,7 @@ public class DvrBrowseFragment extends BrowseFragment
             for (RecordedProgram recordedProgram : mDvrDataManager.getRecordedPrograms()) {
                 handleRecordedProgramAdded(recordedProgram, false);
             }
-            if (TvFeatures.DVR_FAILED_LIST.isEnabled(getContext())) {
+            if (DEBUG/*TvFeatures.DVR_FAILED_LIST.isEnabled(getContext())*/) {
                 // only get failed recordings
                 for (ScheduledRecording scheduledRecording
                         : mDvrDataManager.getFailedScheduledRecordings()) {

@@ -469,7 +469,20 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
         if (DEBUG) {
             Log.d(TAG, "getRecordedPrograms1 " + (mRecordedPrograms != null ? mRecordedPrograms.size() : null));
         }
-        return new ArrayList<>(mRecordedPrograms.values());
+        List<RecordedProgram> result = new ArrayList<>();
+        boolean isRecoring = false;
+        for (RecordedProgram r : mRecordedPrograms.values()) {
+            if (DEBUG) {
+                 Log.d(TAG, "getRecordedPrograms1 " + r.toString());
+            }
+            isRecoring = isRceordProgramRecording(r);
+            if (!isRecoring) {
+                result.add(r);
+            } else {
+                Log.d(TAG, "getRecordedPrograms1 is still recording");
+            }
+        }
+        return result;
     }
 
     @Override
@@ -518,7 +531,7 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
             return Collections.emptyList();
         }
         if (DEBUG) {
-            Log.d(TAG, "getSeriesRecordings1 " + (mSeriesRecordings != null ? mSeriesRecordings.size() : null));
+            Log.d(TAG, "getSeriesRecordings " + (mSeriesRecordings != null ? mSeriesRecordings.size() : null));
         }
         return new ArrayList<>(mSeriesRecordings.values());
     }
@@ -1120,6 +1133,21 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
         }
     }
 
+    private boolean isRceordProgramRecording(RecordedProgram recordProgram) {
+        boolean isRecoring = false;
+        List<ScheduledRecording> startedRecordings = getStartedRecordings();
+        if (recordProgram != null && startedRecordings != null && startedRecordings.size() > 0) {
+            for (ScheduledRecording schedule : startedRecordings) {
+                if (schedule.getRecordedProgramId() != null && schedule.getRecordedProgramId().longValue() == recordProgram.getId()) {
+                    isRecoring = true;
+                    break;
+                }
+            }
+        }
+        Log.d(TAG, "isRceordProgramRecording isRecoring = " + isRecoring);
+        return isRecoring;
+    }
+
     private final class RecordedProgramsQueryTask extends AsyncRecordedProgramQueryTask {
         private final Uri mUri;
 
@@ -1152,7 +1180,7 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
                         Log.d(TAG, "RecordedProgramsQueryTask sotrage = " + r.getRecordFilePath() +
                                 ", saveExistStatus = " +  saveExistStatus + ", readExistStatus = " + readExistStatus);
                     }
-                    if (readExistStatus || TextUtils.isEmpty(path)) {
+                    if ((readExistStatus || TextUtils.isEmpty(path)) && !isRceordProgramRecording(r)) {
                         list.add(r);
                     }
                 }

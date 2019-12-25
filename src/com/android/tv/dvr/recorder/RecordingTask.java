@@ -33,6 +33,7 @@ import android.util.Log;
 import android.widget.Toast;
 import android.content.ContentValues;
 import android.os.Bundle;
+import android.content.ContentUris;
 
 import com.android.tv.InputSessionManager;
 import com.android.tv.InputSessionManager.RecordingSession;
@@ -133,6 +134,7 @@ public class RecordingTask extends RecordingCallback
     private final Clock mClock;
     private boolean mStartedWithClipping;
     private Uri mRecordedProgramUri;
+    private String mRecordedDataUri;
     private boolean mCanceled;
 
     RecordingTask(
@@ -306,15 +308,35 @@ public class RecordingTask extends RecordingCallback
     @Override
     public void onEvent(String inputId, String eventType, Bundle eventArgs) {
         Log.d(TAG,"onEvent: id = " + inputId + ", eventType = "+eventType + ", eventArgs = " + eventArgs);
-        if (eventType.equals(TunableTvView.EVENT_RESOURCE_BUSY)) {
-            if (eventArgs != null) {
-                String info = eventArgs.getString(TunableTvView.KEY_INFO, null);
-                if (DEBUG) {
-                    Log.d(TAG, "EVENT_RESOURCE_BUSY info = " + info);
+        if (eventType != null) {
+            switch (eventType) {
+                case TunableTvView.EVENT_RESOURCE_BUSY:{
+                    if (eventArgs != null) {
+                        String info = eventArgs.getString(TunableTvView.KEY_INFO, null);
+                        if (DEBUG) {
+                            Log.d(TAG, "EVENT_RESOURCE_BUSY info = " + info);
+                        }
+                        if (info != null) {
+                            Toast.makeText(mContext.getApplicationContext(), info, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    break;
                 }
-                if (info != null) {
-                    Toast.makeText(mContext.getApplicationContext(), info, Toast.LENGTH_SHORT).show();
+                case TunableTvView.EVENT_RECORD_PROGRAM_URI:{
+                    if (eventArgs != null) {
+                        String recordProgramUri = eventArgs.getString(TunableTvView.EVENT_RECORD_PROGRAM_URI, null);
+                        String recordDataUri = eventArgs.getString(TunableTvView.EVENT_RECORD_DATA_URI, null);
+                        if (DEBUG) {
+                            Log.d(TAG, "EVENT_RECORD_PROGRAM_URI recordProgramUri = " + recordProgramUri + ", recordDataUri = " + recordDataUri);
+                        }
+                        mRecordedProgramUri = Uri.parse(recordProgramUri);
+                        mRecordedDataUri = recordDataUri;
+                        updateRecordingProgramInfomationToScheduledRecording(mRecordedProgramUri, mRecordedDataUri);
+                    }
+                    break;
                 }
+                default:
+                    break;
             }
         }
     }
@@ -510,6 +532,36 @@ public class RecordingTask extends RecordingCallback
                         }
                     }
                 });
+    }
+
+    private void updateRecordingProgramInfomationToScheduledRecording(Uri recordProgramUri, String recordDataUri) {
+        if (DEBUG) {
+            Log.d(TAG, "updateRecordingProgramInfomationToScheduledRecording recordProgramUri = " + recordProgramUri + " ,recordDataUri = " + recordDataUri);
+        }
+        long recordProgramId = 0;
+        if (recordProgramUri != null && recordDataUri != null) {
+            recordProgramId = ContentUris.parseId(recordProgramUri);
+        }
+        if (recordProgramId != 0) {
+            final Long validRecordProgramId = Long.valueOf(recordProgramId);
+            mScheduledRecording =
+                    ScheduledRecording.buildFrom(mScheduledRecording).setRecordedProgramId(validRecordProgramId).build();
+            runOnMainThread(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            ScheduledRecording schedule =
+                                    mDataManager.getScheduledRecording(mScheduledRecording.getId());
+                            if (schedule != null) {
+                                ScheduledRecording.Builder builder =
+                                        ScheduledRecording
+                                                .buildFrom(schedule)
+                                                .setRecordedProgramId(validRecordProgramId);
+                                mDataManager.updateScheduledRecording(builder.build());
+                            }
+                        }
+                    });
+        }
     }
 
     @Override
