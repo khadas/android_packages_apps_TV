@@ -65,19 +65,19 @@ public class TeleTextAdvancedSettings {
 
     private final int[] BUTTON_RES = {
             R.id.button_navigate1, R.id.button_navigate2, R.id.button_navigate3, R.id.button_navigate4,//4
-            R.id.button_previous_page, R.id.button_next_page, R.id.button_index_page, R.id.button_sub_previous , R.id.button_sub_next,//5
+            R.id.button_previous_page, R.id.button_next_page, R.id.button_index_page, R.id.button_sub_previous , R.id.button_sub_next, R.id.button_clock,//5
             R.id.button_hold, R.id.button_reveal, R.id.button_clear, R.id.button_mix_video , R.id.button_size, R.id.button_timer,//6
             R.id.button_back_page, R.id.button_forward_page, R.id.button_scroll_up, R.id.button_scroll_down//4
     };
     private final int[] BUTTON_TEXT_RES = {
             R.string.subtitle_teletext_quick_navigate_1, R.string.subtitle_teletext_quick_navigate_2, R.string.subtitle_teletext_quick_navigate_3, R.string.subtitle_teletext_quick_navigate_4,
-            R.string.subtitle_teletext_previous_page, R.string.subtitle_teletext_next_page, R.string.subtitle_teletext_index_page, R.string.subtitle_teletext_previous_sub_page, R.string.subtitle_teletext_next_sub_page,
+            R.string.subtitle_teletext_previous_page, R.string.subtitle_teletext_next_page, R.string.subtitle_teletext_index_page, R.string.subtitle_teletext_previous_sub_page, R.string.subtitle_teletext_next_sub_page, R.string.subtitle_teletext_clock,
             R.string.subtitle_teletext_hold, R.string.subtitle_teletext_reveal, R.string.subtitle_teletext_clear, R.string.subtitle_teletext_mix_video, R.string.subtitle_teletext_double_height, R.string.subtitle_teletext_timer,
             R.string.subtitle_teletext_back_page, R.string.subtitle_teletext_forward_page, R.string.subtitle_teletext_double_scroll_up, R.string.subtitle_teletext_double_scroll_down
     };
     private final String[] ADVANCED_OPTION_ACTION = {
             "quick_navigate_1", "quick_navigate_2", "quick_navigate_3", "quick_navigate_4",//4
-            "previous_page", "next_page", "index_page", "previous_sub_page" , "next_sub_page",//5
+            "previous_page", "next_page", "index_page", "previous_sub_page" , "next_sub_page", "clock",//5
             "hold", "reveal", "clear", "mix_video" , "double_height", "timer",//6
             "back_page", "forward_page", "double_scroll_up", "double_scroll_down"//4
     };

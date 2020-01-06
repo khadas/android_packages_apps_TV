@@ -105,6 +105,15 @@
             android:background="@drawable/selector_button"
             android:textSize="@dimen/teletext_ui_button_text_size"
             android:text="@string/subtitle_teletext_next_sub_page" />
+
+        <Button
+            android:id="@+id/button_clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/selector_button"
+            android:text="@string/subtitle_teletext_clock"
+            android:textSize="@dimen/teletext_ui_button_text_size" />
     </LinearLayout>
 
     <LinearLayout

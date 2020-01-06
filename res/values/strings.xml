@@ -1154,6 +1154,7 @@
     <string name="subtitle_teletext_index_page">Index Page</string>
     <string name="subtitle_teletext_next_sub_page">Next Sub Page</string>
     <string name="subtitle_teletext_previous_sub_page">Previous Sub Page</string>
+    <string name="subtitle_teletext_clock">clock</string>
     <string name="subtitle_teletext_back_page">Back Page</string>
     <string name="subtitle_teletext_forward_page">Forward Page</string>
     <string name="subtitle_teletext_hold">Hold</string>
