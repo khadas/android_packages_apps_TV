@@ -3197,6 +3197,13 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                             }
                         }
                     }
+                    if (!hasTeletext) {
+                        Toast.makeText(
+                                this,
+                                R.string.subtitle_teletext_no_teletext,
+                                Toast.LENGTH_SHORT)
+                                .show();
+                    }
                     boolean isGermany = QuickKeyInfo.COUNTRY_GERMANY.equals(mQuickKeyInfo.getCountry());
                     if (!isGermany && !hasTeletext) {
                         //teletext not needed

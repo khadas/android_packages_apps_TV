@@ -433,6 +433,7 @@
     <string name="subtitle_teletext_page_cuntry">通過國家選擇頁數</string>
     <string name="subtitle_teletext_page_ok">確定</string>
     <string name="subtitle_teletext_page_reset">重置</string>
+    <string name="subtitle_teletext_no_teletext">沒有圖文!</string>
     <string name="subtitle_country_english">英國</string>
     <string name="subtitle_country_deutsch">德國</string>
     <string name="subtitle_country_svenska">瑞典/芬蘭/匈利亞</string>

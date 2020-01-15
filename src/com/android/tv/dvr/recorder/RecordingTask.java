@@ -34,6 +34,8 @@ import android.widget.Toast;
 import android.content.ContentValues;
 import android.os.Bundle;
 import android.content.ContentUris;
+import android.os.PowerManager;
+import android.os.SystemClock;
 
 import com.android.tv.InputSessionManager;
 import com.android.tv.InputSessionManager.RecordingSession;
@@ -49,6 +51,7 @@ import com.android.tv.dvr.data.ScheduledRecording;
 import com.android.tv.dvr.recorder.InputTaskScheduler.HandlerWrapper;
 import com.android.tv.util.Utils;
 import com.android.tv.ui.TunableTvView;
+import com.android.tv.common.util.SystemProperties;
 
 import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
@@ -66,6 +69,11 @@ public class RecordingTask extends RecordingCallback
     private static final String TAG = "RecordingTask";
     private static final boolean DEBUG = true;
     private static final boolean DISABLE_STREAM_TIME_FOR_DIRECT_RECORD = true;
+
+    //hold wake lock for 5s to ensure the coming recording schedules
+    private static final String WAKE_LOCK_NAME = "RecordingTask";
+    private static final long WAKE_LOCK_TIMEOUT = 5000;
+    private static PowerManager.WakeLock mWakeLock = null;
 
     /** Compares the end time in ascending order. */
     public static final Comparator<RecordingTask> END_TIME_COMPARATOR =
@@ -389,6 +397,10 @@ public class RecordingTask extends RecordingCallback
         mDvrManager.addListener(this, mHandler);
         mRecordingSession.tune(inputId, mChannel.getUri());
         mState = State.CONNECTION_PENDING;
+        //avoid suspend when recording
+        if (SystemProperties.USE_DEBUG_ENABLE_SUSPEND_RECORD.getValue()) {
+            acquireWakeLock();
+        }
     }
 
     private void failAndQuit() {
@@ -505,6 +517,10 @@ public class RecordingTask extends RecordingCallback
             mRecordingSession = null;
         }
         mDvrManager.removeListener(this);
+        //release wake lock after record
+        if (SystemProperties.USE_DEBUG_ENABLE_SUSPEND_RECORD.getValue()) {
+            releaseWakeLock();
+        }
     }
 
     private boolean sendEmptyMessageAtAbsoluteTime(int what, long when) {
@@ -706,6 +722,30 @@ public class RecordingTask extends RecordingCallback
             } catch (Exception e) {
                 Log.e(TAG, "updateProgramRecordStatusToDb Exception = ", e);
             }
+        }
+    }
+
+    private synchronized void acquireWakeLock() {
+        if (mWakeLock == null) {
+            PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_NAME);
+            if (mWakeLock != null) {
+                Log.d(TAG, "acquireWakeLock " + WAKE_LOCK_NAME + "-" + (mScheduledRecording != null ? mScheduledRecording.getProgramDisplayTitle(mContext) : "no title"));
+                if (mWakeLock.isHeld()) {
+                    mWakeLock.release();
+                }
+                mWakeLock.acquire();
+            }
+        }
+    }
+
+    private synchronized void releaseWakeLock() {
+        if (mWakeLock != null) {
+            Log.d(TAG, "releaseWakeLock " + WAKE_LOCK_NAME + "-" + (mScheduledRecording != null ? mScheduledRecording.getProgramDisplayTitle(mContext) : "no title"));
+            if (mWakeLock.isHeld()) {
+                mWakeLock.release();
+            }
+            mWakeLock = null;
         }
     }
 }

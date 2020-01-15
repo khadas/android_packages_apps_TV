@@ -64,6 +64,9 @@ public final class SystemProperties {
     public static final BooleanSystemProperty USE_DEBUG_TIMESHIFT =
             new BooleanSystemProperty("tv_use_debug_timeshift", false);
 
+    public static final BooleanSystemProperty USE_DEBUG_ENABLE_SUSPEND_RECORD =
+            new BooleanSystemProperty("tv_use_debug_enable_suspend_record", false);
+
     static {
         updateSystemProperties();
     }

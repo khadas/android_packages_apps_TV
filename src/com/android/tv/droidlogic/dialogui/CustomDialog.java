@@ -34,6 +34,8 @@ import android.media.tv.TvContract;
 import android.widget.Toast;
 import android.widget.LinearLayout;
 import android.provider.Settings;
+import android.os.PowerManager;
+import android.os.SystemClock;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,6 +44,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.List;
 import java.util.ArrayList;
+import java.lang.reflect.Method;
 
 import com.android.tv.dvr.data.ScheduledRecording;
 import com.android.tv.R;
@@ -348,6 +351,30 @@ public class CustomDialog {
         final boolean isChannelRecording = isSchedulChannelRecording(scheduler);
         final boolean isMainActivityRunning = isMainActivtyRunning();
         final boolean isRecordTunerAvailable = isRecordTunerAvailableForSchedule(scheduler);
+        //if need to light the screen please run the interface below
+        if (!SystemProperties.USE_DEBUG_ENABLE_SUSPEND_RECORD.getValue()) {
+            checkSystemWakeUp();
+        }
+        if (SystemProperties.USE_DEBUG_ENABLE_SUSPEND_RECORD.getValue()) {
+            if (!isScreenOn()) {
+                //deal directly if screen is off
+                Log.d(TAG, "showConfirmRecord deal directly if screen is off");
+                if (callback != null) {
+                    JSONObject obj = new JSONObject();
+                    try {
+                        obj.put(TYPE_ACTION_KEY, TYPE_ACTION_KEY_PVR_CONFIRM);
+                        obj.put(ACTION_KEY_PVR_CONFIRM_ACTION, ACTION_PVR_CONFIRM_TIMEOUT);
+                        obj.put(ACTION_KEY_PVR_CONFIRM_FUNCTION, "showConfirmRecord");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    containner.setVisibility(View.GONE);
+                    title.setText("");
+                    waitPlayAndRecord(scheduler, obj, alert, title, callback);
+                }
+                return;
+            }
+        }
         updateReminderTips(scheduler, title, count[0]);
         //enable background record at any case
         if (!isMainActivityRunning) {
@@ -540,6 +567,31 @@ public class CustomDialog {
                         Log.d(TAG, "waitPlayAndRecord can't find first schedule");
                     }
                 }
+                String action = ACTION_PVR_CONFIRM_RECORD;
+                if (obj != null) {
+                    try {
+                        action = obj.getString(ACTION_KEY_PVR_CONFIRM_ACTION);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Log.d(TAG, "waitPlayAndRecord get action JSONException = " + e.getMessage());
+                    }
+                }
+                if (ACTION_PVR_CONFIRM_RECORD.equals(action)) {
+                    //record in livetv
+                    Log.d(TAG, "waitPlayAndRecord wait play in livetv");
+                } else {
+                    //background record
+                    //start background record if user hasn't select a certain action
+                    Log.d(TAG, "waitPlayAndRecord record in background as user hasn't select a certain action");
+                    sendCallBackByHandle(callback , obj, scheduler);
+                    hideDialogByHandle(alert);
+                    removeScheduledRecording(scheduler);
+                    delay(1000);
+                    if (isPlayStarted() && isVideoAvailable() && getCurrentPlayingChannelId() == scheduler.getChannelId()) {
+                        updateChannelBannerByHandle(scheduler);
+                    }
+                    return;
+                }
                 //start livetv firstly
                 hideDialogByHandle(alert);
                 startLiveTvByHandle(scheduler);
@@ -695,6 +747,36 @@ public class CustomDialog {
             Log.d(TAG, "getPropertyBoolean key = " + key + ", defValue = " + defValue + ", getValue = " + getValue);
         }
         return getValue;
+    }
+
+    private void checkSystemWakeUp() {
+        PowerManager powerManager = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+        boolean isScreenOpen = powerManager.isScreenOn();
+        Log.d(TAG, "checkSystemWakeUp isScreenOpen = " + isScreenOpen);
+        //Resume if the system is suspending
+        if (!isScreenOpen) {
+            Log.d(TAG, "checkSystemWakeUp wakeUp the android.");
+            long time = SystemClock.uptimeMillis();
+            wakeUp(powerManager, time);
+        }
+    }
+
+    private void wakeUp(PowerManager powerManager, long time) {
+         try {
+             Class<?> cls = Class.forName("android.os.PowerManager");
+             Method method = cls.getMethod("wakeUp", long.class);
+             method.invoke(powerManager, time);
+         } catch(Exception e) {
+             e.printStackTrace();
+             Log.d(TAG, "wakeUp Exception = " + e.getMessage());
+         }
+    }
+
+    private boolean isScreenOn() {
+        PowerManager powerManager = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+        boolean isScreenOpen = powerManager.isScreenOn();
+        Log.d(TAG, "isScreenOn = " + isScreenOpen);
+        return isScreenOpen;
     }
 }
 

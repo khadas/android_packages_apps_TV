@@ -27,6 +27,7 @@ import android.os.SystemClock;
 
 import com.android.tv.Starter;
 import com.android.tv.TvSingletons;
+import com.android.tv.common.util.SystemProperties;
 
 import java.lang.reflect.Method;
 
@@ -34,10 +35,21 @@ import java.lang.reflect.Method;
 @RequiresApi(Build.VERSION_CODES.N)
 public class DvrStartRecordingReceiver extends BroadcastReceiver {
     private static final String TAG = "DvrStartRecordingReceiver";
+    //hold wake lock for 5s to ensure the coming recording schedules
+    private static final String WAKE_LOCK_NAME = "DvrStartRecordingReceiver";
+    private static final long WAKE_LOCK_TIMEOUT = 5000;
+    private static PowerManager.WakeLock mWakeLock = null;
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        checkSystemWakeUp(context);
+        //if need to light the screen please run the interface below
+        if (!SystemProperties.USE_DEBUG_ENABLE_SUSPEND_RECORD.getValue()) {
+            checkSystemWakeUp(context);
+        }
+        //avoid suspend when excute appointed pvr record
+        if (SystemProperties.USE_DEBUG_ENABLE_SUSPEND_RECORD.getValue()) {
+            acquireWakeLock(context);
+        }
         Starter.start(context);
         RecordingScheduler scheduler = TvSingletons.getSingletons(context).getRecordingScheduler();
         if (scheduler != null) {
@@ -66,5 +78,40 @@ public class DvrStartRecordingReceiver extends BroadcastReceiver {
              e.printStackTrace();
              Log.d(TAG, "wakeUp Exception = " + e.getMessage());
          }
+    }
+
+    private void goToSleep(PowerManager powerManager, long time) {
+         try {
+             Class<?> cls = Class.forName("android.os.PowerManager");
+             Method method = cls.getMethod("goToSleep", long.class);
+             method.invoke(powerManager, time);
+         } catch(Exception e) {
+             e.printStackTrace();
+             Log.d(TAG, "goToSleep Exception = " + e.getMessage());
+         }
+    }
+
+    private static synchronized void acquireWakeLock(Context context) {
+        if (mWakeLock == null) {
+            PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_NAME);
+            if (mWakeLock != null) {
+                Log.d(TAG, "acquireWakeLock " + WAKE_LOCK_NAME + " " + mWakeLock);
+                if (mWakeLock.isHeld()) {
+                    mWakeLock.release();
+                }
+                mWakeLock.acquire(WAKE_LOCK_TIMEOUT);
+            }
+        }
+    }
+
+    private static synchronized void releaseWakeLock() {
+        if (mWakeLock != null) {
+            Log.d(TAG, "releaseWakeLock " + WAKE_LOCK_NAME + " " + mWakeLock);
+            if (mWakeLock.isHeld()) {
+                mWakeLock.release();
+            }
+            mWakeLock = null;
+        }
     }
 }

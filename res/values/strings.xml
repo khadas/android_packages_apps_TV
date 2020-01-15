@@ -1164,6 +1164,7 @@
     <string name="subtitle_teletext_double_scroll_up">Double Scroll Up</string>
     <string name="subtitle_teletext_double_scroll_down">Double Scroll Down</string>
     <string name="subtitle_teletext_timer">Timer</string>
+    <string name="subtitle_teletext_no_teletext">No Teletext!</string>
     <string name="subtitle_country_english">English</string>
     <string name="subtitle_country_deutsch">Deutsch</string>
     <string name="subtitle_country_hebrew">Hebrew</string>

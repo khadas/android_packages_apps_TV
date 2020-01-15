@@ -509,6 +509,7 @@
     <string name="subtitle_teletext_double_scroll_up">双行上滑</string>
     <string name="subtitle_teletext_double_scroll_down">双行下滑</string>
     <string name="subtitle_teletext_timer">秒表</string>
+    <string name="subtitle_teletext_no_teletext">没有图文!</string>
     <string name="subtitle_country_english">英国</string>
     <string name="subtitle_country_deutsch">德国</string>
     <string name="subtitle_country_svenska">瑞典/芬兰/匈牙利</string>

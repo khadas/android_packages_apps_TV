@@ -189,7 +189,7 @@ public class RecordingScheduler extends TvInputCallback implements ScheduledReco
 
     private void updateInternal() {
         boolean recordingSoon = updatePendingRecordings();
-        updateNextAlarm();
+        updateNextAlarm(DvrDataManager.NEXT_START_TIME_NOT_FOUND);
         if (recordingSoon) {
             // Start DvrRecordingService to protect upcoming recording task from being killed.
             DvrRecordingService.startForegroundService(mContext, true);
@@ -256,7 +256,7 @@ public class RecordingScheduler extends TvInputCallback implements ScheduledReco
             }
         }
         if (needToUpdateAlarm) {
-            updateNextAlarm();
+            updateNextAlarm(DvrDataManager.NEXT_START_TIME_NOT_FOUND);
         }
     }
 
@@ -279,12 +279,21 @@ public class RecordingScheduler extends TvInputCallback implements ScheduledReco
     private void handleScheduleChange(ScheduledRecording... schedules) {
         if (DEBUG) Log.d(TAG, "handleScheduleChange " + Arrays.asList(schedules));
         boolean needToUpdateAlarm = false;
+        long latestStartRecordTimePeriod = DvrDataManager.NEXT_START_TIME_NOT_FOUND;
         for (ScheduledRecording schedule : schedules) {
             if (schedule.getState() == ScheduledRecording.STATE_RECORDING_NOT_STARTED) {
                 if (DISABLE_STREAM_TIME_FOR_DIRECT_RECORD && schedule.getType() == ScheduledRecording.TYPE_TIMED) {
                     Log.d(TAG, "handleScheduleChange record directly");
                     scheduleRecordingSoon(schedule);
                 } else if (startsWithin(schedule, SOON_DURATION_IN_MS)) {
+                    long exactRecordTimePeriod = schedule.getStartTimeMs() - mClock.currentTimeMillis();
+                    if (exactRecordTimePeriod > 0) {
+                        if (latestStartRecordTimePeriod != DvrDataManager.NEXT_START_TIME_NOT_FOUND) {
+                            latestStartRecordTimePeriod = Math.min(latestStartRecordTimePeriod, exactRecordTimePeriod);
+                        } else {
+                            latestStartRecordTimePeriod = (exactRecordTimePeriod - MS_TO_WAKE_BEFORE_START) > 0 ? (exactRecordTimePeriod - MS_TO_WAKE_BEFORE_START) : 0;
+                        }
+                    }
                     scheduleRecordingSoon(schedule);
                 } else {
                     needToUpdateAlarm = true;
@@ -312,9 +321,9 @@ public class RecordingScheduler extends TvInputCallback implements ScheduledReco
                 }
             }
         }
-        if (needToUpdateAlarm) {
-            updateNextAlarm();
-        }
+        if (needToUpdateAlarm || latestStartRecordTimePeriod != DvrDataManager.NEXT_START_TIME_NOT_FOUND) {
+            updateNextAlarm(latestStartRecordTimePeriod);
+         }
     }
 
     private void scheduleRecordingSoon(ScheduledRecording schedule) {
@@ -357,7 +366,7 @@ public class RecordingScheduler extends TvInputCallback implements ScheduledReco
         if (DEBUG) Log.d(TAG, "scheduleRecordingSoon mLastStartTimePendingMs = " + Utils.toTimeString(mLastStartTimePendingMs));
     }
 
-    private void updateNextAlarm() {
+    private void updateNextAlarm(long period) {
         long systemTime = Clock.SYSTEM.currentTimeMillis();
         long streamTime = mClock.currentTimeMillis();
         long diff = systemTime - streamTime;
@@ -366,9 +375,14 @@ public class RecordingScheduler extends TvInputCallback implements ScheduledReco
                         //Math.max(mLastStartTimePendingMs, streamTime/*mClock.currentTimeMillis()*/));
         if (DEBUG) Log.d(TAG, "updateNextAlarm mLastStartTimePendingMs = " + Utils.toTimeString(mLastStartTimePendingMs) + ", nextStartTime = " + Utils.toTimeString(nextStartTime) +
             "\n" + ", currentTimeMillis = " + Utils.toTimeString(systemTime) + ", currentStreamTimeMillis = " + Utils.toTimeString(streamTime));
-        if (nextStartTime != DvrDataManager.NEXT_START_TIME_NOT_FOUND) {
+        if (nextStartTime != DvrDataManager.NEXT_START_TIME_NOT_FOUND || period != DvrDataManager.NEXT_START_TIME_NOT_FOUND) {
             long wakeAtStreamTime = nextStartTime - MS_TO_WAKE_BEFORE_START;
             long wakeAtSystemtime = wakeAtStreamTime + diff;//add system time diff
+            if (period != DvrDataManager.NEXT_START_TIME_NOT_FOUND) {
+                Log.d(TAG, "updateNextAlarm recording is going to start and adjust wake up time");
+                wakeAtStreamTime = Math.min(streamTime + period, wakeAtStreamTime);
+                wakeAtSystemtime = Math.min(systemTime + period, wakeAtSystemtime);
+            }
             if (DEBUG) Log.d(TAG, "Set alarm to record at " + wakeAtSystemtime + "\n"
                 + ", asSystemTime = " + Utils.toTimeString(wakeAtSystemtime) + ", asStreamTime = " + Utils.toTimeString(wakeAtStreamTime));
             Intent intent = new Intent(mContext, DvrStartRecordingReceiver.class);
