@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Comparator;
 
 /** A convenience class to create and insert program information entries into the database. */
 public final class Program extends BaseProgram implements Comparable<Program>, Parcelable {
@@ -68,6 +69,7 @@ public final class Program extends BaseProgram implements Comparable<Program>, P
         TvContract.Programs.COLUMN_END_TIME_UTC_MILLIS,
         TvContract.Programs.COLUMN_VIDEO_WIDTH,
         TvContract.Programs.COLUMN_VIDEO_HEIGHT,
+        TvContract.Programs.COLUMN_INTERNAL_PROVIDER_FLAG1,
         TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA
     };
 
@@ -130,6 +132,7 @@ public final class Program extends BaseProgram implements Comparable<Program>, P
         builder.setEndTimeUtcMillis(cursor.getLong(index++));
         builder.setVideoWidth((int) cursor.getLong(index++));
         builder.setVideoHeight((int) cursor.getLong(index++));
+        builder.setAppointedWatch(cursor.getInt(index++));
         if (true || CommonUtils.isInBundledPackageSet(packageName)) {
             int type = cursor.getType(index);
             if (type == Cursor.FIELD_TYPE_BLOB) {
@@ -170,6 +173,7 @@ public final class Program extends BaseProgram implements Comparable<Program>, P
         program.mLongDescription = in.readString();
         program.mVideoWidth = in.readInt();
         program.mVideoHeight = in.readInt();
+        program.mAppointedWatch = in.readInt();
         program.mCriticScores = in.readArrayList(Thread.currentThread().getContextClassLoader());
         program.mPosterArtUri = in.readString();
         program.mThumbnailUri = in.readString();
@@ -219,6 +223,9 @@ public final class Program extends BaseProgram implements Comparable<Program>, P
     private int[] mCanonicalGenreIds;
     private TvContentRating[] mContentRatings;
     private boolean mRecordingProhibited;
+
+    //add for droidlogic
+    private int mAppointedWatch;
 
     private Program() {
         // Do nothing.
@@ -307,6 +314,10 @@ public final class Program extends BaseProgram implements Comparable<Program>, P
 
     public int getVideoHeight() {
         return mVideoHeight;
+    }
+
+    public int getAppointedWatchStatus() {
+        return mAppointedWatch;
     }
 
     /** Returns the list of Critic Scores for this program */
@@ -475,6 +486,11 @@ public final class Program extends BaseProgram implements Comparable<Program>, P
         return builder.append("}").toString();
     }
 
+    /** Compares the start time in ascending order. */
+    public static final Comparator<Program> START_TIME_COMPARATOR =
+            (Program lhs, Program rhs) ->
+                    Long.compare(lhs.getStartTimeUtcMillis(), rhs.getStartTimeUtcMillis());
+
     /**
      * Translates a {@link Program} to {@link ContentValues} that are ready to be written into
      * Database.
@@ -565,6 +581,7 @@ public final class Program extends BaseProgram implements Comparable<Program>, P
         mLongDescription = other.mLongDescription;
         mVideoWidth = other.mVideoWidth;
         mVideoHeight = other.mVideoHeight;
+        mAppointedWatch = other.getAppointedWatchStatus();
         mCriticScores = other.mCriticScores;
         mPosterArtUri = other.mPosterArtUri;
         mThumbnailUri = other.mThumbnailUri;
@@ -773,6 +790,17 @@ public final class Program extends BaseProgram implements Comparable<Program>, P
         }
 
         /**
+         * Defines the appoint watch of this program
+         *
+         * @param status
+         * @return a reference to this object
+         */
+        public Builder setAppointedWatch(int status) {
+            mProgram.mAppointedWatch = status;
+            return this;
+        }
+
+        /**
          * Sets the content ratings for this program
          *
          * @param contentRatings the content ratings
@@ -950,6 +978,7 @@ public final class Program extends BaseProgram implements Comparable<Program>, P
         out.writeString(mLongDescription);
         out.writeInt(mVideoWidth);
         out.writeInt(mVideoHeight);
+        out.writeInt(mAppointedWatch);
         out.writeList(mCriticScores);
         out.writeString(mPosterArtUri);
         out.writeString(mThumbnailUri);

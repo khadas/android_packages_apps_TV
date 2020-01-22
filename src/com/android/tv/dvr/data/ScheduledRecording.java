@@ -119,6 +119,24 @@ public final class ScheduledRecording implements Parcelable {
                 .setType(TYPE_PROGRAM);
     }
 
+    /** Builds appointed watch from programs. */
+    public static Builder builder(Program p) {
+        return new Builder()
+                .setChannelId(p.getChannelId())
+                .setStartTimeMs(p.getStartTimeUtcMillis())
+                .setEndTimeMs(p.getEndTimeUtcMillis())
+                .setProgramId(p.getId())
+                .setProgramTitle(p.getTitle())
+                .setSeasonNumber(p.getSeasonNumber())
+                .setEpisodeNumber(p.getEpisodeNumber())
+                .setEpisodeTitle(p.getEpisodeTitle())
+                .setProgramDescription(p.getDescription())
+                .setProgramLongDescription(p.getLongDescription())
+                .setProgramPosterArtUri(p.getPosterArtUri())
+                .setProgramThumbnailUri(p.getThumbnailUri())
+                .setType(TYPE_APPOINT);
+    }
+
     public static Builder builder(String inputId, long channelId, long startTime, long endTime) {
         return new Builder()
                 .setInputId(inputId)
@@ -374,12 +392,14 @@ public final class ScheduledRecording implements Parcelable {
     public static final int FAILED_REASON_INSUFFICIENT_SPACE = 10;
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({TYPE_TIMED, TYPE_PROGRAM})
+    @IntDef({TYPE_TIMED, TYPE_PROGRAM, TYPE_APPOINT})
     public @interface RecordingType {}
     /** Record with given time range. */
     public static final int TYPE_TIMED = 1;
     /** Record with a given program. */
     public static final int TYPE_PROGRAM = 2;
+    /** appoint watch with a given program. */
+    public static final int TYPE_APPOINT = 3;
 
     @RecordingType private final int mType;
 
@@ -986,6 +1006,11 @@ public final class ScheduledRecording implements Parcelable {
     /** Returns {@code true} if the recording is finished, otherwise @{code false}. */
     public boolean isFinished() {
         return mState == STATE_RECORDING_FINISHED;
+    }
+
+    /** Returns {@code true} if the recording is appointed watch, otherwise @{code false}. */
+    public boolean isAppointedWatchProgram() {
+        return mType == TYPE_APPOINT;
     }
 
     @Override

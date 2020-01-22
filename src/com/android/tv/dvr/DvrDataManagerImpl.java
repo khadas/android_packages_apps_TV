@@ -23,6 +23,7 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.database.ContentObserver;
 import android.database.sqlite.SQLiteException;
+import android.media.tv.TvContract;
 import android.media.tv.TvContract.RecordedPrograms;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager.TvInputCallback;
@@ -40,6 +41,11 @@ import android.util.Log;
 import android.util.Range;
 import android.os.StatFs;
 import android.os.Environment;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
+import android.content.Intent;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 
 import com.android.tv.TvSingletons;
 import com.android.tv.common.SoftPreconditions;
@@ -68,6 +74,10 @@ import com.android.tv.util.Filter;
 import com.android.tv.util.TvInputManagerHelper;
 import com.android.tv.util.TvUriMatcher;
 import com.android.tv.common.util.SystemProperties;
+import com.android.tv.data.Program;
+import com.android.tv.data.ProgramDataManager;
+
+import com.droidlogic.app.tv.DroidLogicTvUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -86,6 +96,10 @@ import java.io.File;
 public class DvrDataManagerImpl extends BaseDvrDataManager {
     private static final String TAG = "DvrDataManagerImpl";
     private static final boolean DEBUG = false || SystemProperties.USE_DEBUG_PVR.getValue();
+    public static final String SETTING_DROID_DIALOG_PACKAGE = "com.droidlogic.droidlivetv";
+    public static final String SETTING_DROID_DIALOG_ACTIVITY_APPOINT_RECEIVER = "com.droidlogic.droidlivetv.shortcut.AppointedProgramReceiver";
+    public static final String ACTION_DROID_APPOINTED_WATCH_PROGRAM_ADD = "droidlogic.intent.action.droid_appointed_watch_program_add";
+    public static final String ACTION_DROID_APPOINTED_WATCH_PROGRAM_DELETE = "droidlogic.intent.action.droid_appointed_watch_program_delete";
 
     private final TvInputManagerHelper mInputManager;
 
@@ -319,6 +333,7 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
         mRecordedProgramQueryTask.executeOnDbThread();
         ContentResolver cr = mContext.getContentResolver();
         cr.registerContentObserver(RecordedPrograms.CONTENT_URI, true, mContentObserver);
+        registerAppointedWatchReceiver();
     }
 
     public void stop() {
@@ -336,6 +351,7 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
             i.remove();
             task.cancel(true);
         }
+        unregisterAppointedWatchReceiver();
     }
 
     private void onRecordedProgramsLoadedFinished(Uri uri, List<RecordedProgram> recordedPrograms) {
@@ -1243,6 +1259,153 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
                 Log.d(TAG, "isDataPathAvailable path = " + path + ", result = " + result);
             }
             return result;
+        }
+    }
+
+    private void registerAppointedWatchReceiver() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(DroidLogicTvUtils.ACTION_DROID_PROGRAM_WATCH_APPOINTED);
+        filter.addAction(ACTION_DROID_APPOINTED_WATCH_PROGRAM_ADD);
+        filter.addAction(ACTION_DROID_APPOINTED_WATCH_PROGRAM_DELETE);
+        if (mContext != null) {
+            mContext.registerReceiver(mAppointedWatchBroadcastReceiver, filter);
+        } else {
+            Log.i(TAG, "registerAppointedWatchReceiver null mContext");
+        }
+    }
+
+    private void unregisterAppointedWatchReceiver() {
+        if (mContext != null) {
+            mContext.unregisterReceiver(mAppointedWatchBroadcastReceiver);
+        } else {
+            Log.i(TAG, "unregisterAppointedWatchReceiver null mContext");
+        }
+    }
+
+    private final BroadcastReceiver mAppointedWatchBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (DEBUG) {
+                Log.d(TAG, "AppointedWatchBroadcastReceiver intent = " + intent);
+            }
+            if (intent != null) {
+                String action = intent.getAction();
+                switch (action) {
+                    case DroidLogicTvUtils.ACTION_DROID_PROGRAM_WATCH_APPOINTED: {
+                        boolean isSetting = intent.getBooleanExtra(DroidLogicTvUtils.EXTRA_APPOINTED_SETTING, false);
+                        long programId = intent.getLongExtra(DroidLogicTvUtils.EXTRA_PROGRAM_ID, -1L);
+                        if (!isSetting) {
+                            dealAppointedProgramByThread(mContext, programId, false);
+                        }
+                        break;
+                    }
+                    case ACTION_DROID_APPOINTED_WATCH_PROGRAM_DELETE: {
+                        long programId = intent.getLongExtra(DroidLogicTvUtils.EXTRA_PROGRAM_ID, -1L);
+                        dealAppointedProgramByThread(mContext, programId, false);
+                        break;
+                    }
+                    case ACTION_DROID_APPOINTED_WATCH_PROGRAM_ADD: {
+                        long programId = intent.getLongExtra(DroidLogicTvUtils.EXTRA_PROGRAM_ID, -1L);
+                        dealAppointedProgramByThread(mContext, programId, true);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+        }
+    };
+
+    private void dealAppointedProgramByThread(final Context context, final long programId, final boolean status) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (context != null && programId != -1) {
+                    Program program = ProgramDataManager.getProgram(context, programId);
+                    if (program != null) {
+                        if (status) {
+                            addAppointedWatchProgram(program);
+                        } else {
+                            removeAppointedWatchProgram(program);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /** Adds new appointed watch programs. */
+    @Override
+    public void addAppointedWatchProgram(Program... programs) {
+        for (Program program : programs) {
+            if (DEBUG) {
+                Log.d(TAG, "addAppointedWatchProgram = " + program);
+            }
+            setAppointedProgramAlarm(program);
+            notifyAppointedProgramsAdded(program);
+        }
+    }
+
+    /** Removes appointed watch programs. */
+    @Override
+    public void removeAppointedWatchProgram(Program... programs) {
+        for (Program program : programs) {
+            if (DEBUG) {
+                Log.d(TAG, "removeAppointedWatchProgram = " + program);
+            }
+            cancelAppointedProgramAlarm(program);
+            notifyAppointedProgramsRemoved(program);
+        }
+    }
+
+    private void cancelAppointedProgramAlarm (Program program) {
+        if (program != null) {
+            if (DEBUG) {
+                Log.d(TAG, "cancelAppointedProgramAlarm = " + program);
+            }
+            sendSettingAppointedWatchIntent(program, false, -1l);
+            ProgramDataManager.updateSingleProgramColumn(mContext, program.getId(), TvContract.Programs.COLUMN_INTERNAL_PROVIDER_FLAG1, 0);
+        } else {
+            Log.d(TAG, "cancelAppointedProgramAlarm null program");
+        }
+    }
+
+    private void setAppointedProgramAlarm(Program program) {
+        if (program != null) {
+            AlarmManager alarm = (AlarmManager)mContext.getSystemService(Context.ALARM_SERVICE);
+            String cancelProgram = "";
+            long pendingTime = program.getStartTimeUtcMillis() - mClock.currentTimeMillis();
+            if (pendingTime > 0) {
+                Log.d(TAG, "" + pendingTime / 60000 + " min " + pendingTime % 60000 / 1000 + " sec later show program prompt");
+                //check it one minute before appointed time is up
+                if (pendingTime > 60000) {
+                    pendingTime = pendingTime - 60000;
+                } else {
+                    pendingTime = 0;
+                }
+                sendSettingAppointedWatchIntent(program, true, pendingTime);
+                ProgramDataManager.updateSingleProgramColumn(mContext, program.getId(), TvContract.Programs.COLUMN_INTERNAL_PROVIDER_FLAG1, 1);
+            } else {
+                Log.d(TAG, "setAppointedProgramAlarm program is older");
+            }
+        } else {
+            Log.d(TAG, "setAppointedProgramAlarm null program");
+        }
+    }
+
+    private void sendSettingAppointedWatchIntent (Program program, boolean add, long delay) {
+        Intent intent = new Intent(DroidLogicTvUtils.ACTION_DROID_PROGRAM_WATCH_APPOINTED);
+        intent.addFlags(0x01000000/*Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND*/);
+        intent.setData(TvContract.buildProgramUri(program.getId()));
+        intent.setClassName(SETTING_DROID_DIALOG_PACKAGE, SETTING_DROID_DIALOG_ACTIVITY_APPOINT_RECEIVER);
+        intent.putExtra(DroidLogicTvUtils.EXTRA_PROGRAM_ID, program.getId());
+        intent.putExtra(DroidLogicTvUtils.EXTRA_CHANNEL_ID, program.getChannelId());
+        intent.putExtra(DroidLogicTvUtils.EXTRA_APPOINTED_DELAY, delay);
+        intent.putExtra(DroidLogicTvUtils.EXTRA_APPOINTED_SETTING, true);
+        intent.putExtra(DroidLogicTvUtils.EXTRA_APPOINTED_ACTION, add);
+        mContext.sendBroadcast(intent);
+        if (DEBUG) {
+            Log.d(TAG, "sendSettingAppointedWatchIntent intent = " + intent);
         }
     }
 }

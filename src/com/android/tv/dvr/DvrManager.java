@@ -1132,4 +1132,14 @@ public class DvrManager {
         void onStopRecordingRequested(ScheduledRecording scheduledRecording);
         void onCancelRecording(ScheduledRecording scheduledRecording);
     }
+
+     /** Adds new appointed watch program. */
+    public void addAppointedWatchProgram(Program program) {
+        mDataManager.addAppointedWatchProgram(program);
+    }
+
+    /** Removes appointed watch program. */
+    public void removeAppointedWatchProgram(Program program) {
+        mDataManager.removeAppointedWatchProgram(program);
+    }
 }

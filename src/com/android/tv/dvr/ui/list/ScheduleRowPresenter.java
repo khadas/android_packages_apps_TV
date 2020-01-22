@@ -36,6 +36,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.Log;
+
 import com.android.tv.R;
 import com.android.tv.TvFeatures;
 import com.android.tv.TvSingletons;
@@ -50,6 +52,10 @@ import com.android.tv.dvr.ui.DvrUiHelper;
 import com.android.tv.util.ToastUtils;
 import com.android.tv.util.Utils;
 import com.android.tv.util.TvClock;
+import com.android.tv.data.Program;
+import com.android.tv.common.util.SystemProperties;
+import com.android.tv.data.ProgramDataManager;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
@@ -58,13 +64,15 @@ import java.util.List;
 @TargetApi(Build.VERSION_CODES.N)
 class ScheduleRowPresenter extends RowPresenter {
     private static final String TAG = "ScheduleRowPresenter";
+    private static final boolean DEBUG = false || SystemProperties.USE_DEBUG_PVR.getValue();
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({
         ACTION_START_RECORDING,
         ACTION_STOP_RECORDING,
         ACTION_CREATE_SCHEDULE,
-        ACTION_REMOVE_SCHEDULE
+        ACTION_REMOVE_SCHEDULE,
+        ACTION_REMOVE_APPOINT_WATCH
     })
     public @interface ScheduleRowAction {}
     /** An action to start recording. */
@@ -75,6 +83,8 @@ class ScheduleRowPresenter extends RowPresenter {
     public static final int ACTION_CREATE_SCHEDULE = 3;
     /** An action to remove the schedule. */
     public static final int ACTION_REMOVE_SCHEDULE = 4;
+    /** An action to remove appointes watch. */
+    public static final int ACTION_REMOVE_APPOINT_WATCH = 5;
 
     private final Context mContext;
     private final DvrManager mDvrManager;
@@ -463,6 +473,9 @@ class ScheduleRowPresenter extends RowPresenter {
     }
 
     private int getImageForAction(@ScheduleRowAction int action) {
+        if (DEBUG) {
+            Log.d(TAG, "getImageForAction action = " + action);
+        }
         switch (action) {
             case ACTION_START_RECORDING:
                 return R.drawable.ic_record_start;
@@ -471,6 +484,7 @@ class ScheduleRowPresenter extends RowPresenter {
             case ACTION_CREATE_SCHEDULE:
                 return R.drawable.ic_scheduled_recording;
             case ACTION_REMOVE_SCHEDULE:
+            case ACTION_REMOVE_APPOINT_WATCH:
                 return R.drawable.ic_dvr_cancel;
             default:
                 return 0;
@@ -515,11 +529,15 @@ class ScheduleRowPresenter extends RowPresenter {
         return schedule != null
                 && (schedule.isNotStarted()
                         || schedule.isInProgress()
-                        || schedule.isFinished());
+                        || schedule.isFinished()
+                        || schedule.isAppointedWatchProgram());
     }
 
     /** Called when the button in a row is clicked. */
     protected void onActionClicked(@ScheduleRowAction final int action, ScheduleRow row) {
+        if (DEBUG) {
+            Log.d(TAG, "onActionClicked action = " + action + ", row = " + row);
+        }
         switch (action) {
             case ACTION_START_RECORDING:
                 onStartRecording(row);
@@ -533,12 +551,18 @@ class ScheduleRowPresenter extends RowPresenter {
             case ACTION_REMOVE_SCHEDULE:
                 onRemoveSchedule(row);
                 break;
+            case ACTION_REMOVE_APPOINT_WATCH:
+                onRemoveAppointWatch(row);
+                break;
             default: // fall out
         }
     }
 
     /** Action handler for {@link #ACTION_START_RECORDING}. */
     protected void onStartRecording(ScheduleRow row) {
+        if (DEBUG) {
+            Log.d(TAG, "onStartRecording row = " + row);
+        }
         ScheduledRecording schedule = row.getSchedule();
         if (schedule == null) {
             // This row has been deleted.
@@ -573,6 +597,9 @@ class ScheduleRowPresenter extends RowPresenter {
     }
 
     private void onStartRecordingInternal(ScheduleRow row) {
+        if (DEBUG) {
+            Log.d(TAG, "onStartRecordingInternal row = " + row);
+        }
         if (row.isOnAir() && !row.isRecordingInProgress() && !row.isStartRecordingRequested()) {
             row.setStartRecordingRequested(true);
             if (row.isRecordingNotStarted()) {
@@ -600,6 +627,9 @@ class ScheduleRowPresenter extends RowPresenter {
 
     /** Action handler for {@link #ACTION_STOP_RECORDING}. */
     protected void onStopRecording(ScheduleRow row) {
+        if (DEBUG) {
+            Log.d(TAG, "onStopRecording row = " + row);
+        }
         if (row.getSchedule() == null) {
             // This row has been deleted.
             return;
@@ -621,6 +651,9 @@ class ScheduleRowPresenter extends RowPresenter {
 
     /** Action handler for {@link #ACTION_CREATE_SCHEDULE}. */
     protected void onCreateSchedule(ScheduleRow row) {
+        if (DEBUG) {
+            Log.d(TAG, "onCreateSchedule row = " + row);
+        }
         if (row.getSchedule() == null) {
             // This row has been deleted.
             return;
@@ -645,6 +678,9 @@ class ScheduleRowPresenter extends RowPresenter {
 
     /** Action handler for {@link #ACTION_REMOVE_SCHEDULE}. */
     protected void onRemoveSchedule(ScheduleRow row) {
+        if (DEBUG) {
+            Log.d(TAG, "onRemoveSchedule row = " + row);
+        }
         if (row.getSchedule() == null) {
             // This row has been deleted.
             return;
@@ -677,6 +713,17 @@ class ScheduleRowPresenter extends RowPresenter {
                     mContext.getResources()
                             .getString(R.string.dvr_schedules_deletion_info, deletedInfo),
                     Toast.LENGTH_SHORT);
+        }
+    }
+
+    /** Action handler for {@link #ACTION_REMOVE_SCHEDULE}. */
+    protected void onRemoveAppointWatch(ScheduleRow row) {
+        if (DEBUG) {
+            Log.d(TAG, "onRemoveAppointWatch row = " + row);
+        }
+        Program program = ProgramDataManager.getProgram(getContext(), row.getProgramId());
+        if (program != null) {
+            mDvrManager.removeAppointedWatchProgram(program);
         }
     }
 
@@ -810,7 +857,9 @@ class ScheduleRowPresenter extends RowPresenter {
     @ScheduleRowAction
     protected int[] getAvailableActions(ScheduleRow row) {
         if (row.getSchedule() != null) {
-            if (row.isRecordingInProgress()) {
+            if (row.isAppointedWatchProgram()) {
+                return new int[] {};
+            } else if (row.isRecordingInProgress()) {
                 return new int[] {ACTION_STOP_RECORDING};
             } else if (row.isOnAir() && !row.hasRecordedProgram()) {
                 if (row.isRecordingNotStarted()) {

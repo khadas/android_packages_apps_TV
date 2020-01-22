@@ -31,6 +31,7 @@ import com.android.tv.dvr.data.ScheduledRecording;
 import com.android.tv.dvr.data.ScheduledRecording.RecordingState;
 import com.android.tv.dvr.data.SeriesRecording;
 import com.android.tv.common.util.SystemProperties;
+import com.android.tv.data.Program;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,6 +58,7 @@ public abstract class BaseDvrDataManager implements WritableDvrDataManager {
     private final Set<ScheduledRecordingListener> mScheduledRecordingListeners = new ArraySet<>();
     private final Set<SeriesRecordingListener> mSeriesRecordingListeners = new ArraySet<>();
     private final Set<RecordedProgramListener> mRecordedProgramListeners = new ArraySet<>();
+    private final Set<AppointedProgramListener> mAppointedProgramListeners = new ArraySet<>();
     private final HashMap<Long, ScheduledRecording> mDeletedScheduleMap = new HashMap<>();
 
     public BaseDvrDataManager(Context context, Clock clock) {
@@ -116,6 +118,16 @@ public abstract class BaseDvrDataManager implements WritableDvrDataManager {
         mRecordedProgramListeners.remove(listener);
     }
 
+    @Override
+    public final void addAppointedProgramListener(AppointedProgramListener listener) {
+        mAppointedProgramListeners.add(listener);
+    }
+
+    @Override
+    public final void removeAppointedProgramListener(AppointedProgramListener listener) {
+        mAppointedProgramListeners.remove(listener);
+    }
+
     /**
      * Calls {@link OnDvrScheduleLoadFinishedListener#onDvrScheduleLoadFinished} for each listener.
      */
@@ -158,6 +170,22 @@ public abstract class BaseDvrDataManager implements WritableDvrDataManager {
         for (RecordedProgramListener l : mRecordedProgramListeners) {
             if (DEBUG) Log.d(TAG, "notify " + l + " removed " + Arrays.asList(recordedPrograms));
             l.onRecordedProgramsRemoved(recordedPrograms);
+        }
+    }
+
+     /** Calls {@link AppointedProgramListener#onAppointedProgramsAdded} for each listener. */
+    protected final void notifyAppointedProgramsAdded(Program... programs) {
+        for (AppointedProgramListener l : mAppointedProgramListeners) {
+            if (DEBUG) Log.d(TAG, "notify " + l + " added " + Arrays.asList(programs));
+            l.onAppointedProgramsAdded(programs);
+        }
+    }
+
+    /** Calls {@link AppointedProgramListener#onAppointedProgramsRemoved} for each listener. */
+    protected final void notifyAppointedProgramsRemoved(Program... programs) {
+        for (AppointedProgramListener l : mAppointedProgramListeners) {
+            if (DEBUG) Log.d(TAG, "notify " + l + " removed " + Arrays.asList(programs));
+            l.onAppointedProgramsRemoved(programs);
         }
     }
 

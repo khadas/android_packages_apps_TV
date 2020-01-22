@@ -241,6 +241,14 @@
             android:configChanges="keyboard|keyboardHidden"
             android:exported="false"
             android:theme="@style/Theme.Leanback.Details" />
+        <activity
+            android:name="com.android.tv.dvr.ui.list.AppointedWatchProgramsActivity"
+            android:configChanges="keyboard|keyboardHidden"
+            android:theme="@style/Theme.Leanback.Details" >
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <service
             android:name="com.android.tv.recommendation.NotificationService"

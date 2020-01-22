@@ -72,6 +72,7 @@ import com.android.tv.dvr.ui.DvrHalfSizedDialogFragment.DvrInprogressScheduleCon
 import com.android.tv.dvr.ui.browse.DvrBrowseActivity;
 import com.android.tv.dvr.ui.browse.DvrDetailsActivity;
 import com.android.tv.dvr.ui.list.DvrHistoryActivity;
+import com.android.tv.dvr.ui.list.AppointedWatchProgramsActivity;
 import com.android.tv.dvr.ui.list.DvrSchedulesActivity;
 import com.android.tv.dvr.ui.list.DvrSchedulesFragment;
 import com.android.tv.dvr.ui.list.DvrSeriesSchedulesFragment;
@@ -498,6 +499,13 @@ public class DvrUiHelper {
         context.startActivity(intent);
     }
 
+    /** Shows the appoint watch activity with full schedule. */
+    public static void startAppointWatchActivity(
+            Context context) {
+        Intent intent = new Intent(context, AppointedWatchProgramsActivity.class);
+        context.startActivity(intent);
+    }
+
     /** Shows the schedules activity for series recording. */
     public static void startSchedulesActivityForSeries(
             Context context, SeriesRecording seriesRecording) {
@@ -642,7 +650,10 @@ public class DvrUiHelper {
         if (dvrItem instanceof ScheduledRecording) {
             ScheduledRecording schedule = (ScheduledRecording) dvrItem;
             recordingId = schedule.getId();
-            if (schedule.getState() == ScheduledRecording.STATE_RECORDING_NOT_STARTED) {
+            if (schedule.isAppointedWatchProgram()) {
+                recordingId = schedule.getProgramId();
+                viewType = DvrDetailsActivity.PROGRAM_APPOINT;
+            } else if (schedule.getState() == ScheduledRecording.STATE_RECORDING_NOT_STARTED) {
                 viewType = DvrDetailsActivity.SCHEDULED_RECORDING_VIEW;
             } else if (schedule.getState() == ScheduledRecording.STATE_RECORDING_IN_PROGRESS) {
                 viewType = DvrDetailsActivity.CURRENT_RECORDING_VIEW;
@@ -666,7 +677,10 @@ public class DvrUiHelper {
         } else if (dvrItem instanceof SeriesRecording) {
             recordingId = ((SeriesRecording) dvrItem).getId();
             viewType = DvrDetailsActivity.SERIES_RECORDING_VIEW;
-        } else {
+        } else if (dvrItem instanceof Program) {
+            recordingId = ((Program) dvrItem).getId();
+            viewType = DvrDetailsActivity.PROGRAM_APPOINT;
+         } else {
             return;
         }
         intent.putExtra(DvrDetailsActivity.RECORDING_ID, recordingId);

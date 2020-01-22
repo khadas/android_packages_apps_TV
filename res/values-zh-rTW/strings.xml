@@ -465,4 +465,14 @@
 
     <!-- multi audio -->
     <string name="multi_audio_dolby_audio">杜比</string>
+
+    <!-- pvr -->
+    <string name="dvr_appoint_program">預約觀看</string>
+    <string name="dvr_full_watch_card_view_title">預約觀看列表</string>
+    <string name="dvr_detail_cancel_appoint">取消預約觀看</string>
+    <string name="dvr_appointed_watch_empty_state">沒有預約觀看節目列表.\n可以在節目指南中預約觀看.</string>
+    <plurals name="dvr_appointed_watch_programs_section_subtitle">
+        <item quantity="one">%1$d 节目</item>
+        <item quantity="other">%1$d 节目</item>
+    </plurals>
 </resources>

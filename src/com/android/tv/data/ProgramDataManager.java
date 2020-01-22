@@ -20,6 +20,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.content.ContentValues;
 import android.media.tv.TvContract;
 import android.media.tv.TvContract.Programs;
 import android.net.Uri;
@@ -44,6 +45,8 @@ import com.android.tv.util.AsyncDbTask;
 import com.android.tv.util.MultiLongSparseArray;
 import com.android.tv.util.TvClock;
 import com.android.tv.util.Utils;
+import android.text.TextUtils;
+
 import com.droidlogic.app.SystemControlManager;
 
 import java.util.ArrayList;
@@ -865,5 +868,105 @@ public class ProgramDataManager implements MemoryManageable {
     @Override
     public void performTrimMemory(int level) {
         mChannelId2ProgramUpdatedListeners.clearEmptyCache();
+    }
+
+    public static List<Program> getAppointedPrograms(Context context) {
+        Uri uri = TvContract.Programs.CONTENT_URI;
+        Cursor cursor = null;
+        List<Program> programs = new ArrayList<>();
+        try {
+            cursor = context.getContentResolver().query(uri, Program.PROJECTION, TvContract.Programs.COLUMN_INTERNAL_PROVIDER_FLAG1 + "=?", new String[]{"1"}, null);
+            if (cursor == null || cursor.getCount() == 0) {
+                return programs;
+            }
+            while (cursor.moveToNext()) {
+                programs.add(Program.fromCursor(cursor));
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Unable to get appointed programs ", e);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        if (DEBUG) {
+            Log.d(TAG, "getAppointedPrograms size = " + programs.size());
+        }
+        return programs;
+    }
+
+    public static Program getProgram(Context context, long programId) {
+        if (context == null || programId == -1) {
+            return null;
+        }
+        Uri uri = TvContract.buildProgramUri(programId);
+        Cursor cursor = null;
+        Program result = null;
+        try {
+            cursor = context.getContentResolver().query(uri, Program.PROJECTION, null, null, null);
+            if (cursor == null || cursor.getCount() == 0) {
+                return result;
+            }
+            while (cursor.moveToNext()) {
+                result = Program.fromCursor(cursor);
+                break;
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Unable to get program ", e);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        if (DEBUG) {
+            Log.d(TAG, "getProgram size = " + result);
+        }
+        return result;
+    }
+
+    public static boolean updateSingleProgramColumn(Context context, long id, String columnKey, Object value) {
+        boolean ret = false;
+        if (context == null || id == -1 || TextUtils.isEmpty(columnKey)) {
+            return ret;
+        }
+        String[] projection = {columnKey};
+        ContentResolver contentResolver = context.getContentResolver();
+        Uri programUri = TvContract.buildProgramUri(id);
+        Cursor cursor = null;
+        ContentValues values = null;
+        try {
+            cursor = contentResolver.query(programUri, projection, TvContract.Channels._ID + "=?", new String[]{String.valueOf(id)}, null);
+            while (cursor != null && cursor.moveToNext()) {
+                values = new ContentValues();
+                if (value instanceof byte[]) {
+                    values.put(columnKey, (byte[])value);
+                } else if (value instanceof String) {
+                    values.put(columnKey, (String)value);
+                } else if (value instanceof Integer) {
+                    values.put(columnKey, (Integer)value);
+                } else {
+                    Log.i(TAG, "updateSingleProgramColumn unkown data type");
+                    return ret;
+                }
+                ret = true;
+                contentResolver.update(programUri, values, null, null);
+                break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.i(TAG, "updateSingleProgramColumn operation Exception = " + e.getMessage());
+        }
+        try {
+            if (cursor != null) {
+                cursor.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.i(TAG, "updateSingleProgramColumn close Exception = " + e.getMessage());
+        }
+        if (DEBUG)
+            Log.d(TAG, "updateSingleProgramColumn " + (ret ? "found" : "notfound")
+                    + " _id:" + id + " key:" + columnKey + " value:" + value);
+        return ret;
     }
 }

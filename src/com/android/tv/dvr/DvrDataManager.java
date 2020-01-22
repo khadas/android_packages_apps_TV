@@ -24,6 +24,8 @@ import com.android.tv.dvr.data.RecordedProgram;
 import com.android.tv.dvr.data.ScheduledRecording;
 import com.android.tv.dvr.data.ScheduledRecording.RecordingState;
 import com.android.tv.dvr.data.SeriesRecording;
+import com.android.tv.data.Program;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -124,6 +126,12 @@ public interface DvrDataManager {
     /** Remove a {@link RecordedProgramListener}. */
     void removeRecordedProgramListener(RecordedProgramListener listener);
 
+    /** Add a {@link AppointedProgramListener}. */
+    void addAppointedProgramListener(AppointedProgramListener listener);
+
+    /** Remove a {@link AppointedProgramListener}. */
+    void removeAppointedProgramListener(AppointedProgramListener listener);
+
     /** Add a {@link ScheduledRecordingListener}. */
     void addSeriesRecordingListener(SeriesRecordingListener seriesRecordingListener);
 
@@ -206,5 +214,12 @@ public interface DvrDataManager {
         void onRecordedProgramsChanged(RecordedProgram... recordedPrograms);
 
         void onRecordedProgramsRemoved(RecordedProgram... recordedPrograms);
+    }
+
+    /** Listens for changes to {@link appointed Programs}. */
+    interface AppointedProgramListener {
+        void onAppointedProgramsAdded(Program... programs);
+
+        void onAppointedProgramsRemoved(Program... programs);
     }
 }

@@ -538,6 +538,14 @@
     <string name="pvr_confirm_stop_in_progress_schedule">请选择一个停止一个录制</string>
     <string name="pvr_confirm_stop_in_progress_schedule_stop_all">停止所有</string>
     <string name="pvr_confirm_tuning_diffrent_frequency">当前录制计划需要更改频点，切台后录制自动开始 !</string>
+    <string name="dvr_appoint_program">预约观看</string>
+    <string name="dvr_full_watch_card_view_title">预约观看列表</string>
+    <string name="dvr_detail_cancel_appoint">取消预约观看</string>
+    <string name="dvr_appointed_watch_empty_state">没有预约观看节目历史.\n可以的节目指南中进行预约节目观看.</string>
+    <plurals name="dvr_appointed_watch_programs_section_subtitle">
+        <item quantity="one">%1$d 节目</item>
+        <item quantity="other">%1$d 节目</item>
+    </plurals>
 
     <!-- multi audio -->
     <string name="multi_audio_dolby_audio">杜比</string>

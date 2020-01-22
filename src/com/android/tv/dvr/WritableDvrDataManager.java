@@ -20,6 +20,7 @@ import android.support.annotation.MainThread;
 import com.android.tv.dvr.data.ScheduledRecording;
 import com.android.tv.dvr.data.ScheduledRecording.RecordingState;
 import com.android.tv.dvr.data.SeriesRecording;
+import com.android.tv.data.Program;
 
 /**
  * Full data manager.
@@ -77,4 +78,10 @@ public interface WritableDvrDataManager extends DvrDataManager {
      * <p>Note that this should be called after the input was removed.
      */
     void updateDisplayforAddedOrRemovedStorage();
+
+    /** Adds new appointed watch programs. */
+    void addAppointedWatchProgram(Program... programs);
+
+    /** Removes appointed watch programs. */
+    void removeAppointedWatchProgram(Program... programs);
 }

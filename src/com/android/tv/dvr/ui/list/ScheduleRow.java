@@ -141,6 +141,18 @@ class ScheduleRow {
                 && mSchedule.getState() == ScheduledRecording.STATE_RECORDING_FINISHED;
     }
 
+    public boolean isAppointedWatchProgram() {
+        return mSchedule != null
+                && mSchedule.getType() == ScheduledRecording.TYPE_APPOINT;
+    }
+
+    public long getProgramId() {
+        if (mSchedule != null) {
+            return mSchedule.getProgramId();
+        }
+        return -1;
+    }
+
     /** Creates and returns the new schedule with the existing information. */
     public ScheduledRecording.Builder createNewScheduleBuilder() {
         return mSchedule != null ? ScheduledRecording.buildFrom(mSchedule) : null;

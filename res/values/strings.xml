@@ -1220,4 +1220,13 @@
 
     <!-- multi audio -->
     <string name="multi_audio_dolby_audio">Dolby Audio</string>
+
+    <string name="dvr_appoint_program">Appointed watch</string>
+    <string name="dvr_full_watch_card_view_title">Full appointed watch</string>
+    <string name="dvr_detail_cancel_appoint">Cancel appointed watch</string>
+    <string name="dvr_appointed_watch_empty_state">There is no appointed watch program history.\nYou can appoint to watch programs from the program guide.</string>
+    <plurals name="dvr_appointed_watch_programs_section_subtitle">
+        <item quantity="one">%1$d program</item>
+        <item quantity="other">%1$d programs</item>
+    </plurals>
 </resources>

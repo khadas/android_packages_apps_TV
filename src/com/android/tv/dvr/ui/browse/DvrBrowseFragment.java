@@ -31,6 +31,10 @@ import android.support.v17.leanback.widget.TitleViewAdapter;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver.OnGlobalFocusChangeListener;
+import android.database.ContentObserver;
+import android.content.ContentResolver;
+import android.media.tv.TvContract.Programs;
+import android.net.Uri;
 
 import com.android.tv.R;
 import com.android.tv.TvFeatures;
@@ -42,12 +46,15 @@ import com.android.tv.dvr.DvrDataManager.OnRecordedProgramLoadFinishedListener;
 import com.android.tv.dvr.DvrDataManager.RecordedProgramListener;
 import com.android.tv.dvr.DvrDataManager.ScheduledRecordingListener;
 import com.android.tv.dvr.DvrDataManager.SeriesRecordingListener;
+import com.android.tv.dvr.DvrDataManager.AppointedProgramListener;
 import com.android.tv.dvr.DvrScheduleManager;
 import com.android.tv.dvr.data.RecordedProgram;
 import com.android.tv.dvr.data.ScheduledRecording;
 import com.android.tv.dvr.data.SeriesRecording;
 import com.android.tv.dvr.ui.SortedArrayAdapter;
 import com.android.tv.common.util.SystemProperties;
+import com.android.tv.data.Program;
+import com.android.tv.data.ProgramDataManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,12 +70,14 @@ public class DvrBrowseFragment extends BrowseFragment
                 ScheduledRecordingListener,
                 SeriesRecordingListener,
                 OnDvrScheduleLoadFinishedListener,
-                OnRecordedProgramLoadFinishedListener {
+                OnRecordedProgramLoadFinishedListener,
+                AppointedProgramListener {
     private static final String TAG = "DvrBrowseFragment";
     private static final boolean DEBUG = false || SystemProperties.USE_DEBUG_PVR.getValue();
 
     private static final int MAX_RECENT_ITEM_COUNT = 10;
     private static final int MAX_SCHEDULED_ITEM_COUNT = 4;
+    private static final int MAX_PROGRAM_ITEM_COUNT = 4;
 
     private boolean mShouldShowScheduleRow;
     private boolean mEntranceTransitionEnded;
@@ -76,11 +85,13 @@ public class DvrBrowseFragment extends BrowseFragment
     private RecentRowAdapter mRecentAdapter;
     private ScheduleAdapter mScheduleAdapter;
     private SeriesAdapter mSeriesAdapter;
+    private ProgramAdapter mProgramAdapter;
     private RecordedProgramAdapter[] mGenreAdapters =
             new RecordedProgramAdapter[GenreItems.getGenreCount() + 1];
     private ListRow mRecentRow;
     private ListRow mScheduledRow;
     private ListRow mSeriesRow;
+    private ListRow mProgramRow;
     private ListRow[] mGenreRows = new ListRow[GenreItems.getGenreCount() + 1];
     private List<String> mGenreLabels;
     private DvrDataManager mDvrDataManager;
@@ -195,6 +206,20 @@ public class DvrBrowseFragment extends BrowseFragment
                 }
             };
 
+    static final Comparator<Object> PROGRAM_COMPARATOR =
+            (Object lhs, Object rhs) -> {
+                if ((lhs instanceof Program && rhs instanceof Program)) {
+                    Program one = (Program) lhs;
+                    Program two = (Program) rhs;
+                    int compare =
+                            Long.compare(
+                                    one.getStartTimeUtcMillis(),
+                                    two.getStartTimeUtcMillis());
+                    return compare;
+                }
+                return 0;
+            };
+
     private final DvrScheduleManager.OnConflictStateChangeListener mOnConflictStateChangeListener =
             new DvrScheduleManager.OnConflictStateChangeListener() {
                 @Override
@@ -234,7 +259,11 @@ public class DvrBrowseFragment extends BrowseFragment
                                 SeriesRecording.class, new SeriesRecordingPresenter(context))
                         .addClassPresenter(
                                 FullScheduleCardHolder.class,
-                                new FullSchedulesCardPresenter(context));
+                                new FullSchedulesCardPresenter(context))
+                        .addClassPresenter(
+                                Program.class, new ProgramPresenter(context))
+                        .addClassPresenter(
+                                FullAppointedWatchCardHolder.class, new FullAppointedWatchCardPresenter(context));
 
         if (TvFeatures.DVR_FAILED_LIST.isEnabled(context)) {
             mPresenterSelector.addClassPresenter(
@@ -252,6 +281,18 @@ public class DvrBrowseFragment extends BrowseFragment
                 mDvrDataManager.addRecordedProgramLoadFinishedListener(this);
             }
         }
+    }
+
+     @Override
+    public void onResume() {
+        super.onResume();
+        if (DEBUG) Log.d(TAG, "onResume");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (DEBUG) Log.d(TAG, "onPause");
     }
 
     @Override
@@ -278,6 +319,7 @@ public class DvrBrowseFragment extends BrowseFragment
         mDvrDataManager.removeSeriesRecordingListener(this);
         mDvrDataManager.removeDvrScheduleLoadFinishedListener(this);
         mDvrDataManager.removeRecordedProgramLoadFinishedListener(this);
+        mDvrDataManager.removeAppointedProgramListener(this);
         mRowsAdapter.clear();
         mSeriesId2LatestProgram.clear();
         for (Presenter presenter : mPresenterSelector.getPresenters()) {
@@ -320,6 +362,22 @@ public class DvrBrowseFragment extends BrowseFragment
     public void onRecordedProgramsRemoved(RecordedProgram... recordedPrograms) {
         for (RecordedProgram recordedProgram : recordedPrograms) {
             handleRecordedProgramRemoved(recordedProgram);
+        }
+        postUpdateRows();
+    }
+
+    @Override
+    public void onAppointedProgramsAdded(Program... programs) {
+        for (Program program : programs) {
+            handleProgramAdded(program);
+        }
+        postUpdateRows();
+    }
+
+    @Override
+    public void onAppointedProgramsRemoved(Program... programs) {
+        for (Program program : programs) {
+            handleProgramRemoved(program);
         }
         postUpdateRows();
     }
@@ -434,6 +492,7 @@ public class DvrBrowseFragment extends BrowseFragment
             // Setup rows
             mRecentAdapter = new RecentRowAdapter(MAX_RECENT_ITEM_COUNT);
             mScheduleAdapter = new ScheduleAdapter(MAX_SCHEDULED_ITEM_COUNT);
+            mProgramAdapter  =new ProgramAdapter(MAX_PROGRAM_ITEM_COUNT);
             mSeriesAdapter = new SeriesAdapter();
             for (int i = 0; i < mGenreAdapters.length; i++) {
                 mGenreAdapters[i] = new RecordedProgramAdapter();
@@ -455,6 +514,7 @@ public class DvrBrowseFragment extends BrowseFragment
                 }
                 mRecentAdapter.addExtraItem(DvrHistoryCardHolder.DVR_HISTORY_CARD_HOLDER);
             }
+            loadAppointedWatchProgram();
             // Series Recordings. Series recordings should be added after recorded programs, because
             // we build series recordings' latest program information while adding recorded
             // programs.
@@ -470,12 +530,16 @@ public class DvrBrowseFragment extends BrowseFragment
             mSeriesRow =
                     new ListRow(
                             new HeaderItem(getString(R.string.dvr_main_series)), mSeriesAdapter);
+            mProgramRow =
+                    new ListRow(
+                            new HeaderItem(getString(R.string.dvr_appoint_program)), mProgramAdapter);
             mRowsAdapter.add(mScheduledRow);
             updateRows();
             // Initialize listeners
             mDvrDataManager.addRecordedProgramListener(this);
             mDvrDataManager.addScheduledRecordingListener(this);
             mDvrDataManager.addSeriesRecordingListener(this);
+            mDvrDataManager.addAppointedProgramListener(this);
             mDvrScheudleManager.addOnConflictStateChangeListener(mOnConflictStateChangeListener);
             startEntranceTransition();
             return true;
@@ -614,6 +678,24 @@ public class DvrBrowseFragment extends BrowseFragment
         }
     }
 
+    private void handleProgramAdded(Program program) {
+        if (DEBUG) {
+            Log.d(TAG, "handleProgramAdded " + program);
+        }
+        if (mProgramAdapter != null) {
+            mProgramAdapter.add(program);
+        }
+    }
+
+    private void handleProgramRemoved(Program program) {
+        if (DEBUG) {
+            Log.d(TAG, "handleProgramRemoved " + program);
+        }
+        if (mProgramAdapter != null) {
+            mProgramAdapter.remove(program);
+        }
+    }
+
     private List<RecordedProgramAdapter> getGenreAdapters(String[] genres) {
         List<RecordedProgramAdapter> result = new ArrayList<>();
         if (genres == null || genres.length == 0) {
@@ -664,12 +746,26 @@ public class DvrBrowseFragment extends BrowseFragment
 
     private void updateRows() {
         int visibleRowsCount = 1; // Schedule's Row will never be empty
+        boolean hasAppointProgram = false;
+        if (mProgramAdapter.isEmpty()) {
+            mRowsAdapter.remove(mProgramRow);
+        } else {
+            if (mRowsAdapter.indexOf(mProgramRow) < 0) {
+                mRowsAdapter.add(0, mProgramRow);
+                hasAppointProgram = true;
+            }
+        }
         int recentRowMinSize = TvFeatures.DVR_FAILED_LIST.isEnabled(getContext()) ? 1 : 0;
         if (mRecentAdapter.size() <= recentRowMinSize) {
             mRowsAdapter.remove(mRecentRow);
         } else {
             if (mRowsAdapter.indexOf(mRecentRow) < 0) {
-                mRowsAdapter.add(0, mRecentRow);
+                 if (hasAppointProgram) {
+                    mRowsAdapter.add(1, mRecentRow);
+                    visibleRowsCount++;
+                } else {
+                    mRowsAdapter.add(0, mRecentRow);
+                }
             }
             visibleRowsCount++;
         }
@@ -714,6 +810,17 @@ public class DvrBrowseFragment extends BrowseFragment
             }
         }
         mSeriesId2LatestProgram.put(seriesRecording.getSeriesId(), latestProgram);
+    }
+
+    private void loadAppointedWatchProgram() {
+        //add appoint watch
+        if (mProgramAdapter != null) {
+            mProgramAdapter.clear();
+            mProgramAdapter.addExtraItem(FullAppointedWatchCardHolder.FULL_APPOINT_WATCH_CARD_HOLDER);
+        }
+        for (Program program : ProgramDataManager.getAppointedPrograms(getActivity())) {
+            handleProgramAdded(program);
+        }
     }
 
     private class ScheduleAdapter extends SortedArrayAdapter<Object> {
@@ -788,6 +895,21 @@ public class DvrBrowseFragment extends BrowseFragment
                 return -((ScheduledRecording) item).getId() - 1;
             } else if (item instanceof RecordedProgram) {
                 return ((RecordedProgram) item).getId();
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    private class ProgramAdapter extends SortedArrayAdapter<Object> {
+        ProgramAdapter(int maxItemCount) {
+            super(mPresenterSelector, PROGRAM_COMPARATOR, maxItemCount);
+        }
+
+        @Override
+        public long getId(Object item) {
+            if (item instanceof Program) {
+                return ((Program) item).getId();
             } else {
                 return -1;
             }

@@ -58,6 +58,9 @@ public class DvrDetailsActivity extends Activity implements PinDialogFragment.On
     /** SERIES_RECORDING_VIEW refers to series recording in DVR. */
     public static final int SERIES_RECORDING_VIEW = 4;
 
+    /** appointed program. */
+    public static final int PROGRAM_APPOINT = 6;
+
     private PinDialogFragment.OnPinCheckedListener mOnPinCheckedListener;
 
     @Override
@@ -83,6 +86,8 @@ public class DvrDetailsActivity extends Activity implements PinDialogFragment.On
                 detailsFragment = new RecordedProgramDetailsFragment();
             } else if (detailsViewType == SERIES_RECORDING_VIEW) {
                 detailsFragment = new SeriesRecordingDetailsFragment();
+            } else if (detailsViewType == PROGRAM_APPOINT) {
+                detailsFragment = new AppointedWatchDetailsFragment();
             }
             detailsFragment.setArguments(args);
             getFragmentManager()
