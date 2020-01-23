@@ -2901,14 +2901,18 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         }
         switch (mOverlayManager.onKeyDown(keyCode, event)) {
             case KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY:
+                Log.d(TAG, "onKeyDown KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY");
                 return super.onKeyDown(keyCode, event);
             case KEY_EVENT_HANDLER_RESULT_HANDLED:
+                Log.d(TAG, "onKeyDown KEY_EVENT_HANDLER_RESULT_HANDLED");
                 return true;
             case KEY_EVENT_HANDLER_RESULT_NOT_HANDLED:
+                Log.d(TAG, "onKeyDown KEY_EVENT_HANDLER_RESULT_NOT_HANDLED");
                 return false;
             case KEY_EVENT_HANDLER_RESULT_PASSTHROUGH:
             default:
                 // fall through
+                Log.d(TAG, "onKeyDown fall through");
         }
         if (mSearchFragment.isVisible()) {
             return super.onKeyDown(keyCode, event);
@@ -3049,14 +3053,18 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
         switch (mOverlayManager.onKeyUp(keyCode, event)) {
             case KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY:
+                Log.d(TAG, "onKeyUp KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY");
                 return super.onKeyUp(keyCode, event);
             case KEY_EVENT_HANDLER_RESULT_HANDLED:
+                Log.d(TAG, "onKeyUp KEY_EVENT_HANDLER_RESULT_HANDLED");
                 return true;
             case KEY_EVENT_HANDLER_RESULT_NOT_HANDLED:
+                Log.d(TAG, "onKeyUp KEY_EVENT_HANDLER_RESULT_NOT_HANDLED");
                 return false;
             case KEY_EVENT_HANDLER_RESULT_PASSTHROUGH:
             default:
                 // fall through
+                Log.d(TAG, "onKeyUp KEY_EVENT_HANDLER_RESULT_PASSTHROUGH");
         }
 
         if (mSearchFragment.isVisible()) {

@@ -81,12 +81,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import com.android.tv.common.util.SystemProperties;
 
 /** A class responsible for the life cycle and event handling of the pop-ups over TV view. */
 @UiThread
 public class TvOverlayManager implements AccessibilityStateChangeListener {
     private static final String TAG = "TvOverlayManager";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = false || SystemProperties.USE_DEBUG_DISPLAY.getValue();
     private static final String INTRO_TRACKER_LABEL = "Intro dialog";
 
     @Retention(RetentionPolicy.SOURCE)
@@ -485,6 +486,7 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
 
         mCurrentDialog = dialog;
         dialog.show(mMainActivity.getFragmentManager(), tag);
+        Log.d(TAG, "showDialogFragment " + dialog);
 
         // Calling this from SafeDismissDialogFragment.onCreated() might be late
         // because it takes time for onCreated to be called
@@ -695,6 +697,7 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
 
     /** It is called when a SafeDismissDialogFragment is destroyed. */
     public void onDialogDestroyed() {
+        Log.d(TAG, "onDialogDestroyed " + mCurrentDialog);
         mCurrentDialog = null;
         PendingDialogAction action = mPendingDialogActionQueue.poll();
         if (action == null) {
@@ -1048,6 +1051,7 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
                 || mProgramGuide.isActive()
                 || mSetupFragmentActive
                 || mNewSourcesFragmentActive) {
+            Log.d(TAG, "onKeyDown KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY");
             return MainActivity.KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY;
         }
         if (mTransitionManager.isKeypadChannelSwitchActive()) {
@@ -1153,6 +1157,7 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
                 mProgramGuide.onBackPressed();
                 return MainActivity.KEY_EVENT_HANDLER_RESULT_HANDLED;
             }
+            Log.d(TAG, "onKeyUp KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY mProgramGuide.isActive");
             return MainActivity.KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY;
         }
         if (mSideFragmentManager.isActive()) {
@@ -1161,6 +1166,7 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
                 mSideFragmentManager.popSideFragment();
                 return MainActivity.KEY_EVENT_HANDLER_RESULT_HANDLED;
             }
+            Log.d(TAG, "onKeyUp KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY mSideFragmentManager.isActive");
             return MainActivity.KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY;
         }
         if (mMenu.isActive() || mTransitionManager.isSceneActive()) {
@@ -1180,6 +1186,7 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
                     showKeypadChannelSwitch(keyCode);
                     return MainActivity.KEY_EVENT_HANDLER_RESULT_HANDLED;
                 }
+                Log.d(TAG, "onKeyUp KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY mMenu.isActive");
                 return MainActivity.KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY;
             }
         }
@@ -1188,6 +1195,7 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
                 hideOverlays(TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_SCENE);
                 return MainActivity.KEY_EVENT_HANDLER_RESULT_HANDLED;
             }
+            Log.d(TAG, "onKeyUp isKeypadChannelSwitchActive()");
             return mKeypadChannelSwitchView.onKeyUp(keyCode, event)
                     ? MainActivity.KEY_EVENT_HANDLER_RESULT_HANDLED
                     : MainActivity.KEY_EVENT_HANDLER_RESULT_NOT_HANDLED;
@@ -1197,6 +1205,7 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
                 mTransitionManager.goToEmptyScene(true);
                 return MainActivity.KEY_EVENT_HANDLER_RESULT_HANDLED;
             }
+            Log.d(TAG, "onKeyUp isSelectInputActive()");
             return mSelectInputView.onKeyUp(keyCode, event)
                     ? MainActivity.KEY_EVENT_HANDLER_RESULT_HANDLED
                     : MainActivity.KEY_EVENT_HANDLER_RESULT_NOT_HANDLED;
@@ -1206,6 +1215,7 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
                 closeSetupFragment(true);
                 return MainActivity.KEY_EVENT_HANDLER_RESULT_HANDLED;
             }
+            Log.d(TAG, "onKeyUp KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY mSetupFragmentActive");
             return MainActivity.KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY;
         }
         if (mNewSourcesFragmentActive) {
@@ -1213,6 +1223,7 @@ public class TvOverlayManager implements AccessibilityStateChangeListener {
                 closeNewSourcesFragment(true);
                 return MainActivity.KEY_EVENT_HANDLER_RESULT_HANDLED;
             }
+            Log.d(TAG, "onKeyUp KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY mNewSourcesFragmentActive");
             return MainActivity.KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY;
         }
         return MainActivity.KEY_EVENT_HANDLER_RESULT_PASSTHROUGH;

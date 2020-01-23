@@ -144,9 +144,10 @@ public class ParentalControlsFragment extends SideFragment {
                         tvActivity.getOverlayManager().getSideFragmentManager().hideSidePanel(true);
                         PinDialogFragment fragment =
                                 PinDialogFragment.create(PinDialogFragment.PIN_DIALOG_TYPE_NEW_PIN);
+                        //hide sidefragment
                         tvActivity
                                 .getOverlayManager()
-                                .showDialogFragment(PinDialogFragment.DIALOG_TAG, fragment, true);
+                                .showDialogFragment(PinDialogFragment.DIALOG_TAG, fragment, false);
                     }
                 });
         items.addAll(mActionItems);

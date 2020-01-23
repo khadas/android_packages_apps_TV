@@ -67,6 +67,9 @@ public final class SystemProperties {
     public static final BooleanSystemProperty USE_DEBUG_ENABLE_SUSPEND_RECORD =
             new BooleanSystemProperty("tv_use_debug_enable_suspend_record", false);
 
+    public static final BooleanSystemProperty USE_DEBUG_DISPLAY =
+            new BooleanSystemProperty("tv_use_debug_display", false);
+
     static {
         updateSystemProperties();
     }

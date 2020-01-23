@@ -48,10 +48,11 @@ import com.android.tv.R;
 import com.android.tv.TvSingletons;
 import com.android.tv.common.SoftPreconditions;
 import com.android.tv.util.TvSettings;
+import com.android.tv.common.util.SystemProperties;
 
 public class PinDialogFragment extends SafeDismissDialogFragment {
     private static final String TAG = "PinDialogFragment";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = false || SystemProperties.USE_DEBUG_DISPLAY.getValue();
 
     /** PIN code dialog for unlock channel */
     public static final int PIN_DIALOG_TYPE_UNLOCK_CHANNEL = 0;
@@ -268,6 +269,7 @@ public class PinDialogFragment extends SafeDismissDialogFragment {
 
     /** Dismisses the pin dialog without calling activity listener. */
     public void dismissSilently() {
+        if (DEBUG) Log.d(TAG, "dismissSilently");
         mDismissSilently = true;
         dismiss();
     }
