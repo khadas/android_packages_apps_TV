@@ -111,8 +111,10 @@ public class ChannelModifyDetailsFragment extends SideFragment {
                 num = ITEM_TYPE.length - 2;//not dtmb, move is not need
             }
             for (int i = 0; i < num; i++) {
-                if (i == 2 && TvContract.Channels.TYPE_OTHER.equals(mChannelType)) {
+                if (i == SET_DELETE && TvContract.Channels.TYPE_OTHER.equals(mChannelType)) {
                     continue;//skip delete function for other type of channels as sync reason
+                } else if (i == SET_FAVOURITE) {
+                    continue;//hide add fav function, and set it by new fav list
                 }
                 items.add(new EditOptionItem(getString(ITEM_TYPE[i]), i, mChannelId));
             }
