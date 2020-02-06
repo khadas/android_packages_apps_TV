@@ -161,6 +161,16 @@ public class ChannelModifyDetailsFragment extends SideFragment {
                 createEditDialogUi(mId);
             } else if (mTrackId == SET_SKIP) {
                 mChannelSettingsManager.skipChannel(mId);
+                Channel next = null;
+                if (getMainActivity().getCurrentChannelId() == mId) {
+                    if (mChannelTuner.moveToAdjacentBrowsableChannel(true)) {
+                        next = mChannelTuner.getCurrentChannel();
+                        Log.d(TAG, "onSelected skip next = " + next);
+                        if (next != null) {
+                            getMainActivity().tuneToChannel(next);
+                        }
+                    }
+                }
                 closeFragment();
             } else if (mTrackId == SET_DELETE) {
                 mChannelSettingsManager.deleteChannel(mId);

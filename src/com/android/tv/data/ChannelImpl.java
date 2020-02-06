@@ -969,7 +969,8 @@ public final class ChannelImpl implements Channel {
     public boolean hasSameReadWriteInfo(Channel other) {
         return other != null
                 && Objects.equals(mChannelInternalProviderDataMap, other.getChannelInternalProviderDataMap())
-                && Objects.equals(mContentRatings, other.getContentRatings());
+                && Objects.equals(mContentRatings, other.getContentRatings())
+                && Objects.equals(mBrowsable, other.isBrowsable());
     }
 
     public String getChannelInternalProviderDataByKey(String key) {

@@ -36,6 +36,8 @@ import com.android.tv.util.TvInputManagerHelper;
 import com.android.tv.util.Utils;
 import com.android.tv.common.util.SystemProperties;
 import com.android.tv.data.ChannelNumber;
+import com.android.tv.common.util.SystemProperties;
+
 import com.droidlogic.app.tv.DroidLogicTvUtils;
 
 import java.util.ArrayList;
@@ -55,6 +57,7 @@ import android.provider.Settings;
 @MainThread
 public class ChannelTuner {
     private static final String TAG = "ChannelTuner";
+    private static final boolean DEBUG = false || SystemProperties.USE_DEBUG_CHANNEL_UPDATE.getValue();
     private static final String BROADCAST_SKIP_ALL_CHANNELS = "android.action.skip.all.channels";
 
     private boolean mStarted;
@@ -226,6 +229,9 @@ public class ChannelTuner {
      */
     public void setCurrentChannel(Channel currentChannel) {
         mCurrentChannel = currentChannel;
+        if (DEBUG) {
+            Log.d(TAG, "setCurrentChannel " + mCurrentChannel);
+        }
     }
 
     /** Returns the current channel's ID. */
@@ -403,6 +409,9 @@ public class ChannelTuner {
             setRecentChannelId(previousChannel);
         }
         mCurrentChannel = channel;
+        if (DEBUG) {
+            Log.d(TAG, "setCurrentChannelAndNotify " + mCurrentChannel);
+        }
         if (mCurrentChannel != null) {
             mCurrentChannelInputInfo = mInputManager.getTvInputInfo(mCurrentChannel.getInputId());
         }
@@ -412,7 +421,7 @@ public class ChannelTuner {
     }
 
     private synchronized void updateChannelData(List<Channel> channels) {
-        if (SystemProperties.USE_DEBUG_CHANNEL_UPDATE.getValue()) {
+        if (DEBUG) {
             Log.d(TAG, "updateChannelData channels = " + (channels != null ? channels.size() : 0));
         }
         if (mContext != null) {
@@ -438,7 +447,7 @@ public class ChannelTuner {
             } else if (channel.isRadioChannel()) {
                 mRadioChannels.add(channel);
             }
-            if (SystemProperties.USE_DEBUG_CHANNEL_UPDATE.getValue()) {
+            if (DEBUG) {
                 Log.d(TAG, "updateChannelData no." + i + "->" + channel);
             }
         }
@@ -462,13 +471,13 @@ public class ChannelTuner {
     }
 
     private synchronized void updateBrowsableChannels() {
-        if (SystemProperties.USE_DEBUG_CHANNEL_UPDATE.getValue()) {
+        if (DEBUG) {
             Log.d(TAG, "updateBrowsableChannels");
         }
         mBrowsableChannels.clear();
         int i = 0;
         for (Channel channel : mChannels) {
-            if (SystemProperties.USE_DEBUG_CHANNEL_UPDATE.getValue()) Log.d(TAG, "updateBrowsableChannels no." + (i++) + "->" + channel);
+            if (DEBUG) Log.d(TAG, "updateBrowsableChannels no." + (i++) + "->" + channel);
             //also delete hidden channel
             if ((!channel.isOtherChannel() && channel.isBrowsable()) || (channel.isOtherChannel() && !channel.IsHidden())) {//other source may not have permissions to write browse
                 mBrowsableChannels.add(channel);
