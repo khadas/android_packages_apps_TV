@@ -273,6 +273,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     private static final int MSG_TUNE_TO_CEC_DEV = 1005;
     private static final int MSG_START_TV = 1006;
     private static final int MSG_STOP_TV = 1007;
+    private static final int MSG_UPDTE_CHANNEL_BANNER = 1008;
 
     private static final int TVVIEW_SET_MAIN_TIMEOUT_MS = 3000;
 
@@ -2959,7 +2960,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                                     CHANNEL_CHANGE_INITIAL_DELAY_MILLIS);
                         }
                         mQuickKeyInfo.setSearchedChannelFlag(false);
-                        moveToAdjacentChannel(true, false);
+                        //take handle message to deal
+                        //moveToAdjacentChannel(true, false);
+                        mChannelTuner.moveToAdjacentBrowsableChannel(true);
                         mTracker.sendChannelUp();
                     }
                     return true;
@@ -2976,7 +2979,9 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                                     CHANNEL_CHANGE_INITIAL_DELAY_MILLIS);
                         }
                         mQuickKeyInfo.setSearchedChannelFlag(false);
-                        moveToAdjacentChannel(false, false);
+                        //take handle message to deal
+                        //moveToAdjacentChannel(false, false);
+                        mChannelTuner.moveToAdjacentBrowsableChannel(false);
                         mTracker.sendChannelDown();
                     }
                     return true;
@@ -3471,6 +3476,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         mHandler.removeMessages(MSG_CHANNEL_UP_PRESSED);
         mHandler.removeMessages(MSG_CHANNEL_DOWN_PRESSED);
         mHandler.removeMessages(MSG_TUNE_CHANNEL);
+        mHandler.removeMessages(MSG_UPDTE_CHANNEL_BANNER);
         if (mChannelTuner.getBrowsableChannelCount() > 0) {
             if (!mTvView.isPlaying()) {
                 // We expect that mTvView is already played. But, it is sometimes not.
@@ -3485,6 +3491,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 //tuneToChannel(mChannelTuner.getCurrentChannel());
                 mHandler.sendMessage(mHandler.obtainMessage(MSG_TUNE_CHANNEL, mChannelTuner.getCurrentChannel()));
             }
+            mHandler.sendEmptyMessage(MSG_UPDTE_CHANNEL_BANNER);
         } else {
             if (!USE_DROIDLOIC_CUSTOMIZATION) {
                 showSettingsFragment();
@@ -4100,6 +4107,11 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 case MSG_STOP_TV:
                     if (DEBUG) Log.d(TAG, "MSG_STOP_TV");
                     mainActivity.stopTv();
+                    break;
+                case MSG_UPDTE_CHANNEL_BANNER:
+                    if (DEBUG) Log.d(TAG, "MSG_UPDTE_CHANNEL_BANNER");
+                    mainActivity.mOverlayManager.updateChannelBannerAndShowIfNeeded(
+                            TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE);
                     break;
                 default: // fall out
             }
