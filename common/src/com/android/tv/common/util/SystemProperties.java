@@ -70,6 +70,9 @@ public final class SystemProperties {
     public static final BooleanSystemProperty USE_DEBUG_DISPLAY =
             new BooleanSystemProperty("tv_use_debug_display", false);
 
+    public static final BooleanSystemProperty USE_DEBUG_LOCK =
+            new BooleanSystemProperty("tv_use_debug_lock", false);
+
     static {
         updateSystemProperties();
     }

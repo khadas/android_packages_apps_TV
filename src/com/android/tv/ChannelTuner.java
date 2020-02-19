@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Comparator;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import android.provider.Settings;
 
@@ -58,6 +59,7 @@ import android.provider.Settings;
 public class ChannelTuner {
     private static final String TAG = "ChannelTuner";
     private static final boolean DEBUG = false || SystemProperties.USE_DEBUG_CHANNEL_UPDATE.getValue();
+    private static final boolean DEBUG_LOCK = false || SystemProperties.USE_DEBUG_LOCK.getValue();
     private static final String BROADCAST_SKIP_ALL_CHANNELS = "android.action.skip.all.channels";
 
     private boolean mStarted;
@@ -79,6 +81,7 @@ public class ChannelTuner {
     @Nullable private TvInputInfo mCurrentChannelInputInfo;
 
     private Context mContext;
+    private ReentrantReadWriteLock mReentrantReadWriteLock = new ReentrantReadWriteLock();
 
     private final ChannelDataManager.Listener mChannelDataManagerListener =
             new ChannelDataManager.Listener() {
@@ -153,20 +156,60 @@ public class ChannelTuner {
 
     /** Returns browsable channel lists. */
     public List<Channel> getBrowsableChannelList() {
-        return Collections.unmodifiableList(mBrowsableChannels);
+        mReentrantReadWriteLock.readLock().lock();
+        boolean writeLock = mReentrantReadWriteLock.isWriteLocked();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getBrowsableChannelList writeLock = " + writeLock);
+        }
+        List<Channel> result = Collections.unmodifiableList(mBrowsableChannels);
+        mReentrantReadWriteLock.readLock().unlock();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getBrowsableChannelList unlock");
+        }
+        return result;
     }
 
     public List<Channel> getAllChannelList() {
-        return Collections.unmodifiableList(mChannels);
+        mReentrantReadWriteLock.readLock().lock();
+        boolean writeLock = mReentrantReadWriteLock.isWriteLocked();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getAllChannelList writeLock = " + writeLock);
+        }
+        List<Channel> result = Collections.unmodifiableList(mChannels);
+        mReentrantReadWriteLock.readLock().unlock();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getAllChannelList unlock");
+        }
+        return result;
     }
 
     public int getAllChannelListCount() {
-        return mChannels.size();
+        mReentrantReadWriteLock.readLock().lock();
+        boolean writeLock = mReentrantReadWriteLock.isWriteLocked();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getAllChannelListCount writeLock = " + writeLock);
+        }
+        int result = mChannels.size();
+        mReentrantReadWriteLock.readLock().unlock();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getAllChannelListCount unlock");
+        }
+        return result;
     }
 
     /** Returns the number of browsable channels. */
     public int getBrowsableChannelCount() {
-        return mBrowsableChannels.size();
+        mReentrantReadWriteLock.readLock().lock();
+        boolean writeLock = mReentrantReadWriteLock.isWriteLocked();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getBrowsableChannelCount writeLock = " + writeLock);
+        }
+        int result = mBrowsableChannels.size();
+        mReentrantReadWriteLock.readLock().unlock();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getBrowsableChannelCount unlock");
+        }
+        return result;
     }
 
     /** Returns the current channel. */
@@ -179,12 +222,21 @@ public class ChannelTuner {
      * Returns the current channel index.
      */
     public int getCurrentChannelIndex() {
+        mReentrantReadWriteLock.readLock().lock();
+        boolean writeLock = mReentrantReadWriteLock.isWriteLocked();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getCurrentChannelIndex writeLock = " + writeLock);
+        }
         int currentChannelIndex = 0;
         if (mCurrentChannel != null) {
             Integer integer = mChannelIndexMap.get(mCurrentChannel.getId());
             if (integer != null) {
                 currentChannelIndex = integer.intValue();
             }
+        }
+        mReentrantReadWriteLock.readLock().unlock();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getCurrentChannelIndex unlock");
         }
         return currentChannelIndex;
     }
@@ -193,30 +245,58 @@ public class ChannelTuner {
      * Returns the channel index by given channel.
      */
     public int getChannelIndex(Channel channel) {
-        return mChannelIndexMap.get(channel.getId());
+        mReentrantReadWriteLock.readLock().lock();
+        boolean writeLock = mReentrantReadWriteLock.isWriteLocked();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getChannelIndex writeLock = " + writeLock);
+        }
+        int result = mChannelIndexMap.get(channel.getId());
+        mReentrantReadWriteLock.readLock().unlock();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getChannelIndex unlock");
+        }
+        return result;
     }
 
     /**
      * Returns the channel by index.
      */
     public Channel getChannelByIndex(int channelIndex) {
-        Channel mChannel = null;
+        mReentrantReadWriteLock.readLock().lock();
+        boolean writeLock = mReentrantReadWriteLock.isWriteLocked();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getChannelByIndex2 writeLock = " + writeLock);
+        }
+        Channel result = null;
         if (channelIndex >= 0 && channelIndex < mChannels.size()) {
-            mChannel = mChannels.get(channelIndex);
+            result = mChannels.get(channelIndex);
          }
-        return mChannel;
+        mReentrantReadWriteLock.readLock().unlock();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getChannelByIndex2 unlock");
+        }
+        return result;
     }
 
     /**
      * Returns the channel index which will be deleted by channelId.
      */
     public int getChannelIndexById(long channelId) {
+        mReentrantReadWriteLock.readLock().lock();
+        boolean writeLock = mReentrantReadWriteLock.isWriteLocked();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getChannelIndexById writeLock = " + writeLock);
+        }
         int mChannelIndex = 0;
         for (int i = 0; i < mChannels.size(); i++) {
             if (mChannels.get(i).getId() == channelId) {
                 mChannelIndex = i;
                 break;
             }
+        }
+        mReentrantReadWriteLock.readLock().unlock();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getChannelIndexById unlock");
         }
         return mChannelIndex;
     }
@@ -290,7 +370,16 @@ public class ChannelTuner {
      * #moveToAdjacentBrowsableChannel}.
      */
     public Channel getAdjacentBrowsableChannel(boolean up) {
-        if (isCurrentChannelPassthrough() || getBrowsableChannelCount() == 0) {
+        mReentrantReadWriteLock.readLock().lock();
+        boolean writeLock = mReentrantReadWriteLock.isWriteLocked();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getAdjacentBrowsableChannel writeLock = " + writeLock);
+        }
+        if (isCurrentChannelPassthrough() || /*getBrowsableChannelCount()*/mBrowsableChannels.size() == 0) {
+            mReentrantReadWriteLock.readLock().unlock();
+            if (DEBUG_LOCK) {
+                Log.d(TAG, "getAdjacentBrowsableChannel unlock 1");
+            }
             return null;
         }
         int channelIndex;
@@ -298,6 +387,10 @@ public class ChannelTuner {
             channelIndex = 0;
             Channel channel = mChannels.get(channelIndex);
             if (((!channel.isOtherChannel() && channel.isBrowsable()) || (channel.isOtherChannel() && !channel.IsHidden())) && ((MainActivity)mContext).mQuickKeyInfo.isChannelMatchAtvDtvSource(channel)) {
+                mReentrantReadWriteLock.readLock().unlock();
+                if (DEBUG_LOCK) {
+                    Log.d(TAG, "getAdjacentBrowsableChannel unlock 2");
+                }
                 return channel;
             }
         } else {
@@ -311,10 +404,18 @@ public class ChannelTuner {
             }
             Channel channel = mChannels.get(nextChannelIndex);
             if (((!channel.isOtherChannel() && channel.isBrowsable()) || (channel.isOtherChannel() && !channel.IsHidden())) && ((MainActivity)mContext).mQuickKeyInfo.isChannelMatchAtvDtvSource(channel)) {
+                mReentrantReadWriteLock.readLock().unlock();
+                if (DEBUG_LOCK) {
+                    Log.d(TAG, "getAdjacentBrowsableChannel unlock 3");
+                }
                 return channel;
             }
         }
         Log.e(TAG, "This code should not be reached");
+        mReentrantReadWriteLock.readLock().unlock();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getAdjacentBrowsableChannel unlock 4");
+        }
         return null;
     }
 
@@ -323,26 +424,54 @@ public class ChannelTuner {
      * with {@code channelId} is browsable, the channel will be returned.
      */
     public Channel findNearestBrowsableChannel(long channelId) {
-        if (getBrowsableChannelCount() == 0) {
+        mReentrantReadWriteLock.readLock().lock();
+        boolean writeLock = mReentrantReadWriteLock.isWriteLocked();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "findNearestBrowsableChannel writeLock = " + writeLock);
+        }
+        if (/*getBrowsableChannelCount()*/mBrowsableChannels.size() == 0) {
+            mReentrantReadWriteLock.readLock().unlock();
+            if (DEBUG_LOCK) {
+                Log.d(TAG, "findNearestBrowsableChannel unlock 1");
+            }
             return null;
         }
         Channel channel = mChannelMap.get(channelId);
         if (channel == null) {
-            return mBrowsableChannels.get(0);
+            channel = mBrowsableChannels.get(0);
+            mReentrantReadWriteLock.readLock().unlock();
+            if (DEBUG_LOCK) {
+                Log.d(TAG, "findNearestBrowsableChannel unlock 2");
+            }
+            return channel/*mBrowsableChannels.get(0)*/;
         } else if ((!channel.isOtherChannel() && channel.isBrowsable()) || (channel.isOtherChannel() && !channel.IsHidden())) {
-            return channel;
+            mReentrantReadWriteLock.readLock().unlock();
+            if (DEBUG_LOCK) {
+                Log.d(TAG, "findNearestBrowsableChannel unlock 3");
+            }
         }
         int index = mChannelIndexMap.get(channelId);
         int size = mChannels.size();
         for (int i = 1; i <= size / 2; ++i) {
             Channel upChannel = mChannels.get((index + i) % size);
             if ((!upChannel.isOtherChannel() && upChannel.isBrowsable()) || (upChannel.isOtherChannel() && !upChannel.IsHidden())) {
+                mReentrantReadWriteLock.readLock().unlock();
+                if (DEBUG_LOCK) {
+                    Log.d(TAG, "findNearestBrowsableChannel unlock 4");
+                }
                 return upChannel;
             }
             Channel downChannel = mChannels.get((index - i + size) % size);
             if ((!downChannel.isOtherChannel() && downChannel.isBrowsable()) || (downChannel.isOtherChannel() && !downChannel.IsHidden())) {
+                if (DEBUG_LOCK) {
+                    Log.d(TAG, "findNearestBrowsableChannel unlock 5");
+                }
                 return downChannel;
             }
+        }
+        mReentrantReadWriteLock.readLock().unlock();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "findNearestBrowsableChannel unlock 6");
         }
         throw new IllegalStateException(
                 "This code should be unreachable in findNearestBrowsableChannel");
@@ -356,18 +485,39 @@ public class ChannelTuner {
      *     change will be failed and it will return false.
      */
     public boolean moveToChannel(Channel channel) {
+        mReentrantReadWriteLock.readLock().lock();
+        boolean writeLock = mReentrantReadWriteLock.isWriteLocked();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "moveToChannel writeLock = " + writeLock);
+        }
         if (channel == null) {
+            mReentrantReadWriteLock.readLock().unlock();
+            if (DEBUG_LOCK) {
+                Log.d(TAG, "moveToChannel unlock 1");
+            }
             return false;
         }
         if (channel.isPassthrough()) {
             setCurrentChannelAndNotify(channel);
+            mReentrantReadWriteLock.readLock().unlock();
+            if (DEBUG_LOCK) {
+                Log.d(TAG, "moveToChannel unlock 2");
+            }
             return true;
         }
         SoftPreconditions.checkState(mChannelDataManagerLoaded, TAG, "Channel data is not loaded");
         Channel newChannel = mChannelMap.get(channel.getId());
         if (newChannel != null && ((MainActivity)mContext).mQuickKeyInfo.isChannelMatchAtvDtvSource(channel)) {
             setCurrentChannelAndNotify(newChannel);
+            mReentrantReadWriteLock.readLock().unlock();
+            if (DEBUG_LOCK) {
+                Log.d(TAG, "moveToChannel unlock 3");
+            }
             return true;
+        }
+        mReentrantReadWriteLock.readLock().unlock();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "moveToChannel unlock 1");
         }
         return false;
     }
@@ -420,9 +570,11 @@ public class ChannelTuner {
         }
     }
 
-    private synchronized void updateChannelData(List<Channel> channels) {
-        if (DEBUG) {
-            Log.d(TAG, "updateChannelData channels = " + (channels != null ? channels.size() : 0));
+    private void updateChannelData(List<Channel> channels) {
+        mReentrantReadWriteLock.writeLock().lock();
+        boolean writeLock = mReentrantReadWriteLock.isWriteLocked();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "updateChannelData channels = " + (channels != null ? channels.size() : 0) + ", writeLock = " + writeLock);
         }
         if (mContext != null) {
             //[DroidLogic]
@@ -437,8 +589,8 @@ public class ChannelTuner {
         mChannelIndexMap.clear();
         mVideoChannels.clear();
         mRadioChannels.clear();
-        for (int i = 0; i < mChannels.size(); ++i) {
-            Channel channel = mChannels.get(i);
+        for (int i = 0; i < channels.size(); ++i) {
+            Channel channel = channels.get(i);
             long channelId = channel.getId();
             mChannelMap.put(channelId, channel);
             mChannelIndexMap.put(channelId, i);
@@ -447,11 +599,11 @@ public class ChannelTuner {
             } else if (channel.isRadioChannel()) {
                 mRadioChannels.add(channel);
             }
-            if (DEBUG) {
+            if (DEBUG_LOCK) {
                 Log.d(TAG, "updateChannelData no." + i + "->" + channel);
             }
         }
-        updateBrowsableChannels();
+        updateBrowsableChannelsLocked();
 
         if (mCurrentChannel != null && !mCurrentChannel.isPassthrough()) {
             Channel prevChannel = mCurrentChannel;
@@ -468,16 +620,33 @@ public class ChannelTuner {
             l.onAllChannelsListChanged();
             l.onBrowsableChannelListChanged();
         }
+        mReentrantReadWriteLock.writeLock().unlock();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "updateChannelData unlock");
+        }
     }
 
-    private synchronized void updateBrowsableChannels() {
+    private void updateBrowsableChannels() {
+        mReentrantReadWriteLock.writeLock().lock();
+        boolean writeLock = mReentrantReadWriteLock.isWriteLocked();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "updateBrowsableChannels writeLock = " + writeLock);
+        }
+        updateBrowsableChannelsLocked();
+        mReentrantReadWriteLock.writeLock().unlock();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "updateBrowsableChannels unlock");
+        }
+    }
+
+    private void updateBrowsableChannelsLocked() {
         if (DEBUG) {
             Log.d(TAG, "updateBrowsableChannels");
         }
         mBrowsableChannels.clear();
         int i = 0;
         for (Channel channel : mChannels) {
-            if (DEBUG) Log.d(TAG, "updateBrowsableChannels no." + (i++) + "->" + channel);
+            if (DEBUG) Log.d(TAG, "updateBrowsableChannelsLocked no." + (i++) + "->" + channel);
             //also delete hidden channel
             if ((!channel.isOtherChannel() && channel.isBrowsable()) || (channel.isOtherChannel() && !channel.IsHidden())) {//other source may not have permissions to write browse
                 mBrowsableChannels.add(channel);
@@ -490,7 +659,7 @@ public class ChannelTuner {
                 intent.setAction(BROADCAST_SKIP_ALL_CHANNELS);
                 mContext.sendBroadcast(intent);
             } else {
-                Log.d(TAG, "mBrowsableChannels.size(): " + mBrowsableChannels.size());
+                Log.d(TAG, "updateBrowsableChannelsLocked mBrowsableChannels.size(): " + mBrowsableChannels.size());
             }
         }
     }
@@ -509,19 +678,48 @@ public class ChannelTuner {
     }
 
     public Channel getChannelById(long id) {
+        mReentrantReadWriteLock.writeLock().lock();
+        boolean writeLock = mReentrantReadWriteLock.isWriteLocked();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getChannelById writeLock = " + writeLock);
+        }
         Channel channelbyid = null;
         if (mChannelMap != null) {
             channelbyid = mChannelMap.get(id);
+        }
+        mReentrantReadWriteLock.writeLock().unlock();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getChannelById unlock");
         }
         return channelbyid;
     }
 
     public List<Channel> getVideoChannelList() {
-        return mVideoChannels;
+        mReentrantReadWriteLock.readLock().lock();
+        boolean writeLock = mReentrantReadWriteLock.isWriteLocked();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getVideoChannelList writeLock = " + writeLock);
+        }
+        List<Channel> result = Collections.unmodifiableList(mVideoChannels);
+        mReentrantReadWriteLock.readLock().unlock();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getVideoChannelList unlock");
+        }
+        return result;
     }
 
     public List<Channel> getRadioChannelList() {
-        return mRadioChannels;
+        mReentrantReadWriteLock.readLock().lock();
+        boolean writeLock = mReentrantReadWriteLock.isWriteLocked();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getRadioChannelList writeLock = " + writeLock);
+        }
+        List<Channel> result = Collections.unmodifiableList(mRadioChannels);
+        mReentrantReadWriteLock.readLock().unlock();
+        if (DEBUG_LOCK) {
+            Log.d(TAG, "getRadioChannelList unlock");
+        }
+        return result;
     }
 
     private class TypeComparator implements Comparator<Channel> {
