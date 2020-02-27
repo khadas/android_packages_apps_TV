@@ -724,7 +724,7 @@ public class ChannelTuner {
 
     private class TypeComparator implements Comparator<Channel> {
         public int compare(Channel object1, Channel object2) {
-            boolean b1 = object1.isVideoChannel() ;
+            /*boolean b1 = object1.isVideoChannel() ;
             boolean b2 = object2.isVideoChannel();
             if (b1 && !b2) {
                 return -1;
@@ -742,7 +742,8 @@ public class ChannelTuner {
                 if (object1.isAnalogChannel()) {
                    return 1;
                 }
-            }
+            }*/
+            //sort as display number for channel list
             String p1 = object1.getDisplayNumber();
             String p2 = object2.getDisplayNumber();
             return ChannelNumber.compare(p1, p2);

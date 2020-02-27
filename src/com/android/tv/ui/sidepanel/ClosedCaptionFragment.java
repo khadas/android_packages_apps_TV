@@ -28,6 +28,7 @@ import android.view.ViewGroup;
 import com.android.tv.R;
 import com.android.tv.util.CaptionSettings;
 import com.android.tv.droidlogic.QuickKeyInfo;
+import com.android.tv.data.api.Channel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ import java.util.Locale;
 
 public class ClosedCaptionFragment extends SideFragment {
     private static final String TRACKER_LABEL = "closed caption";
+    private static final String DTVKIT_PACKAGE = "org.dtvkit.inputsource";
     private boolean mResetClosedCaption;
     private int mClosedCaptionOption;
     private String mClosedCaptionLanguage;
@@ -104,7 +106,11 @@ public class ClosedCaptionFragment extends SideFragment {
                 items2.add(item2);
             }
             if (hassubtitle) {
-                items1.add(item1);
+                Channel current = getMainActivity().getCurrentChannel();
+                //use captionmanager to control subtitle and hide it for dtvkit
+                if (current != null && !DTVKIT_PACKAGE.equals(current.getPackageName())) {
+                    items1.add(item1);
+                }
                 items1.addAll(items2);
             }
         }
