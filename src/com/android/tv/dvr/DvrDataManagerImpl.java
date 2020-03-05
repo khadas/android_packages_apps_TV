@@ -1208,18 +1208,18 @@ public class DvrDataManagerImpl extends BaseDvrDataManager {
             if (result != null && result.size() > 0) {
                 Iterator<RecordedProgram> iter = result.iterator();
                 boolean saveExistStatus;
-                boolean readExistStatus;
+                //boolean readExistStatus;
                 String path = null;
                 while (iter.hasNext()) {
                     RecordedProgram r = iter.next();
                     path = r.getRecordFilePath();
-                    saveExistStatus = r.isRecordStorageExist();
-                    readExistStatus = isPathAvailable(path);
+                    saveExistStatus = r.getDataBytes() > 0/*r.isRecordStorageExist()*/;
+                    //readExistStatus = isPathAvailable(path);
                     if (DEBUG) {
                         Log.d(TAG, "RecordedProgramsQueryTask sotrage = " + r.getRecordFilePath() +
-                                ", saveExistStatus = " +  saveExistStatus + ", readExistStatus = " + readExistStatus);
+                                ", saveExistStatus = " +  saveExistStatus/* + ", readExistStatus = " + readExistStatus*/ + ", getDataBytes = " + r.getDataBytes());
                     }
-                    if ((readExistStatus || TextUtils.isEmpty(path)) && !isRceordProgramRecording(r)) {
+                    if ((saveExistStatus/*readExistStatus*/ || TextUtils.isEmpty(path)) && !isRceordProgramRecording(r)) {
                         list.add(r);
                     }
                 }
