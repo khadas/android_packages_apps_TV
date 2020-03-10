@@ -331,6 +331,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                                         break;
                                     } else if (type == TvTrackInfo.TYPE_AUDIO) {
                                         mAudioChannelCount = track.getAudioChannelCount();
+                                        mMainActivity.updateAudioSettings(track.getLanguage(), trackId, track.getAudioChannelCount());
                                         trackFound = true;
                                         break;
                                     } else if (type == TvTrackInfo.TYPE_SUBTITLE) {

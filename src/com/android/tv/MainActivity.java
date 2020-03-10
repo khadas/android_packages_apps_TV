@@ -3930,6 +3930,29 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         }
     }
 
+    public void updateAudioSettings(String language, String trackId, int channelCount) {
+        TvSettings.setMultiAudioId(this, trackId);
+        TvSettings.setMultiAudioLanguage(this, language);
+        TvSettings.setMultiAudioChannelCount(this, channelCount);
+        boolean found = false;
+        List<TvTrackInfo> tracks = getTracks(TvTrackInfo.TYPE_AUDIO);
+        if (tracks != null) {
+            for (TvTrackInfo track : tracks) {
+                if (track.getId().equals(trackId)) {
+                    Log.d(TAG, "updateAudioSettings found " + trackId);
+                    mTvOptionsManager.onMultiAudioChanged(
+                        track == null ? null : Utils.getMultiAudioString(this, track, false));
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            Log.d(TAG, "updateAudioSettings not found");
+            mTvOptionsManager.onMultiAudioChanged(null);
+        }
+    }
+
     private void resetCaptionSettings() {
         mCaptionSettings.setEnableOption(CaptionSettings.OPTION_SYSTEM);
         mCaptionSettings.setLanguage(null);
