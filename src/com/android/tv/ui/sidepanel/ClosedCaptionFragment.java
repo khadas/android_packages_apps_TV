@@ -24,6 +24,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.android.tv.R;
 import com.android.tv.util.CaptionSettings;
@@ -208,13 +209,18 @@ public class ClosedCaptionFragment extends SideFragment {
         @Override
         protected void onSelected() {
             super.onSelected();
-
-            if (!getMainActivity().getCaptionSettings().isSystemSettingEnabled()) {
-                getMainActivity().getCaptionSettings().setCaptionsEnabled(true);
-            }
-
             mSelectedItem = this;
-            getMainActivity().selectSubtitleTrack(mOption, mTrackId);
+            if (getMainActivity().getCaptionSettings().isSystemSettingEnabled()) {
+                getMainActivity().selectSubtitleTrack(mOption, mTrackId);
+            } else {
+                String captionOff = getMainActivity().getString(R.string.options_item_closed_caption)
+                        + " " + getMainActivity().getString(R.string.closed_caption_option_item_off);
+                Toast.makeText(
+                                getMainActivity(),
+                                captionOff,
+                                Toast.LENGTH_SHORT)
+                        .show();
+            }
             //sub index is saved in db of each channel
             /*Settings.System.putInt(getActivity().getContentResolver(), CC_OPTION, mOption);
             Settings.System.putString(getActivity().getContentResolver(), CC_TRACKID, mTrackId);*/
