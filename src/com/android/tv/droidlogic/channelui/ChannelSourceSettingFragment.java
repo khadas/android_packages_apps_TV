@@ -164,7 +164,7 @@ public class ChannelSourceSettingFragment extends SideFragment {
                 }
             });
         }
-        if (currentChannel == null || (currentChannel != null && !currentChannel.getType().equals(TvContract.Channels.TYPE_DTMB))) {
+        //if (currentChannel == null || (currentChannel != null && !currentChannel.getType().equals(TvContract.Channels.TYPE_DTMB))) {
             //add in droidtvsetting to act as a product prop
             /*final int[] switchstatus = {R.string.channel_audio_ad_switch_off, R.string.channel_audio_ad_switch_on};
             mActionItems.add(new SubMenuItem(getString(R.string.channel_audio_ad_switch),
@@ -187,7 +187,7 @@ public class ChannelSourceSettingFragment extends SideFragment {
                     }
                 });
             }
-        }
+        //}
         mActionItems.add(new SubMenuItem(getString(R.string.channel_volume_compensate),
                 String.valueOf(mChannelSettingsManager.getVolumeCompensateStatus() * 5)  + "%", getMainActivity().getOverlayManager().getSideFragmentManager()) {
             @Override
