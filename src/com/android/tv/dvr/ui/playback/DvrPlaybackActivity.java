@@ -23,6 +23,10 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.text.TextUtils;
+import android.content.IntentFilter;
 
 import com.android.tv.R;
 import com.android.tv.Starter;
@@ -36,15 +40,40 @@ public class DvrPlaybackActivity extends Activity implements OnPinCheckedListene
     private static final String TAG = "DvrPlaybackActivity";
     private static final boolean DEBUG = true;
 
+    public static final String SYSTEM_DIALOG_REASON_KEY = "reason";
+    public static final String SYSTEM_DIALOG_REASON_HOME_KEY = "homekey";
+
     private DvrPlaybackOverlayFragment mOverlayFragment;
     private OnPinCheckedListener mOnPinCheckedListener;
     private TeleTextAdvancedSettings mTeleTextAdvancedSettings;
+
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action != null) {
+                switch (action) {
+                    case Intent.ACTION_CLOSE_SYSTEM_DIALOGS:
+                        String reason = intent.getStringExtra(SYSTEM_DIALOG_REASON_KEY);
+                        if (TextUtils.equals(reason, SYSTEM_DIALOG_REASON_HOME_KEY)) {
+                            finish();
+                        }
+                        break;
+                    case Intent.ACTION_SCREEN_OFF:
+                        finish();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Starter.start(this);
         if (DEBUG) Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
+        registerMainReceiver();
         setIntent(createProgramIntent(getIntent()));
         setContentView(R.layout.activity_dvr_playback);
         mOverlayFragment =
@@ -64,6 +93,13 @@ public class DvrPlaybackActivity extends Activity implements OnPinCheckedListene
     public void onStop() {
         super.onStop();
         hideTeleTextAdvancedSettings();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (DEBUG) Log.d(TAG, "onDestroy");
+        unregisterMainReceiver();
     }
 
     @Override
@@ -116,5 +152,16 @@ public class DvrPlaybackActivity extends Activity implements OnPinCheckedListene
             mTeleTextAdvancedSettings.setTvView(mOverlayFragment.getTvView());
         }
         mTeleTextAdvancedSettings.hideTeletextAdvancedDialog();
+    }
+
+    private void unregisterMainReceiver() {
+        unregisterReceiver(mReceiver);
+    }
+
+    private void registerMainReceiver() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+        intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(mReceiver, intentFilter);
     }
 }
