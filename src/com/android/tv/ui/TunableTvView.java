@@ -461,7 +461,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                 @Override
                 public void onContentAllowed(String inputId) {
                     if (DEBUG) Log.d(TAG, "onContentAllowed");
-                    mMainActivity.mQuickKeyInfo.setProperty(DroidLogicTvUtils.TV_CURRENT_BLOCK_STATUS, false);
+                    mMainActivity.mQuickKeyInfo.saveBooleanValue(DroidLogicTvUtils.TV_CURRENT_BLOCK_STATUS, false);
                     mBlockedContentRating = null;
                     updateBlockScreenAndMuting();
                     if (mOnTuneListener != null) {
@@ -472,7 +472,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                 @Override
                 public void onContentBlocked(String inputId, TvContentRating rating) {
                     if (DEBUG) Log.d(TAG, "onContentBlocked");
-                    mMainActivity.mQuickKeyInfo.setProperty(DroidLogicTvUtils.TV_CURRENT_BLOCK_STATUS, true);
+                    mMainActivity.mQuickKeyInfo.saveBooleanValue(DroidLogicTvUtils.TV_CURRENT_BLOCK_STATUS, true);
                     if (rating != null && rating.equals(mBlockedContentRating)) {
                         return;
                     }
@@ -827,7 +827,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
         //mBlockedContentRating = null;
         TvContentRating[] ratings = mMainActivity.mQuickKeyInfo.getContentRatingsOfCurrentProgram();
         boolean needSendStatus = false;
-        if (mMainActivity.mQuickKeyInfo.getPropertyBoolean(DroidLogicTvUtils.TV_CURRENT_BLOCK_STATUS, false)) {
+        if (mMainActivity.mQuickKeyInfo.getBooleanValue(DroidLogicTvUtils.TV_CURRENT_BLOCK_STATUS, false)) {
             //keep the rating if previous channel blocked
             if (ratings != null && ratings.length > 0) {
                 mBlockedContentRating = mParentalControlSettings.getBlockedRating(ratings);
@@ -840,7 +840,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
         }
 
         boolean newScreenBlocked = mScreenBlocked;
-        if (mMainActivity.mQuickKeyInfo.getPropertyBoolean(DroidLogicTvUtils.TV_CURRENT_CHANNELBLOCK_STATUS, false)) {
+        if (mMainActivity.mQuickKeyInfo.getBooleanValue(DroidLogicTvUtils.TV_CURRENT_CHANNELBLOCK_STATUS, false)) {
             if (mCurrentChannel != null && mCurrentChannel.isLocked()) {
                 newScreenBlocked = true;
             } else {
@@ -1163,7 +1163,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
         }
         mResetScreenBlocked = false;
         mScreenBlocked = blockOrUnblock;
-        mMainActivity.mQuickKeyInfo.setProperty(DroidLogicTvUtils.TV_CURRENT_CHANNELBLOCK_STATUS, blockOrUnblock);
+        mMainActivity.mQuickKeyInfo.saveBooleanValue(DroidLogicTvUtils.TV_CURRENT_CHANNELBLOCK_STATUS, blockOrUnblock);
 
         if (closePipIfNeeded()) {
             return;

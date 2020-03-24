@@ -1282,7 +1282,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         if (checked) {
             switch (type) {
                 case PinDialogFragment.PIN_DIALOG_TYPE_UNLOCK_CHANNEL:
-                    blockOrUnblockScreen(mTvView, false);
+                    blockOrUnblockScreenByUser(mTvView, false);
                     mIsCurrentChannelUnblockedByUser = true;
                     break;
                 case PinDialogFragment.PIN_DIALOG_TYPE_UNLOCK_PROGRAM:
@@ -1856,7 +1856,7 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
         Channel returnChannel = mChannelBeforeShrunkenTvView;
         if (returnChannel == null
-                || (!returnChannel.isPassthrough() && !returnChannel.isBrowsable())) {
+                || (!returnChannel.isPassthrough() && ((!returnChannel.isOtherChannel() && !returnChannel.isBrowsable()) || (returnChannel.isOtherChannel() && returnChannel.IsHidden())))) {
             // Try to tune to the next best channel instead.
             returnChannel = getBrowsableChannel();
         }
@@ -1892,6 +1892,19 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
 
     private boolean isUnderShrunkenTvView() {
         return mTvViewUiManager.isUnderShrunkenTvView() || mIsCompletingShrunkenTvView;
+    }
+
+    public void updateBlockStatusForPreviousSavedChannelBeforeShrunkenTvViewiIfNeeded(long setChannelId, boolean blocked, boolean forceUpdate) {
+        if (mShowLockedChannelsTemporarily && isUnderShrunkenTvView()) {
+            if (forceUpdate || (mChannelBeforeShrunkenTvView != null && mChannelBeforeShrunkenTvView.getId() == setChannelId)) {
+                Log.d(TAG, "updateBlockStatusForPreviousSavedChannelBeforeShrunkenTvViewiIfNeeded set blocked = " + blocked);
+                mQuickKeyInfo.saveBooleanValue(DroidLogicTvUtils.TV_CURRENT_CHANNELBLOCK_STATUS, blocked);
+            } else {
+                Log.d(TAG, "updateBlockStatusForPreviousSavedChannelBeforeShrunkenTvViewiIfNeeded no need set");
+            }
+        } else {
+            Log.d(TAG, "updateBlockStatusForPreviousSavedChannelBeforeShrunkenTvViewiIfNeeded not set");
+        }
     }
 
     /**
@@ -2636,10 +2649,17 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
     }
 
     private void blockOrUnblockScreen(TunableTvView tvView, boolean blockOrUnblock) {
-        String valueStr = mQuickKeyInfo.getProperty(DroidLogicTvUtils.TV_CURRENT_CHANNELBLOCK_STATUS);
-        boolean needPreview = mQuickKeyInfo.needPreviewFetureInLuncher();
-        if (needPreview && tvView != null && tvView.getResetBlockUiStatus() && !TextUtils.isEmpty(valueStr)) {
-            boolean lastBlockStatus = mQuickKeyInfo.getPropertyBoolean(DroidLogicTvUtils.TV_CURRENT_CHANNELBLOCK_STATUS, false);
+        blockOrUnblockScreenByType(tvView, blockOrUnblock, false);
+    }
+
+    private void blockOrUnblockScreenByUser(TunableTvView tvView, boolean blockOrUnblock) {
+        blockOrUnblockScreenByType(tvView, blockOrUnblock, true);
+    }
+
+    private void blockOrUnblockScreenByType(TunableTvView tvView, boolean blockOrUnblock, boolean byUser) {
+        boolean lastBlockStatus = mQuickKeyInfo.getBooleanValue(DroidLogicTvUtils.TV_CURRENT_CHANNELBLOCK_STATUS, false);
+        if (!mShowLockedChannelsTemporarily && !isUnderShrunkenTvView() &&
+                !byUser && tvView != null /*&& tvView.getResetBlockUiStatus()*/ /*&& !TextUtils.isEmpty(valueStr)*/) {
             long lastChannelId = getChannelIdForAtvDtvMode();
             Channel currentOne = tvView.getCurrentChannel();
             if (currentOne != null && currentOne.getId() == lastChannelId) {

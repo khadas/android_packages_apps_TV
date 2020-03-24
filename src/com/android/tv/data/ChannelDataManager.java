@@ -41,6 +41,11 @@ import android.util.ArraySet;
 import android.util.Log;
 import android.util.MutableInt;
 import android.text.TextUtils;
+import android.content.ContentProviderOperation;
+import android.content.OperationApplicationException;
+import android.os.RemoteException;
+import android.content.ContentProviderResult;
+
 import com.android.tv.TvSingletons;
 import com.android.tv.common.SoftPreconditions;
 import com.android.tv.common.WeakHandler;
@@ -69,6 +74,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
+import java.util.Iterator;
 
 /**
  * The class to manage channel data. Basic features: reading channel list and each channel's current
@@ -502,7 +508,7 @@ public class ChannelDataManager {
             updateOneColumnValue(column, 0, unlockedIds);
         }
         mLockedUpdateChannelIds.clear();
-        if (DEBUG) {
+        if (true || DEBUG) {
             Log.d(
                     TAG,
                     "applyUpdatedValuesToDb"
@@ -727,20 +733,21 @@ public class ChannelDataManager {
                             !(channelWrapper.mChannel.isBrowsable() == channel.isBrowsable()) ||
                             !(channelWrapper.mChannel.isFavourite() == channel.isFavourite()) ||
                             !(channelWrapper.mChannel.IsHidden() == channel.IsHidden()) ||
+                            !(channelWrapper.mChannel.isLocked() == channel.isLocked()) ||
                             !(channelWrapper.mChannel.hasSameFavouriteInfo(channel.getFavouriteInfo()))) {
                         // Channel data updated
                         if (SystemProperties.USE_DEBUG_CHANNEL_UPDATE.getValue()) {
                             Log.d(TAG, "onPostExecute update old = " + channelWrapper.mChannel);
                             Log.d(TAG, "onPostExecute update new = " + channel);
                         }
-                        Channel oldChannel = channelWrapper.mChannel;
+                        //Channel oldChannel = channelWrapper.mChannel;
                         // We assume that mBrowsable and mLocked are controlled by only TV app.
                         // The values for mBrowsable and mLocked are updated when
                         // {@link #applyUpdatedValuesToDb} is called. Therefore, the value
                         // between DB and ChannelDataManager could be different for a while.
                         // Therefore, we'll keep the values in ChannelDataManager.
                         //channel.setBrowsable(oldChannel.isBrowsable());
-                        channel.setLocked(oldChannel.isLocked());
+                        //channel.setLocked(oldChannel.isLocked());
                         //channel.setFavourite(oldChannel.isFavourite());
                         channelWrapper.mChannel.copyFrom(channel);
                         if (!channelWrapper.mInputRemoved) {
@@ -815,11 +822,40 @@ public class ChannelDataManager {
                 new Runnable() {
                     @Override
                     public void run() {
-                        String selection = Utils.buildSelectionForIds(Channels._ID, ids);
+                        /*String selection = Utils.buildSelectionForIds(Channels._ID, ids);
                         ContentValues values = new ContentValues();
                         values.put(columnName, columnValue);
-                        mContentResolver.update(
-                                TvContract.Channels.CONTENT_URI, values, selection, null);
+                        int rowId = mContentResolver.update(
+                                TvContract.Channels.CONTENT_URI, values, selection, null);*/
+                        Iterator it = ids.iterator();
+                        ArrayList<ContentProviderOperation> ops = new ArrayList<>();
+                        ContentValues values = null;
+                        Uri uri = null;
+                        long id = -1;
+                        while (it.hasNext()) {
+                            id = (long)it.next();
+                            values = new ContentValues();
+                            values.put(columnName, columnValue);
+                            ops.add(ContentProviderOperation.newUpdate(
+                                    TvContract.buildChannelUri(id))
+                                    .withValues(values)
+                                    .build());
+                        }
+                        ContentProviderResult[] results = null;
+                        try {
+                            results = mContentResolver.applyBatch(TvContract.AUTHORITY, ops);
+                        } catch (RemoteException | OperationApplicationException e) {
+                            Log.e(TAG, "updateOneColumnValue Failed = " + e.getMessage());
+                        }
+                        ops.clear();
+                        if (true || DEBUG) {
+                            Log.d(TAG, "updateOneColumnValue update columnName = " + columnName + ", columnValue = " + columnValue);
+                            if (results != null) {
+                                for (ContentProviderResult temp : results) {
+                                    Log.d(TAG, "updateOneColumnValue result " + temp.toString());
+                                }
+                            }
+                        }
                     }
                 });
     }

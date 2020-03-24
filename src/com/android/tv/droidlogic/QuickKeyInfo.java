@@ -44,6 +44,7 @@ import android.os.Handler;
 import android.net.Uri;
 import android.media.AudioManager;
 import android.content.ContentValues;
+import android.preference.PreferenceManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -95,6 +96,7 @@ import com.droidlogic.app.tv.TvInSignalInfo;
 import com.droidlogic.app.tv.TvScanConfig;
 import com.droidlogic.app.tv.TvControlDataManager;
 import com.droidlogic.app.tv.TvControlManager.FreqList;
+import com.droidlogic.app.DataProviderManager;
 
 import com.droidlogic.app.DroidLogicKeyEvent;
 
@@ -1950,14 +1952,35 @@ public class QuickKeyInfo implements TvControlManager.RRT5SourceUpdateListener {
         }
         return getValue;
     }
-    /********end: set prop by system control********/
 
-    public boolean needPreviewFetureInLuncher() {
-        boolean isTv = TvSingletons.getSingletons(mActivity).getSystemControlManager().getPropertyBoolean("ro.vendor.platform.has.tvuimode", false);
-        boolean needPreview = TvSingletons.getSingletons(mActivity).getSystemControlManager().getPropertyBoolean("tv.need.preview_window", true);
+    public void saveStringValue(String key, String value) {
+        boolean result = DataProviderManager.putStringValue(mContext, key, value);
         if (DEBUG) {
-            Log.d(TAG, "needPreviewFetureInLuncher isTv = " + isTv + ", needPreview = " + needPreview);
+            Log.d(TAG, "saveStringValue key = " + key + ", value = " + value + ", result = " + result);
         }
-        return isTv && needPreview;
     }
+
+    public String getStringValue(String key, String def) {
+        String result = DataProviderManager.getStringValue(mContext, key, def);
+        if (DEBUG) {
+            Log.d(TAG, "getStringValue key = " + key + ", result = " + result);
+        }
+        return result;
+    }
+
+    public void saveBooleanValue(String key, boolean value) {
+        boolean result = DataProviderManager.putBooleanValue(mContext, key, value);
+        if (DEBUG) {
+            Log.d(TAG, "saveBooleanValue key = " + key + ", value = " + value + ", result = " + result);
+        }
+    }
+
+    public boolean getBooleanValue(String key, boolean def) {
+        boolean result = DataProviderManager.getBooleanValue(mContext, key, def);
+        if (DEBUG) {
+            Log.d(TAG, "getBooleanValue key = " + key + ", result = " + result);
+        }
+        return result;
+    }
+    /********end: set prop by system control********/
 }

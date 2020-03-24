@@ -46,6 +46,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import com.droidlogic.app.tv.DroidLogicTvUtils;
+
 public class ChannelsBlockedFragment extends SideFragment {
     private static final String TRACKER_LABEL = "Channels blocked";
     private int mBlockedChannelCount;
@@ -84,10 +86,11 @@ public class ChannelsBlockedFragment extends SideFragment {
                                 case KeyEvent.KEYCODE_DPAD_UP:
                                 case KeyEvent.KEYCODE_DPAD_DOWN:
                                     if (mLastFocusedChannelId != Channel.INVALID_ID) {
-                                        getMainActivity()
-                                                .tuneToChannel(
-                                                        getChannelDataManager()
-                                                                .getChannel(mLastFocusedChannelId));
+                                        Channel focusedChannel = getChannelDataManager()
+                                                                .getChannel(mLastFocusedChannelId);
+                                        if (focusedChannel != null) {
+                                            getMainActivity().tuneToChannel(focusedChannel);
+                                        }
                                     }
                                     break;
                             }
@@ -192,9 +195,11 @@ public class ChannelsBlockedFragment extends SideFragment {
         @Override
         protected void onSelected() {
             boolean lock = !areAllChannelsBlocked();
+            getMainActivity().updateBlockStatusForPreviousSavedChannelBeforeShrunkenTvViewiIfNeeded(-1, lock, true);
             for (Channel channel : mChannels) {
                 getChannelDataManager().updateLocked(channel.getId(), lock);
             }
+            getChannelDataManager().applyUpdatedValuesToDb();
             mBlockedChannelCount = lock ? mChannels.size() : 0;
             notifyItemsChanged();
             mUpdated = true;
@@ -238,8 +243,10 @@ public class ChannelsBlockedFragment extends SideFragment {
         @Override
         protected void onSelected() {
             super.onSelected();
+            getMainActivity().updateBlockStatusForPreviousSavedChannelBeforeShrunkenTvViewiIfNeeded(getChannel().getId(), isChecked(), false);
             getChannelDataManager().updateLocked(getChannel().getId(), isChecked());
             mBlockedChannelCount += isChecked() ? 1 : -1;
+            getChannelDataManager().applyUpdatedValuesToDb();
             notifyItemChanged(mLockAllItem);
             mUpdated = true;
         }
