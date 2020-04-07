@@ -1501,6 +1501,11 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
                 mChannelTuner.moveToChannel(channel);
             } else {
                 long channelId = ContentUris.parseId(channelUri);
+                long savedChannelId = getChannelIdForAtvDtvMode();
+                if (channelId != savedChannelId) {
+                    Log.d(TAG, "startTv use saved channel id channelId = " + channelId + ", savedChannelId = " + savedChannelId);
+                    channelId = savedChannelId;
+                }
                 Channel channel = mChannelDataManager.getChannel(channelId);
                 if (channel == null || !mChannelTuner.moveToChannel(channel)) {
                     Channel nearone = mChannelTuner.findNearestBrowsableChannel(0);

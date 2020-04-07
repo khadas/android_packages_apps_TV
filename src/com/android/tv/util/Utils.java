@@ -72,7 +72,9 @@ import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
 import com.droidlogic.app.tv.DroidLogicTvUtils;
+import com.droidlogic.app.tv.TvScanConfig;
 
 /** A class that includes convenience methods for accessing TvProvider database. */
 public class Utils {
@@ -237,12 +239,31 @@ public class Utils {
             return;
         }
         PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putLong(PREF_KEY_LAST_WATCHED_CHANNEL_ID, ContentUris.parseId(Uri.parse(uri)))
                 .putString(PREF_KEY_LAST_WATCHED_CHANNEL_URI, uri).apply();
         Uri channelUri = Uri.parse(uri);
         if (channelUri != null && !TvContract.isChannelUriForPassthroughInput(channelUri)) {
             Settings.System.putLong(context.getContentResolver(), DroidLogicTvUtils.TV_DTV_CHANNEL_INDEX, ContentUris.parseId(channelUri));
             Settings.System.putInt(context.getContentResolver(), DroidLogicTvUtils.TV_CURRENT_DEVICE_ID,
                     DroidLogicTvUtils.DEVICE_ID_ADTV);
+        }
+    }
+
+    /** save channel id. */
+    public static void saveChannelIdForAtvDtvMode(Context context, long channelid) {
+        String inputid  = DroidLogicTvUtils.getSearchInputId(context);
+        if (!DroidLogicTvUtils.isDroidLogicInput(inputid)) {
+            Settings.System.putLong(context.getContentResolver(), inputid, channelid);
+            Log.d(TAG, "saveChannelIdForAtvDtvMode other type " + inputid + ", channelid = " + channelid);
+        } else if (DroidLogicTvUtils.isAtscCountry(context)) {
+            String currentSignalType = DroidLogicTvUtils.getCurrentSignalType(context) == DroidLogicTvUtils.SIGNAL_TYPE_ERROR
+                ? TvContract.Channels.TYPE_ATSC_T : DroidLogicTvUtils.getCurrentSignalType(context);
+            Settings.System.putLong(context.getContentResolver(), currentSignalType, channelid);
+        } else {
+            Settings.System.putLong(context.getContentResolver(), DroidLogicTvUtils.getSearchType(context).equals(TvScanConfig.TV_SEARCH_TYPE.get(TvScanConfig.TV_SEARCH_TYPE_ATV_INDEX))
+                ? DroidLogicTvUtils.ATV_CHANNEL_INDEX : DroidLogicTvUtils.DTV_CHANNEL_INDEX,
+                channelid);
+            Log.d(TAG, "save atv = " + (DroidLogicTvUtils.getSearchType(context).equals(TvScanConfig.TV_SEARCH_TYPE.get(TvScanConfig.TV_SEARCH_TYPE_ATV_INDEX))) + ", channelid = " + channelid);
         }
     }
 

@@ -61,7 +61,7 @@ import com.android.tv.dvr.DvrDataManager;
 import com.android.tv.dvr.DvrManager;
 import com.android.tv.common.util.SystemProperties;
 import com.android.tv.ui.TvOverlayManager;
-
+import com.android.tv.util.Utils;
 
 import com.droidlogic.app.tv.DroidLogicTvUtils;
 
@@ -370,6 +370,9 @@ public class CustomDialog {
                     }
                     containner.setVisibility(View.GONE);
                     title.setText("");
+                    long channelId = scheduler.getChannelId();
+                    Utils.setLastWatchedChannelUri(applicationContext, TvContract.buildChannelUri(channelId).toString());
+                    Utils.saveChannelIdForAtvDtvMode(applicationContext, channelId);
                     waitPlayAndRecord(scheduler, obj, alert, title, callback);
                 }
                 return;
