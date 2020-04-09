@@ -239,10 +239,11 @@ public class Utils {
             return;
         }
         PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putLong(PREF_KEY_LAST_WATCHED_CHANNEL_ID, ContentUris.parseId(Uri.parse(uri)))
                 .putString(PREF_KEY_LAST_WATCHED_CHANNEL_URI, uri).apply();
         Uri channelUri = Uri.parse(uri);
         if (channelUri != null && !TvContract.isChannelUriForPassthroughInput(channelUri)) {
+            PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putLong(PREF_KEY_LAST_WATCHED_CHANNEL_ID, ContentUris.parseId(channelUri)).apply();
             Settings.System.putLong(context.getContentResolver(), DroidLogicTvUtils.TV_DTV_CHANNEL_INDEX, ContentUris.parseId(channelUri));
             Settings.System.putInt(context.getContentResolver(), DroidLogicTvUtils.TV_CURRENT_DEVICE_ID,
                     DroidLogicTvUtils.DEVICE_ID_ADTV);
