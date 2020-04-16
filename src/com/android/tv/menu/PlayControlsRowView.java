@@ -19,7 +19,7 @@ package com.android.tv.menu;
 import android.content.Context;
 import android.content.res.Resources;
 import android.text.TextUtils;
-import android.text.format.DateFormat;
+//import android.text.format.DateFormat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
@@ -50,6 +50,10 @@ import com.android.tv.ui.TunableTvView;
 
 import android.support.v17.leanback.widget.GuidedAction;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
 public class PlayControlsRowView extends MenuRowView {
     private static final String TAG = "PlayControlsRowView";
     private static final boolean DEBUG = false || SystemProperties.USE_DEBUG_TIMESHIFT.getValue();
@@ -77,7 +81,8 @@ public class PlayControlsRowView extends MenuRowView {
     private final DvrManager mDvrManager;
     private final MainActivity mMainActivity;
 
-    private final java.text.DateFormat mTimeFormat;
+    //private final java.text.DateFormat mTimeFormat;
+    private final java.text.SimpleDateFormat mTimeFormat;
     private long mProgramStartTimeMs;
     private long mProgramEndTimeMs;
     private boolean mUseCompactLayout;
@@ -130,7 +135,9 @@ public class PlayControlsRowView extends MenuRowView {
                 -res.getDimensionPixelSize(R.dimen.play_controls_time_indicator_width) / 2;
         mTimeTextLeftMargin = -res.getDimensionPixelOffset(R.dimen.play_controls_time_width) / 2;
         mTimelineWidth = res.getDimensionPixelSize(R.dimen.play_controls_width);
-        mTimeFormat = DateFormat.getTimeFormat(context);
+        //mTimeFormat = DateFormat.getTimeFormat(context);
+        mTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss a");
+        mTimeFormat.setTimeZone(TimeZone.getDefault());
         mNormalButtonMargin = res.getDimensionPixelSize(R.dimen.play_controls_button_normal_margin);
         mCompactButtonMargin =
                 res.getDimensionPixelSize(R.dimen.play_controls_button_compact_margin);
@@ -592,7 +599,14 @@ public class PlayControlsRowView extends MenuRowView {
         int currentTimePositionPixel =
                 convertDurationToPixel(currentPositionMs - mProgramStartTimeMs);
         mTimeText.setTranslationX(currentTimePositionPixel + mTimeTextLeftMargin);
-        setTextIfNeeded(mTimeText, getTimeString(currentPositionMs));
+        String currentTime = getTimeString(currentPositionMs);
+        if (currentTime != null) {
+            String[] currentSplit = currentTime.split(" ");
+            if (currentSplit != null && currentSplit.length == 3) {
+                currentTime = currentSplit[1] + " " + currentSplit[2] + "\n" + currentSplit[0];
+            }
+        }
+        setTextIfNeeded(mTimeText, currentTime);
         mTimeIndicator.setTranslationX(currentTimePositionPixel + mTimeIndicatorLeftMargin);
         if (DEBUG) {
             Log.d(TAG, "updateTime currentPositionMs = " + getTimeString(currentPositionMs));
@@ -631,9 +645,23 @@ public class PlayControlsRowView extends MenuRowView {
     private void updateRecTimeText() {
         if (isEnabled()) {
             mProgramStartTimeText.setVisibility(View.VISIBLE);
-            setTextIfNeeded(mProgramStartTimeText, getTimeString(mProgramStartTimeMs));
+            String startTime = getTimeString(mProgramStartTimeMs);
+            if (startTime != null) {
+                String[] startSplit = startTime.split(" ");
+                if (startSplit != null && startSplit.length == 3) {
+                    startTime = startSplit[1] + " " + startSplit[2] + "\n" + startSplit[0];
+                }
+            }
+            setTextIfNeeded(mProgramStartTimeText, startTime);
             mProgramEndTimeText.setVisibility(View.VISIBLE);
-            setTextIfNeeded(mProgramEndTimeText, getTimeString(mProgramEndTimeMs));
+            String endTime = getTimeString(mProgramEndTimeMs);
+            if (endTime != null) {
+                String[] endSplit = endTime.split(" ");
+                if (endSplit != null && endSplit.length == 3) {
+                    endTime = endSplit[1] + " " + endSplit[2] + "\n" + endSplit[0];
+                }
+            }
+            setTextIfNeeded(mProgramEndTimeText, endTime);
         } else {
             mProgramStartTimeText.setVisibility(View.GONE);
             mProgramEndTimeText.setVisibility(View.GONE);
@@ -753,7 +781,8 @@ public class PlayControlsRowView extends MenuRowView {
     }
 
     private String getTimeString(long timeMs) {
-        return mTimeFormat.format(timeMs);
+        //return mTimeFormat.format(timeMs);
+        return mTimeFormat.format(new Date(timeMs));
     }
 
     private int convertDurationToPixel(long duration) {

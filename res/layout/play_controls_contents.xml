@@ -23,17 +23,17 @@
 
     <TextView
         android:id="@+id/time_text"
-        android:layout_width="@dimen/play_controls_time_width"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignStart="@+id/body"
         android:layout_marginBottom="@dimen/play_controls_time_bottom_margin"
         android:gravity="center"
-        android:maxLines="1"
+        android:maxLines="2"
         android:textColor="@color/play_controls_time_text_color"
         android:textSize="@dimen/play_controls_time_text_size"
         android:fontFamily="@string/font" />
-
+    <!--android:layout_width="@dimen/play_controls_time_width"-->
     <RelativeLayout
         android:id="@id/body"
         android:layout_width="@dimen/play_controls_width"
@@ -67,7 +67,8 @@
             android:layout_below="@id/progress"
             android:layout_marginStart="@dimen/play_controls_program_time_margin_start"
             android:layout_marginTop="@dimen/play_controls_program_time_margin_top"
-            android:maxLines="1"
+            android:gravity="center"
+            android:maxLines="2"
             android:textColor="@color/play_controls_rec_time_text_color"
             android:textSize="@dimen/play_controls_rec_time_text_size"
             android:fontFamily="@string/font" />
@@ -79,7 +80,8 @@
             android:layout_below="@id/progress"
             android:layout_marginEnd="@dimen/play_controls_program_time_margin_end"
             android:layout_marginTop="@dimen/play_controls_program_time_margin_top"
-            android:maxLines="1"
+            android:gravity="center"
+            android:maxLines="2"
             android:textColor="@color/play_controls_rec_time_text_color"
             android:textSize="@dimen/play_controls_rec_time_text_size"
             android:fontFamily="@string/font" />

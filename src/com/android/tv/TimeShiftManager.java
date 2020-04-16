@@ -764,7 +764,7 @@ public class TimeShiftManager {
                 if (DEBUG) {
                     Log.d(TAG, "handleGetCurrentPosition mIsPlayOffsetChanged=" + mIsPlayOffsetChanged + "\n" +
                             ",mRecordStartTimeMs=" + Utils.toTimeString(mRecordStartTimeMs) + ",mRecordEndTimeMs=" + Utils.toTimeString(mRecordEndTimeMs) + "\n" +
-                            ",timeShiftGetCurrentPositionMs=" + Utils.toTimeString(mTvView.timeshiftGetCurrentPositionMs()) + ",getStreamTime=" + Utils.toTimeString(getStreamTime));
+                            ",timeShiftGetCurrentPositionMs=" + Utils.toTimeString(mTvView.timeshiftGetCurrentPositionMs()) + ",getCurrentPositionMs=" + Utils.toTimeString(getCurrentPositionMs()) + ",getStreamTime=" + Utils.toTimeString(getStreamTime));
                 }
             } else {
                 setCurrentPositionMs(getStreamTime/*System.currentTimeMillis()*/);
@@ -906,7 +906,7 @@ public class TimeShiftManager {
     private class ProgramManager {
         private final ProgramDataManager mProgramDataManager;
         private Channel mChannel;
-        private final List<Program> mPrograms = new ArrayList<>();
+        private final List<Program> mPrograms = Collections.synchronizedList(new ArrayList<>());
         private final Queue<Range<Long>> mProgramLoadQueue = new LinkedList<>();
         private LoadProgramsForCurrentChannelTask mProgramLoadTask = null;
         private int mEmptyFetchCount = 0;
@@ -1434,6 +1434,7 @@ public class TimeShiftManager {
             if (mSeekRequestTimeMs == INVALID_TIME) {
                 mCurrentPositionMs = currentPositionMs;
                 TimeShiftManager.this.onCurrentPositionChanged();
+                Log.d(TAG, "onCurrentPositionChanged mCurrentPositionMs = " + Utils.toTimeString(mCurrentPositionMs));
                 return;
             }
             long currentTimeMs = mTvClock.currentTimeMillis();//System.currentTimeMillis();
@@ -1444,13 +1445,14 @@ public class TimeShiftManager {
                 initialize(currentPositionMs);
             } else {
                 if (getPlayStatus() == PLAY_STATUS_PLAYING) {
-                    if (getPlayDirection() == PLAY_DIRECTION_FORWARD) {
+                    /*if (getPlayDirection() == PLAY_DIRECTION_FORWARD) {
                         mCurrentPositionMs +=
                                 (currentTimeMs - mSeekRequestTimeMs) * getPlaybackSpeed();
                     } else {
                         mCurrentPositionMs -=
                                 (currentTimeMs - mSeekRequestTimeMs) * getPlaybackSpeed();
-                    }
+                    }*/
+                    mCurrentPositionMs = currentPositionMs;
                 }
                 TimeShiftManager.this.onCurrentPositionChanged();
             }
