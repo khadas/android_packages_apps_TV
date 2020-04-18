@@ -23,6 +23,9 @@ import android.content.Intent;
 import android.media.tv.TvInputInfo;
 import android.view.View;
 import android.widget.Toast;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+
 import com.android.tv.MainActivity;
 import com.android.tv.R;
 import com.android.tv.TvApplication;
@@ -171,19 +174,28 @@ public class SettingsFragment extends SideFragment {
                         }
                     });
         }
-        items.add(
-                new ActionItem(getString(R.string.settings_send_feedback)) {
-                    @Override
-                    protected void onSelected() {
-                        Intent intent = new Intent(Intent.ACTION_APP_ERROR);
-                        ApplicationErrorReport report = new ApplicationErrorReport();
-                        report.packageName = report.processName = getContext().getPackageName();
-                        report.time = System.currentTimeMillis();
-                        report.type = ApplicationErrorReport.TYPE_NONE;
-                        intent.putExtra(Intent.EXTRA_BUG_REPORT, report);
-                        startActivityForResult(intent, 0);
-                    }
-                });
+
+        //add send back option if related component has been found
+        PackageManager packageManager = getMainActivity().getPackageManager();
+        Intent activityIntent = new Intent(Intent.ACTION_APP_ERROR, null);
+        List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(activityIntent, PackageManager.MATCH_DEFAULT_ONLY);
+        boolean hasSendBack = (resolveInfos != null && resolveInfos.size() > 0) ? true : false;
+        if (hasSendBack) {
+            items.add(
+                    new ActionItem(getString(R.string.settings_send_feedback)) {
+                        @Override
+                        protected void onSelected() {
+                            Intent intent = new Intent(Intent.ACTION_APP_ERROR);
+                            ApplicationErrorReport report = new ApplicationErrorReport();
+                            report.packageName = report.processName = getContext().getPackageName();
+                            report.time = System.currentTimeMillis();
+                            report.type = ApplicationErrorReport.TYPE_NONE;
+                            intent.putExtra(Intent.EXTRA_BUG_REPORT, report);
+                            startActivityForResult(intent, 0);
+                        }
+                    });
+        }
+
         if (Licenses.hasLicenses(getContext())) {
             items.add(
                     new SubMenuItem(
