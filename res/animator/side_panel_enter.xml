@@ -18,7 +18,7 @@
 <set xmlns:android="http://schemas.android.com/apk/res/android">
     <objectAnimator
         android:propertyName="translationX"
-        android:valueFrom="@dimen/side_panel_enter_offset_x"
+        android:valueFrom="0dp"
         android:valueTo="0dp"
         android:duration="@integer/side_panel_anim_duration"
         android:interpolator="@android:interpolator/linear_out_slow_in" />

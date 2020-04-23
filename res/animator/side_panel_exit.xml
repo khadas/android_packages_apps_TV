@@ -19,7 +19,7 @@
     <objectAnimator
         android:propertyName="translationX"
         android:valueFrom="0dp"
-        android:valueTo="@dimen/side_panel_exit_offset_x"
+        android:valueTo="0dp"
         android:duration="@integer/side_panel_anim_short_duration"
         android:interpolator="@android:interpolator/fast_out_linear_in" />
     <objectAnimator

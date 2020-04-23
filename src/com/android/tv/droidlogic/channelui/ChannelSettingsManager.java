@@ -69,8 +69,6 @@ public class ChannelSettingsManager {
     private int mDeviceId = -1;
     private long mChannelId = -1;
     private MainActivity mMainActivity;
-    private ArrayList<ChannelInfo> videoChannelList;
-    private ArrayList<ChannelInfo> radioChannelList;
     private int mStrength;
     private int mQuality;
 
@@ -96,21 +94,15 @@ public class ChannelSettingsManager {
     }
 
     private void initParameters() {
-        loadChannelInfoList();
         RefreshTvSourceType();
     }
 
-    public void loadChannelInfoList() {
-        videoChannelList = mTvDataBaseManager.getChannelList(mInputId, TvContract.Channels.SERVICE_TYPE_AUDIO_VIDEO, false);
-        radioChannelList = mTvDataBaseManager.getChannelList(mInputId, TvContract.Channels.SERVICE_TYPE_AUDIO, false);
-    }
-
     public ArrayList<ChannelInfo> getVideoChannelList() {
-        return videoChannelList;
+        return  mTvDataBaseManager.getChannelList(mInputId, TvContract.Channels.SERVICE_TYPE_AUDIO_VIDEO, false);
     }
 
     public ArrayList<ChannelInfo> getRadioChannelList() {
-        return radioChannelList;
+        return mTvDataBaseManager.getChannelList(mInputId, TvContract.Channels.SERVICE_TYPE_AUDIO, false);
     }
 
     public ArrayList<HashMap<String, String>> getChannelInfoStatus() {
@@ -498,7 +490,9 @@ public class ChannelSettingsManager {
         if (id == -1) {
             return null;
         }
-        loadChannelInfoList();
+
+        ArrayList<ChannelInfo> videoChannelList = mTvDataBaseManager.getChannelList(mInputId, TvContract.Channels.SERVICE_TYPE_AUDIO_VIDEO, false);
+        ArrayList<ChannelInfo> radioChannelList = mTvDataBaseManager.getChannelList(mInputId, TvContract.Channels.SERVICE_TYPE_AUDIO, false);
         if (videoChannelList != null) {
             for (int i =0; i < videoChannelList.size(); i++) {
                 if (videoChannelList.get(i).getId() == id) {
