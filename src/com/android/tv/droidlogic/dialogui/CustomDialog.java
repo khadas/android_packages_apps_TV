@@ -248,7 +248,7 @@ public class CustomDialog {
             schedulerInputInfo = mTvInputManagerHelper.getTvInputInfo(scheduler.getInputId());
             if (schedulerInputInfo != null && schedulerInputInfo.canRecord() &&
                     !mInputSessionManager.isTunedForRecording(TvContract.buildChannelUri(scheduler.getChannelId())) &&
-                    mInputSessionManager.getTunedRecordingSessionCount(scheduler.getInputId()) < schedulerInputInfo.getTunerCount() - 1) {
+                    mInputSessionManager.getAllTunedSessionCount(scheduler.getInputId()) < schedulerInputInfo.getTunerCount()) {
                 result = true;
             }
         }

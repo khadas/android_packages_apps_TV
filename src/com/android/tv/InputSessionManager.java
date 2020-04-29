@@ -219,6 +219,10 @@ public class InputSessionManager {
         }
     }
 
+    public int getAllTunedSessionCount(String inputId) {
+        return getTunedTvViewSessionCount(inputId) + getTunedRecordingSessionCount(inputId);
+    }
+
     public boolean isTunedForRecording(Uri channelUri) {
         synchronized (mRecordingSessions) {
             for (RecordingSession session : mRecordingSessions) {

@@ -3695,15 +3695,18 @@ public class MainActivity extends Activity implements OnActionClickListener, OnP
         boolean result = false;
         TvInputInfo nextinput = null;
         InputSessionManager inputSessionManager = null;
-        boolean isTooManySession = false;
         if (CommonFeatures.DVR.isEnabled(MainActivity.this) && nextchannel != null) {
             inputSessionManager = TvSingletons.getSingletons(MainActivity.this).getInputSessionManager();
             nextinput = mTvInputManagerHelper.getTvInputInfo(nextchannel.getInputId());
+            if (nextinput != null) {
+                int tunerCount = nextinput.getTunerCount();
+                Log.d(TAG, "isRecordSessionLargerThanTuner tunerCount = " + tunerCount);
+            }
         }
         if (inputSessionManager != null && nextinput != null && nextinput.canRecord()
                         && !inputSessionManager.isTunedForRecording(nextchannel.getUri())
                         && inputSessionManager.getTunedRecordingSessionCount(nextinput.getId()) >= nextinput.getTunerCount()) {
-            isTooManySession = true;
+            result = true;
         }
         return result;
     }
