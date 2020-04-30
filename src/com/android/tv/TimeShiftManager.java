@@ -414,7 +414,7 @@ public class TimeShiftManager {
     }
 
     public boolean isActionEnabled(@TimeShiftActionId int actionId) {
-        return (mEnabledActionIds & actionId) == actionId;
+        return (mEnabledActionIds & actionId) == actionId && isAvailable();
     }
 
     private void updateActions() {

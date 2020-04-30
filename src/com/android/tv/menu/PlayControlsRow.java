@@ -61,7 +61,8 @@ public class PlayControlsRow extends MenuRow {
 
     @Override
     public boolean isVisible() {
-        return mTimeShiftManager.isAvailable();
+        // need to display play control for record while time shift is not available
+        return true/*mTimeShiftManager.isAvailable()*/;
     }
 
     @Override

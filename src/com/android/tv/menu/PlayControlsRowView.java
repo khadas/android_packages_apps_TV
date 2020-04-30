@@ -559,7 +559,12 @@ public class PlayControlsRowView extends MenuRowView {
     }
 
     private void updateAll(boolean forceUpdate) {
-        if (mTimeShiftManager.isAvailable() && !mTvView.isScreenBlocked()) {
+        if (!mTimeShiftManager.isAvailable()) {
+            //still display play control banner
+            setEnabled(true);
+            mBackgroundView.setEnabled(true);
+            setTextIfNeeded(mBackgroundView, null);
+        } else if (mTimeShiftManager.isAvailable() && !mTvView.isScreenBlocked()) {
             setEnabled(true);
             initializeTimeline();
             mBackgroundView.setEnabled(true);
@@ -587,7 +592,7 @@ public class PlayControlsRowView extends MenuRowView {
     }
 
     private void updateTime() {
-        if (isEnabled()) {
+        if (isEnabled() && mTimeShiftManager.isAvailable()) {
             mTimeText.setVisibility(View.VISIBLE);
             mTimeIndicator.setVisibility(View.VISIBLE);
         } else {
@@ -614,7 +619,7 @@ public class PlayControlsRowView extends MenuRowView {
     }
 
     private void updateProgress() {
-        if (isEnabled()) {
+        if (isEnabled() && mTimeShiftManager.isAvailable()) {
             long progressStartTimeMs =
                     Math.min(
                             mProgramEndTimeMs,
@@ -643,7 +648,7 @@ public class PlayControlsRowView extends MenuRowView {
     }
 
     private void updateRecTimeText() {
-        if (isEnabled()) {
+        if (isEnabled() && mTimeShiftManager.isAvailable()) {
             mProgramStartTimeText.setVisibility(View.VISIBLE);
             String startTime = getTimeString(mProgramStartTimeMs);
             if (startTime != null) {
@@ -749,6 +754,9 @@ public class PlayControlsRowView extends MenuRowView {
             mRecordButton.setImageResId(R.drawable.ic_record_stop);
         } else {
             mRecordButton.setImageResId(R.drawable.ic_record_start);
+        }
+        if (!mTimeShiftManager.isAvailable() && !mRecordButton.isFocused()) {
+            mRecordButton.requestFocus();
         }
     }
 
