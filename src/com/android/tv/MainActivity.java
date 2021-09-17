@@ -195,7 +195,7 @@ public class MainActivity extends Activity
                 HasSingletons<MySingletons>,
                 HasAndroidInjector {
     private static final String TAG = "MainActivity";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     private AudioCapabilitiesReceiver mAudioCapabilitiesReceiver;
 
     /** Singletons needed for this class. */
@@ -368,6 +368,8 @@ public class MainActivity extends Activity
     private final Handler mHandler = new MainActivityHandler(this);
     private final Set<OnActionClickListener> mOnActionClickListeners = new ArraySet<>();
 
+    private BroadcastReceiver mHomeKeyEventBroadCastReceiver;
+
     private final BroadcastReceiver mBroadcastReceiver =
             new BroadcastReceiver() {
                 @Override
@@ -422,8 +424,8 @@ public class MainActivity extends Activity
                     }
                     Channel channel = mTvView.getCurrentChannel();
                     if (channel != null && channel.getId() == channelId) {
-                        mOverlayManager.updateChannelBannerAndShowIfNeeded(
-                                TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_UPDATE_INFO);
+//                        mOverlayManager.updateChannelBannerAndShowIfNeeded(
+//                                TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_UPDATE_INFO);
                         mMediaSessionWrapper.update(mTvView.isBlocked(), channel, program);
                     }
                 }
@@ -439,12 +441,12 @@ public class MainActivity extends Activity
                     if (mActivityResumed) {
                         resumeTvIfNeeded();
                     }
-                    mOverlayManager.onBrowsableChannelsUpdated();
+//                    mOverlayManager.onBrowsableChannelsUpdated();
                 }
 
                 @Override
                 public void onBrowsableChannelListChanged() {
-                    mOverlayManager.onBrowsableChannelsUpdated();
+//                    mOverlayManager.onBrowsableChannelsUpdated();
                 }
 
                 @Override
@@ -617,16 +619,16 @@ public class MainActivity extends Activity
                                     case TimeShiftManager.TIME_SHIFT_ACTION_ID_FAST_FORWARD:
                                     case TimeShiftManager.TIME_SHIFT_ACTION_ID_JUMP_TO_PREVIOUS:
                                     case TimeShiftManager.TIME_SHIFT_ACTION_ID_JUMP_TO_NEXT:
-                                        mOverlayManager.updateChannelBannerAndShowIfNeeded(
-                                                TvOverlayManager
-                                                        .UPDATE_CHANNEL_BANNER_REASON_FORCE_SHOW);
+//                                        mOverlayManager.updateChannelBannerAndShowIfNeeded(
+//                                                TvOverlayManager
+//                                                        .UPDATE_CHANNEL_BANNER_REASON_FORCE_SHOW);
                                         break;
                                     case TimeShiftManager.TIME_SHIFT_ACTION_ID_PAUSE:
                                     case TimeShiftManager.TIME_SHIFT_ACTION_ID_PLAY:
                                     default:
-                                        mOverlayManager.updateChannelBannerAndShowIfNeeded(
-                                                TvOverlayManager
-                                                        .UPDATE_CHANNEL_BANNER_REASON_UPDATE_INFO);
+//                                        mOverlayManager.updateChannelBannerAndShowIfNeeded(
+//                                                TvOverlayManager
+//                                                        .UPDATE_CHANNEL_BANNER_REASON_UPDATE_INFO);
                                         break;
                                 }
                             }
@@ -732,6 +734,8 @@ public class MainActivity extends Activity
             mDvrConflictChecker = new ConflictChecker(this);
         }
         initForTest();
+        mHomeKeyEventBroadCastReceiver = new HomeKeyEventBroadCastReceiver();
+        registerReceiver(mHomeKeyEventBroadCastReceiver, new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
         Debug.getTimer(Debug.TAG_START_UP_TIMER).log("MainActivity.onCreate end");
     }
 
@@ -775,33 +779,34 @@ public class MainActivity extends Activity
 
     @BlockScreenType
     private int getDesiredBlockScreenType() {
-        if (!mActivityResumed) {
-            return TunableTvView.BLOCK_SCREEN_TYPE_NO_UI;
-        }
-        if (isUnderShrunkenTvView()) {
-            return TunableTvView.BLOCK_SCREEN_TYPE_SHRUNKEN_TV_VIEW;
-        }
-        if (mOverlayManager.needHideTextOnMainView()) {
-            return TunableTvView.BLOCK_SCREEN_TYPE_NO_UI;
-        }
-        SafeDismissDialogFragment currentDialog = mOverlayManager.getCurrentDialog();
-        if (currentDialog != null) {
-            // If PIN dialog is shown for unblocking the channel lock or content ratings lock,
-            // keeping the unlocking message is more natural instead of changing it.
-            if (currentDialog instanceof PinDialogFragment) {
-                int type = ((PinDialogFragment) currentDialog).getType();
-                if (type == PinDialogFragment.PIN_DIALOG_TYPE_UNLOCK_CHANNEL
-                        || type == PinDialogFragment.PIN_DIALOG_TYPE_UNLOCK_PROGRAM) {
-                    return TunableTvView.BLOCK_SCREEN_TYPE_NORMAL;
-                }
-            }
-            return TunableTvView.BLOCK_SCREEN_TYPE_NO_UI;
-        }
-        if (mOverlayManager.isSetupFragmentActive()
-                || mOverlayManager.isNewSourcesFragmentActive()) {
-            return TunableTvView.BLOCK_SCREEN_TYPE_NO_UI;
-        }
-        return TunableTvView.BLOCK_SCREEN_TYPE_NORMAL;
+        return TunableTvView.BLOCK_SCREEN_TYPE_NO_UI;
+//        if (!mActivityResumed) {
+//            return TunableTvView.BLOCK_SCREEN_TYPE_NO_UI;
+//        }
+//        if (isUnderShrunkenTvView()) {
+//            return TunableTvView.BLOCK_SCREEN_TYPE_SHRUNKEN_TV_VIEW;
+//        }
+//        if (mOverlayManager.needHideTextOnMainView()) {
+//            return TunableTvView.BLOCK_SCREEN_TYPE_NO_UI;
+//        }
+//        SafeDismissDialogFragment currentDialog = mOverlayManager.getCurrentDialog();
+//        if (currentDialog != null) {
+//            // If PIN dialog is shown for unblocking the channel lock or content ratings lock,
+//            // keeping the unlocking message is more natural instead of changing it.
+//            if (currentDialog instanceof PinDialogFragment) {
+//                int type = ((PinDialogFragment) currentDialog).getType();
+//                if (type == PinDialogFragment.PIN_DIALOG_TYPE_UNLOCK_CHANNEL
+//                        || type == PinDialogFragment.PIN_DIALOG_TYPE_UNLOCK_PROGRAM) {
+//                    return TunableTvView.BLOCK_SCREEN_TYPE_NORMAL;
+//                }
+//            }
+//            return TunableTvView.BLOCK_SCREEN_TYPE_NO_UI;
+//        }
+//        if (mOverlayManager.isSetupFragmentActive()
+//                || mOverlayManager.isNewSourcesFragmentActive()) {
+//            return TunableTvView.BLOCK_SCREEN_TYPE_NO_UI;
+//        }
+//        return TunableTvView.BLOCK_SCREEN_TYPE_NORMAL;
     }
 
     @Override
@@ -809,11 +814,11 @@ public class MainActivity extends Activity
         if (DEBUG) {
             Log.d(TAG, "onNewIntent(): " + intent);
         }
-        if (mOverlayManager == null) {
-            // It's called before onCreate. The intent will be handled at onCreate. b/30725058
-            return;
-        }
-        mOverlayManager.getSideFragmentManager().hideAll(false);
+//        if (mOverlayManager == null) {
+//            // It's called before onCreate. The intent will be handled at onCreate. b/30725058
+//            return;
+//        }
+//        mOverlayManager.getSideFragmentManager().hideAll(false);
         if (!handleIntent(intent) && !mActivityStarted) {
             // If the activity is stopped and not destroyed, finish the activity.
             // Otherwise, just ignore the intent.
@@ -891,7 +896,7 @@ public class MainActivity extends Activity
             mSetupUtils.markNewChannelsBrowsable();
             resumeTvIfNeeded();
         }
-        mOverlayManager.showMenuWithTimeShiftPauseIfNeeded();
+//        mOverlayManager.showMenuWithTimeShiftPauseIfNeeded();
 
         // NOTE: The following codes are related to pop up an overlay UI after resume. When
         // the following code is changed, please modify willShowOverlayUiWhenResume() accordingly.
@@ -903,14 +908,14 @@ public class MainActivity extends Activity
             // This will delay the start of the animation until after the Live Channel app is
             // shown. Without this the animation is completed before it is actually visible on
             // the screen.
-            mHandler.post(() -> mOverlayManager.showProgramGuide());
+//            mHandler.post(() -> mOverlayManager.showProgramGuide());
         } else if (mShowSelectInputView) {
             mShowSelectInputView = false;
             // mShowSelectInputView is true when the activity is started/resumed because the
             // TV_INPUT button was pressed in a different app.  This will delay the start of
             // the animation until after the Live Channel app is shown. Without this the
             // animation is completed before it is actually visible on the screen.
-            mHandler.post(() -> mOverlayManager.showSelectInputView());
+//            mHandler.post(() -> mOverlayManager.showSelectInputView());
         }
         if (mDvrConflictChecker != null) {
             mDvrConflictChecker.start();
@@ -930,8 +935,8 @@ public class MainActivity extends Activity
         }
         finishChannelChangeIfNeeded();
         mActivityResumed = false;
-        mOverlayManager.hideOverlays(TvOverlayManager.FLAG_HIDE_OVERLAYS_DEFAULT);
-        mTvView.setBlockScreenType(TunableTvView.BLOCK_SCREEN_TYPE_NO_UI);
+//        mOverlayManager.hideOverlays(TvOverlayManager.FLAG_HIDE_OVERLAYS_DEFAULT);
+//        mTvView.setBlockScreenType(TunableTvView.BLOCK_SCREEN_TYPE_NO_UI);
         mBackKeyPressed = false;
         mShowLockedChannelsTemporarily = false;
         mShouldTuneToTunerChannel = false;
@@ -980,17 +985,17 @@ public class MainActivity extends Activity
                     mTvView.unblockContent(unblockedRating);
                     break;
                 case PinDialogFragment.PIN_DIALOG_TYPE_ENTER_PIN:
-                    mOverlayManager
-                            .getSideFragmentManager()
-                            .show(new ParentalControlsFragment(), false);
+//                    mOverlayManager
+//                            .getSideFragmentManager()
+//                            .show(new ParentalControlsFragment(), false);
                     // fall through.
                 case PinDialogFragment.PIN_DIALOG_TYPE_NEW_PIN:
-                    mOverlayManager.getSideFragmentManager().showSidePanel(true);
+//                    mOverlayManager.getSideFragmentManager().showSidePanel(true);
                     break;
                 default: // fall out
             }
         } else if (type == PinDialogFragment.PIN_DIALOG_TYPE_ENTER_PIN) {
-            mOverlayManager.getSideFragmentManager().hideAll(false);
+//            mOverlayManager.getSideFragmentManager().hideAll(false);
         }
     }
 
@@ -1124,7 +1129,7 @@ public class MainActivity extends Activity
     }
 
     private void stopAll(boolean keepVisibleBehind) {
-        mOverlayManager.hideOverlays(TvOverlayManager.FLAG_HIDE_OVERLAYS_WITHOUT_ANIMATION);
+//        mOverlayManager.hideOverlays(TvOverlayManager.FLAG_HIDE_OVERLAYS_WITHOUT_ANIMATION);
         stopTv("stopAll()", keepVisibleBehind);
     }
 
@@ -1170,15 +1175,15 @@ public class MainActivity extends Activity
                     .show();
             return;
         }
-        if (calledByPopup) {
-            mOverlayManager.hideOverlays(
-                    TvOverlayManager.FLAG_HIDE_OVERLAYS_WITHOUT_ANIMATION
-                            | TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_FRAGMENT);
-        } else {
-            mOverlayManager.hideOverlays(
-                    TvOverlayManager.FLAG_HIDE_OVERLAYS_WITHOUT_ANIMATION
-                            | TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_SIDE_PANEL_HISTORY);
-        }
+//        if (calledByPopup) {
+//            mOverlayManager.hideOverlays(
+//                    TvOverlayManager.FLAG_HIDE_OVERLAYS_WITHOUT_ANIMATION
+//                            | TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_FRAGMENT);
+//        } else {
+//            mOverlayManager.hideOverlays(
+//                    TvOverlayManager.FLAG_HIDE_OVERLAYS_WITHOUT_ANIMATION
+//                            | TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_SIDE_PANEL_HISTORY);
+//        }
     }
 
     public boolean hasCaptioningSettingsActivity() {
@@ -1288,7 +1293,7 @@ public class MainActivity extends Activity
             // Show ChannelSourcesFragment only if all the channels are loaded.
             return;
         }
-        mOverlayManager.getSideFragmentManager().show(new SettingsFragment());
+//        mOverlayManager.getSideFragmentManager().show(new SettingsFragment());
     }
 
     public void showMerchantCollection() {
@@ -1403,7 +1408,7 @@ public class MainActivity extends Activity
                     mInputIdUnderSetup = null;
                 }
                 if (!mIsSetupActivityCalledByPopup) {
-                    mOverlayManager.getSideFragmentManager().showSidePanel(false);
+//                    mOverlayManager.getSideFragmentManager().showSidePanel(false);
                 }
                 break;
             case REQUEST_CODE_NOW_PLAYING:
@@ -1442,12 +1447,12 @@ public class MainActivity extends Activity
 
         // When side panel is closing, it has the focus.
         // Keep the focus, but just don't deliver the key events.
-        if ((mContentView.hasFocusable() && !mOverlayManager.getSideFragmentManager().isHiding())
-                || mOverlayManager.getSideFragmentManager().isActive()) {
-            return super.dispatchKeyEvent(event);
-        }
-        if (BLOCKLIST_KEYCODE_TO_TIS.contains(event.getKeyCode())
-                || KeyEvent.isGamepadButton(event.getKeyCode())) {
+//        if ((mContentView.hasFocusable() && !mOverlayManager.getSideFragmentManager().isHiding())
+//                || mOverlayManager.getSideFragmentManager().isActive()) {
+//            return super.dispatchKeyEvent(event);
+//        }
+        if (BLOCKLIST_KEYCODE_TO_TIS.contains(event.getKeyCode()) 
+		|| KeyEvent.isGamepadButton(event.getKeyCode())) {
             // If the event is in blocklisted or gamepad key, do not pass it to session.
             // Gamepad keys are blocklisted to support TV UIs and here's the detail.
             // If there's a TIS granted RECEIVE_INPUT_EVENT, TIF sends key events to TIS
@@ -1491,7 +1496,7 @@ public class MainActivity extends Activity
         }
 
         if (TvInputManager.ACTION_SETUP_INPUTS.equals(intent.getAction())) {
-            runAfterAttachedToWindow(() -> mOverlayManager.showSetupFragment());
+//            runAfterAttachedToWindow(() -> mOverlayManager.showSetupFragment());
         } else if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             Uri uri = intent.getData();
             if (Utils.isProgramsUri(uri)) {
@@ -1687,8 +1692,8 @@ public class MainActivity extends Activity
         mTunePending = false;
         if (CommonFeatures.TUNER_SIGNAL_STRENGTH.isEnabled(this)) {
             mTvView.resetChannelSignalStrength();
-            mOverlayManager.updateChannelBannerAndShowIfNeeded(
-                    TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_UPDATE_SIGNAL_STRENGTH);
+//            mOverlayManager.updateChannelBannerAndShowIfNeeded(
+//                    TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_UPDATE_SIGNAL_STRENGTH);
         }
         final Channel channel = mChannelTuner.getCurrentChannel();
         SoftPreconditions.checkState(channel != null);
@@ -1709,7 +1714,7 @@ public class MainActivity extends Activity
                     return;
                 }
                 if (mChannelDataManager.getChannelCount() > 0) {
-                    mOverlayManager.showIntroDialog();
+//                    mOverlayManager.showIntroDialog();
                 } else {
                     startOnboardingActivity();
                     return;
@@ -1718,32 +1723,32 @@ public class MainActivity extends Activity
             mShowNewSourcesFragment = false;
             if (mChannelTuner.getBrowsableChannelCount() == 0
                     && mChannelDataManager.getChannelCount() > 0
-                    && !mOverlayManager.getSideFragmentManager().isActive()) {
+                    /*&& !mOverlayManager.getSideFragmentManager().isActive()*/) {
                 if (!mChannelTuner.areAllChannelsLoaded()) {
                     return;
                 }
-                if (mTvInputManagerHelper.getTunerTvInputSize() == 1) {
-                    mOverlayManager
-                            .getSideFragmentManager()
-                            .show(new CustomizeChannelListFragment());
-                } else {
-                    mOverlayManager.showSetupFragment();
-                }
+//                if (mTvInputManagerHelper.getTunerTvInputSize() == 1) {
+//                    mOverlayManager
+//                            .getSideFragmentManager()
+//                            .show(new CustomizeChannelListFragment());
+//                } else {
+//                    mOverlayManager.showSetupFragment();
+//                }
                 return;
             }
             if (!CommonUtils.isRunningInTest()
                     && mShowNewSourcesFragment
                     && mSetupUtils.hasUnrecognizedInput(mTvInputManagerHelper)) {
                 // Show new channel sources fragment.
-                runAfterAttachedToWindow(
-                        () ->
-                                mOverlayManager.runAfterOverlaysAreClosed(
-                                        new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                mOverlayManager.showNewSourcesFragment();
-                                            }
-                                        }));
+//                runAfterAttachedToWindow(
+//                        () ->
+//                                mOverlayManager.runAfterOverlaysAreClosed(
+//                                        new Runnable() {
+//                                            @Override
+//                                            public void run() {
+//                                                mOverlayManager.showNewSourcesFragment();
+//                                            }
+//                                        }));
             }
             mSetupUtils.onTuned();
             if (mTuneParams != null) {
@@ -1794,8 +1799,8 @@ public class MainActivity extends Activity
         // its current channel onConnectionFailed().
         checkChannelLockNeeded(mTvView, channel);
         if (updateChannelBanner) {
-            mOverlayManager.updateChannelBannerAndShowIfNeeded(
-                    TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE);
+//            mOverlayManager.updateChannelBannerAndShowIfNeeded(
+//                    TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE);
         }
         if (mActivityResumed) {
             // requestVisibleBehind should be called after onResume() is called. But, when
@@ -1855,7 +1860,7 @@ public class MainActivity extends Activity
             }
         }
         mRecentChannels.addFirst(channelId);
-        mOverlayManager.getMenu().onRecentChannelsChanged();
+//        mOverlayManager.getMenu().onRecentChannelsChanged();
     }
 
     /** Returns the recently tuned channels. */
@@ -1885,15 +1890,15 @@ public class MainActivity extends Activity
     private void blockOrUnblockScreen(TunableTvView tvView, boolean blockOrUnblock) {
         tvView.blockOrUnblockScreen(blockOrUnblock);
         if (tvView == mTvView) {
-            mOverlayManager.updateChannelBannerAndShowIfNeeded(
-                    TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_LOCK_OR_UNLOCK);
+//            mOverlayManager.updateChannelBannerAndShowIfNeeded(
+//                    TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_LOCK_OR_UNLOCK);
             mMediaSessionWrapper.update(blockOrUnblock, getCurrentChannel(), getCurrentProgram());
         }
     }
 
     /** Hide the overlays when tuning to a channel from the menu (e.g. Channels). */
     public void hideOverlaysForTune() {
-        mOverlayManager.hideOverlays(TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_SCENE);
+//        mOverlayManager.hideOverlays(TvOverlayManager.FLAG_HIDE_OVERLAYS_KEEP_SCENE);
     }
 
     public boolean needToKeepSetupScreenWhenHidingOverlay() {
@@ -2046,6 +2051,8 @@ public class MainActivity extends Activity
                 mTvInputManagerHelper.removeCallback(mTvInputCallback);
             }
         }
+        if (mHomeKeyEventBroadCastReceiver != null)
+            unregisterReceiver(mHomeKeyEventBroadCastReceiver);
         super.onDestroy();
     }
 
@@ -2054,17 +2061,17 @@ public class MainActivity extends Activity
         if (DeveloperPreferences.LOG_KEYEVENT.get(this)) {
             Log.d(TAG, "onKeyDown(" + keyCode + ", " + event + ")");
         }
-        switch (mOverlayManager.onKeyDown(keyCode, event)) {
-            case KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY:
-                return super.onKeyDown(keyCode, event);
-            case KEY_EVENT_HANDLER_RESULT_HANDLED:
-                return true;
-            case KEY_EVENT_HANDLER_RESULT_NOT_HANDLED:
-                return false;
-            case KEY_EVENT_HANDLER_RESULT_PASSTHROUGH:
-            default:
-                // fall through
-        }
+//        switch (mOverlayManager.onKeyDown(keyCode, event)) {
+//            case KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY:
+//                return super.onKeyDown(keyCode, event);
+//            case KEY_EVENT_HANDLER_RESULT_HANDLED:
+//                return true;
+//            case KEY_EVENT_HANDLER_RESULT_NOT_HANDLED:
+//                return false;
+//            case KEY_EVENT_HANDLER_RESULT_PASSTHROUGH:
+//            default:
+//                // fall through
+//        }
         if (mSearchFragment.isVisible()) {
             return super.onKeyDown(keyCode, event);
         }
@@ -2152,17 +2159,17 @@ public class MainActivity extends Activity
             mOtherActivityLaunched = true;
             return false;
         }
-        switch (mOverlayManager.onKeyUp(keyCode, event)) {
-            case KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY:
-                return super.onKeyUp(keyCode, event);
-            case KEY_EVENT_HANDLER_RESULT_HANDLED:
-                return true;
-            case KEY_EVENT_HANDLER_RESULT_NOT_HANDLED:
-                return false;
-            case KEY_EVENT_HANDLER_RESULT_PASSTHROUGH:
-            default:
-                // fall through
-        }
+//        switch (mOverlayManager.onKeyUp(keyCode, event)) {
+//            case KEY_EVENT_HANDLER_RESULT_DISPATCH_TO_OVERLAY:
+//                return super.onKeyUp(keyCode, event);
+//            case KEY_EVENT_HANDLER_RESULT_HANDLED:
+//                return true;
+//            case KEY_EVENT_HANDLER_RESULT_NOT_HANDLED:
+//                return false;
+//            case KEY_EVENT_HANDLER_RESULT_PASSTHROUGH:
+//            default:
+//                // fall through
+//        }
         if (mSearchFragment.isVisible()) {
             if (keyCode == KeyEvent.KEYCODE_BACK) {
                 getFragmentManager().popBackStack();
@@ -2195,7 +2202,7 @@ public class MainActivity extends Activity
             }
         } else {
             if (KeypadChannelSwitchView.isChannelNumberKey(keyCode)) {
-                mOverlayManager.showKeypadChannelSwitch(keyCode);
+//                mOverlayManager.showKeypadChannelSwitch(keyCode);
                 return true;
             }
             switch (keyCode) {
@@ -2224,13 +2231,13 @@ public class MainActivity extends Activity
                         // See dispatchKeyEvent() for detail.
                         return true;
                     }
-                    if (keyCode != KeyEvent.KEYCODE_MENU) {
-                        mOverlayManager.updateChannelBannerAndShowIfNeeded(
-                                TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_FORCE_SHOW);
-                    }
-                    if (keyCode != KeyEvent.KEYCODE_E) {
-                        mOverlayManager.showMenu(Menu.REASON_NONE);
-                    }
+//                    if (keyCode != KeyEvent.KEYCODE_MENU) {
+//                        mOverlayManager.updateChannelBannerAndShowIfNeeded(
+//                                TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_FORCE_SHOW);
+//                    }
+//                    if (keyCode != KeyEvent.KEYCODE_E) {
+//                        mOverlayManager.showMenu(Menu.REASON_NONE);
+//                    }
                     return true;
                 case KeyEvent.KEYCODE_CHANNEL_UP:
                 case KeyEvent.KEYCODE_DPAD_UP:
@@ -2244,7 +2251,7 @@ public class MainActivity extends Activity
                     }
                     // fall through.
                 case KeyEvent.KEYCODE_CAPTIONS:
-                    mOverlayManager.getSideFragmentManager().show(new ClosedCaptionFragment());
+//                    mOverlayManager.getSideFragmentManager().show(new ClosedCaptionFragment());
                     return true;
                 case KeyEvent.KEYCODE_A:
                     if (!DeveloperPreferences.USE_DEBUG_KEYS.get(this)) {
@@ -2252,10 +2259,10 @@ public class MainActivity extends Activity
                     }
                     // fall through.
                 case KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK:
-                    mOverlayManager.getSideFragmentManager().show(new MultiAudioFragment());
+//                    mOverlayManager.getSideFragmentManager().show(new MultiAudioFragment());
                     return true;
                 case KeyEvent.KEYCODE_INFO:
-                    mOverlayManager.showBanner();
+//                    mOverlayManager.showBanner();
                     return true;
                 case KeyEvent.KEYCODE_MEDIA_RECORD:
                 case KeyEvent.KEYCODE_V:
@@ -2338,10 +2345,10 @@ public class MainActivity extends Activity
                     mUseKeycodeBlocklist = !mUseKeycodeBlocklist;
                     return true;
                 case KeyEvent.KEYCODE_O:
-                    mOverlayManager.getSideFragmentManager().show(new DisplayModeFragment());
+//                    mOverlayManager.getSideFragmentManager().show(new DisplayModeFragment());
                     return true;
                 case KeyEvent.KEYCODE_D:
-                    mOverlayManager.getSideFragmentManager().show(new DeveloperOptionFragment());
+//                    mOverlayManager.getSideFragmentManager().show(new DeveloperOptionFragment());
                     return true;
                 default: // fall out
             }
@@ -2363,7 +2370,7 @@ public class MainActivity extends Activity
                             mTvView.getBlockedContentRating().flattenToString());
         }
         if (dialog != null) {
-            mOverlayManager.showDialogFragment(PinDialogFragment.DIALOG_TAG, dialog, false);
+//            mOverlayManager.showDialogFragment(PinDialogFragment.DIALOG_TAG, dialog, false);
         }
     }
 
@@ -2386,16 +2393,18 @@ public class MainActivity extends Activity
     @Override
     public void onUserInteraction() {
         super.onUserInteraction();
-        if (mOverlayManager != null) {
-            mOverlayManager.onUserInteraction();
-        }
+//        if (mOverlayManager != null) {
+//            mOverlayManager.onUserInteraction();
+//        }
     }
 
     @Override
     public void enterPictureInPictureMode() {
+        return;
         // We need to hide overlay first, before moving the activity to PIP. If not, UI will
         // be shown during PIP stack resizing, because UI and its animation is stuck during
         // PIP resizing.
+/*
         mIsInPIPMode = true;
         if (mOverlayManager.isOverlayOpened()) {
             mOverlayManager.hideOverlays(TvOverlayManager.FLAG_HIDE_OVERLAYS_WITHOUT_ANIMATION);
@@ -2403,6 +2412,7 @@ public class MainActivity extends Activity
         } else {
             MainActivity.super.enterPictureInPictureMode();
         }
+*/
     }
 
     @Override
@@ -2482,8 +2492,8 @@ public class MainActivity extends Activity
             if (!mTvView.isPlaying()) {
                 startTv(channel.getUri());
             } else if (channel.equals(mTvView.getCurrentChannel())) {
-                mOverlayManager.updateChannelBannerAndShowIfNeeded(
-                        TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE);
+//                mOverlayManager.updateChannelBannerAndShowIfNeeded(
+//                        TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE);
             } else if (channel.equals(mChannelTuner.getCurrentChannel())) {
                 // Channel banner is already updated in moveToAdjacentChannel
                 tune(false);
@@ -2506,10 +2516,10 @@ public class MainActivity extends Activity
      */
     private void moveToAdjacentChannel(boolean channelUp, boolean fastTuning) {
         if (mChannelTuner.moveToAdjacentBrowsableChannel(channelUp)) {
-            mOverlayManager.updateChannelBannerAndShowIfNeeded(
-                    fastTuning
-                            ? TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE_FAST
-                            : TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE);
+//            mOverlayManager.updateChannelBannerAndShowIfNeeded(
+//                    fastTuning
+//                            ? TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE_FAST
+//                            : TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE);
         }
     }
 
@@ -2787,7 +2797,7 @@ public class MainActivity extends Activity
 
     private void initAnimations() {
         mTvViewUiManager.initAnimatorIfNeeded();
-        mOverlayManager.initAnimatorIfNeeded();
+//        mOverlayManager.initAnimatorIfNeeded();
     }
 
     private void initSideFragments() {
@@ -2795,7 +2805,7 @@ public class MainActivity extends Activity
     }
 
     private void initMenuItemViews() {
-        mOverlayManager.getMenu().preloadItemViews();
+        /*mOverlayManager.getMenu().preloadItemViews();*/
     }
 
     private boolean isAudioOnlyInput() {
@@ -2902,15 +2912,15 @@ public class MainActivity extends Activity
                 mTracker.sendChannelTuneTime(info.getCurrentChannel(), mTuneDurationTimer.reset());
             }
             if (info.isVideoOrAudioAvailable() && mChannel.equals(getCurrentChannel())) {
-                mOverlayManager.updateChannelBannerAndShowIfNeeded(
-                        TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_UPDATE_STREAM_INFO);
+//                mOverlayManager.updateChannelBannerAndShowIfNeeded(
+//                        TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_UPDATE_STREAM_INFO);
             }
             applyDisplayRefreshRate(info.getVideoFrameRate());
             mTvViewUiManager.updateTvAspectRatio();
             applyMultiAudio(
                     allowAutoSelectionOfTrack ? null : getSelectedTrack(TvTrackInfo.TYPE_AUDIO));
             applyClosedCaption();
-            mOverlayManager.getMenu().onStreamInfoChanged();
+//            mOverlayManager.getMenu().onStreamInfoChanged();
             if (mTvView.isVideoAvailable()) {
                 mTvViewUiManager.fadeInTvView();
             }
@@ -2947,8 +2957,8 @@ public class MainActivity extends Activity
             }
             mChannelTuner.setCurrentChannel(currentChannel);
             mTvView.setCurrentChannel(currentChannel);
-            mOverlayManager.updateChannelBannerAndShowIfNeeded(
-                    TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE);
+//            mOverlayManager.updateChannelBannerAndShowIfNeeded(
+//                    TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_TUNE);
         }
 
         @Override
@@ -2968,7 +2978,7 @@ public class MainActivity extends Activity
                 mUnlockAllowedRatingBeforeShrunken = isUnderShrunkenTvView();
                 mTvView.unblockContent(rating);
             }
-            mOverlayManager.setBlockingContentRating(rating);
+//            mOverlayManager.setBlockingContentRating(rating);
             mTvViewUiManager.fadeInTvView();
             mMediaSessionWrapper.update(true, getCurrentChannel(), getCurrentProgram());
         }
@@ -2978,15 +2988,15 @@ public class MainActivity extends Activity
             if (!isUnderShrunkenTvView()) {
                 mUnlockAllowedRatingBeforeShrunken = false;
             }
-            mOverlayManager.setBlockingContentRating(null);
+//            mOverlayManager.setBlockingContentRating(null);
             mMediaSessionWrapper.update(false, getCurrentChannel(), getCurrentProgram());
         }
 
         @Override
         public void onChannelSignalStrength() {
             if (CommonFeatures.TUNER_SIGNAL_STRENGTH.isEnabled(getApplicationContext())) {
-                mOverlayManager.updateChannelBannerAndShowIfNeeded(
-                        TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_UPDATE_SIGNAL_STRENGTH);
+//                mOverlayManager.updateChannelBannerAndShowIfNeeded(
+//                        TvOverlayManager.UPDATE_CHANNEL_BANNER_REASON_UPDATE_SIGNAL_STRENGTH);
             }
         }
     }
@@ -3047,5 +3057,21 @@ public class MainActivity extends Activity
 
         @ContributesAndroidInjector
         abstract DvrScheduleFragment contributesDvrScheduleFragment();
+    }
+
+    class HomeKeyEventBroadCastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.e(TAG, "Live TV HomeKeyEventBroadCastReceiver");
+
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            finish();
+        }
     }
 }

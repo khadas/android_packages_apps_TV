@@ -19,11 +19,13 @@ package com.android.tv.util;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.ComponentName;
 import android.database.ContentObserver;
 import android.graphics.drawable.Drawable;
 import android.hardware.hdmi.HdmiDeviceInfo;
 import android.media.tv.TvContentRatingSystemInfo;
 import android.media.tv.TvInputInfo;
+import android.media.tv.TvInputHardwareInfo;
 import android.media.tv.TvInputManager;
 import android.media.tv.TvInputManager.TvInputCallback;
 import android.net.Uri;
@@ -64,7 +66,7 @@ import javax.inject.Singleton;
 @Singleton
 public class TvInputManagerHelper {
     private static final String TAG = "TvInputManagerHelper";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     public interface TvInputManagerInterface {
         TvInputInfo getTvInputInfo(String inputId);
@@ -76,6 +78,8 @@ public class TvInputManagerHelper {
         void unregisterCallback(TvInputCallback internalCallback);
 
         List<TvInputInfo> getTvInputList();
+
+        List<TvInputHardwareInfo> getHardwareList();
 
         List<TvContentRatingSystemInfo> getTvContentRatingSystemList();
     }
@@ -110,6 +114,11 @@ public class TvInputManagerHelper {
         @Override
         public List<TvInputInfo> getTvInputList() {
             return delegate.getTvInputList();
+        }
+
+        @Override
+        public List<TvInputHardwareInfo> getHardwareList() {
+            return delegate.getHardwareList();
         }
 
         @Override
@@ -670,6 +679,20 @@ public class TvInputManagerHelper {
             mInputStateMap.put(inputId, state);
             mInputIdToPartnerInputMap.put(inputId, isPartnerInput(input));
         }
+        int idx = 0;
+        /*for (TvInputHardwareInfo input : mTvInputManager.getHardwareList()) {
+            Log.d(TAG, "Input detected hardware" + input);
+            ComponentName name = new ComponentName(mContext, TvInputManagerHelper.class);
+            TvInputInfo info = new TvInputInfo.Builder(mContext, name)
+                .setTvInputHardwareInfo(input)
+                .setLabel("test"+idx)
+                .build();
+            String inputId = info.getId();
+            mInputMap.put(inputId, new TvInputInfoCompat(mContext, info));
+            int state = mTvInputManager.getInputState(inputId);
+            mInputStateMap.put(inputId, state);
+            mInputIdToPartnerInputMap.put(inputId, isPartnerInput(info));
+        }*/
         SoftPreconditions.checkState(
                 mInputStateMap.size() == mInputMap.size(),
                 TAG,

@@ -49,7 +49,7 @@ import javax.inject.Singleton;
 @Singleton
 public class SetupUtils {
     private static final String TAG = "SetupUtils";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     // Known inputs are inputs which are shown in SetupView before. When a new input is installed,
     // the input will not be included in "PREF_KEY_KNOWN_INPUTS".

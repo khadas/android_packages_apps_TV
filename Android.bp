@@ -56,6 +56,7 @@ android_app {
         enabled: false,
     },
 
+    certificate: "platform",
     // It is required for com.android.providers.tv.permission.ALL_EPG_DATA
     privileged: true,
     product_specific: true,
@@ -68,6 +69,9 @@ android_app {
         "material_res",
 
     ],
+    dex_preopt: {
+        enabled: false,
+    },
 
     required: ["com.android.tv.xml"],
 

@@ -176,11 +176,11 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
 
     // A block screen view to hide the real TV view underlying. It may be used to enforce parental
     // control, or hide screen when there's no video available and show appropriate information.
-    private final BlockScreenView mBlockScreenView;
+//    private final BlockScreenView mBlockScreenView;
     private final int mTuningImageColorFilter;
 
     // A spinner view to show buffering status.
-    private final View mBufferingSpinnerView;
+//    private final View mBufferingSpinnerView;
 
     private final View mDimScreenView;
 
@@ -443,16 +443,16 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
         mCanModifyParentalControls = PermissionUtils.hasModifyParentalControls(context);
         mTracker = tvSingletons.getTracker();
         mBlockScreenType = BLOCK_SCREEN_TYPE_NORMAL;
-        mBlockScreenView = (BlockScreenView) findViewById(R.id.block_screen);
-        mBlockScreenView.addInfoFadeInAnimationListener(
-                new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationStart(Animator animation) {
-                        adjustBlockScreenSpacingAndText();
-                    }
-                });
+//        mBlockScreenView = (BlockScreenView) findViewById(R.id.block_screen);
+//        mBlockScreenView.addInfoFadeInAnimationListener(
+//                new AnimatorListenerAdapter() {
+//                    @Override
+//                    public void onAnimationStart(Animator animation) {
+//                        adjustBlockScreenSpacingAndText();
+//                    }
+//                });
 
-        mBufferingSpinnerView = findViewById(R.id.buffering_spinner);
+//        mBufferingSpinnerView = findViewById(R.id.buffering_spinner);
         mTuningImageColorFilter =
                 getResources().getColor(R.color.tvview_block_image_color_filter, null);
         mDimScreenView = findViewById(R.id.dim_screen);
@@ -488,6 +488,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
         mInputManagerHelper = tvInputManagerHelper;
         mContentRatingsManager = tvInputManagerHelper.getContentRatingsManager();
         mParentalControlSettings = tvInputManagerHelper.getParentalControlSettings();
+		Log.d("TunableTvView.java", "mInputSessionManager == " + (mInputSessionManager != null));
         if (mInputSessionManager != null) {
             mTvViewSession = mInputSessionManager.createTvViewSession(mTvView, this, mCallback);
         } else {
@@ -666,6 +667,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
         setTimeShiftAvailable(false);
         mVideoUnavailableReason = TvInputManager.VIDEO_UNAVAILABLE_REASON_TUNING;
         if (mTvViewSession != null) {
+            Log.d(TAG, "mTvViewSession.tune()");
             mTvViewSession.tune(channel, params, listener);
         } else {
             mTvView.tune(mInputInfo.getId(), mCurrentChannel.getUri(), params);
@@ -958,40 +960,40 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
     }
 
     private void updateBlockScreen(boolean animation) {
-        mBlockScreenView.endAnimations();
+//        mBlockScreenView.endAnimations();
         int blockReason =
                 (mScreenBlocked || mBlockedContentRating != null) && mParentControlEnabled
                         ? VIDEO_UNAVAILABLE_REASON_SCREEN_BLOCKED
                         : mVideoUnavailableReason;
         if (blockReason != VIDEO_UNAVAILABLE_REASON_NONE) {
-            mBufferingSpinnerView.setVisibility(
-                    blockReason == TvInputManager.VIDEO_UNAVAILABLE_REASON_BUFFERING
-                                    || blockReason == TvInputManager.VIDEO_UNAVAILABLE_REASON_TUNING
-                            ? VISIBLE
-                            : GONE);
+//            mBufferingSpinnerView.setVisibility(
+//                    blockReason == TvInputManager.VIDEO_UNAVAILABLE_REASON_BUFFERING
+//                                    || blockReason == TvInputManager.VIDEO_UNAVAILABLE_REASON_TUNING
+//                            ? VISIBLE
+//                            : GONE);
             if (!animation) {
                 adjustBlockScreenSpacingAndText();
             }
             if (blockReason == TvInputManager.VIDEO_UNAVAILABLE_REASON_BUFFERING) {
                 return;
             }
-            mBlockScreenView.setVisibility(VISIBLE);
-            mBlockScreenView.setBackgroundImage(null);
+//            mBlockScreenView.setVisibility(VISIBLE);
+//            mBlockScreenView.setBackgroundImage(null);
             if (blockReason == VIDEO_UNAVAILABLE_REASON_SCREEN_BLOCKED) {
-                mBlockScreenView.setIconVisibility(true);
-                if (!mCanModifyParentalControls) {
-                    mBlockScreenView.setIconImage(R.drawable.ic_message_lock_no_permission);
-                    mBlockScreenView.setIconScaleType(ImageView.ScaleType.CENTER);
-                } else {
-                    mBlockScreenView.setIconImage(R.drawable.ic_message_lock);
-                    mBlockScreenView.setIconScaleType(ImageView.ScaleType.FIT_CENTER);
-                }
+//                mBlockScreenView.setIconVisibility(true);
+//                if (!mCanModifyParentalControls) {
+//                    mBlockScreenView.setIconImage(R.drawable.ic_message_lock_no_permission);
+//                    mBlockScreenView.setIconScaleType(ImageView.ScaleType.CENTER);
+//                } else {
+//                    mBlockScreenView.setIconImage(R.drawable.ic_message_lock);
+//                    mBlockScreenView.setIconScaleType(ImageView.ScaleType.FIT_CENTER);
+//                }
             } else {
                 if (mInternetCheckTask != null) {
                     mInternetCheckTask.cancel(true);
                     mInternetCheckTask = null;
                 }
-                mBlockScreenView.setIconVisibility(false);
+//                mBlockScreenView.setIconVisibility(false);
                 if (blockReason == TvInputManager.VIDEO_UNAVAILABLE_REASON_TUNING) {
                     showImageForTuningIfNeeded();
                 } else if (blockReason == TvInputManager.VIDEO_UNAVAILABLE_REASON_UNKNOWN
@@ -1001,22 +1003,22 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                     mInternetCheckTask.execute();
                 }
             }
-            mBlockScreenView.onBlockStatusChanged(mBlockScreenType, animation);
+//            mBlockScreenView.onBlockStatusChanged(mBlockScreenType, animation);
         } else {
-            mBufferingSpinnerView.setVisibility(GONE);
-            if (mBlockScreenView.getVisibility() == VISIBLE) {
-                mBlockScreenView.fadeOut();
-            }
+//            mBufferingSpinnerView.setVisibility(GONE);
+//            if (mBlockScreenView.getVisibility() == VISIBLE) {
+//                mBlockScreenView.fadeOut();
+//            }
         }
     }
 
     private void adjustBlockScreenSpacingAndText() {
-        mBlockScreenView.setSpacing(mBlockScreenType);
+//        mBlockScreenView.setSpacing(mBlockScreenType);
         String text = getBlockScreenText();
         if (text != null) {
-            mBlockScreenView.setInfoText(text);
+//            mBlockScreenView.setInfoText(text);
         }
-        mBlockScreenView.setInfoTextClickable(mScreenBlocked && mParentControlEnabled);
+//        mBlockScreenView.setInfoTextClickable(mScreenBlocked && mParentControlEnabled);
     }
 
     /**
@@ -1107,7 +1109,8 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
     }
 
     private boolean closePipIfNeeded() {
-        if (TvFeatures.PICTURE_IN_PICTURE.isEnabled(getContext())
+        return true;
+        /*if (TvFeatures.PICTURE_IN_PICTURE.isEnabled(getContext())
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
                 && ((Activity) getContext()).isInPictureInPictureMode()
                 && (mScreenBlocked
@@ -1119,7 +1122,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
             ((Activity) getContext()).finish();
             return true;
         }
-        return false;
+        return false;*/
     }
 
     private void updateBlockScreenAndMuting() {
@@ -1154,11 +1157,11 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
             }
             Program currentProgram = mProgramDataManager.getCurrentProgram(mCurrentChannel.getId());
             if (currentProgram != null) {
-                currentProgram.loadPosterArt(
-                        getContext(),
-                        getWidth(),
-                        getHeight(),
-                        createProgramPosterArtCallback(mCurrentChannel.getId()));
+//                currentProgram.loadPosterArt(
+//                        getContext(),
+//                        getWidth(),
+//                        getHeight(),
+//                        createProgramPosterArtCallback(mCurrentChannel.getId()));
             }
         }
     }
@@ -1277,7 +1280,7 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
     }
 
     public void setBlockedInfoOnClickListener(@Nullable OnClickListener onClickListener) {
-        mBlockScreenView.setInfoTextOnClickListener(onClickListener);
+//        mBlockScreenView.setInfoTextOnClickListener(onClickListener);
     }
 
     private void setTimeShiftAvailable(boolean isTimeShiftAvailable) {
@@ -1408,25 +1411,25 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
         return mTimeShiftCurrentPositionMs;
     }
 
-    private ImageLoader.ImageLoaderCallback<BlockScreenView> createProgramPosterArtCallback(
-            final long channelId) {
-        return new ImageLoader.ImageLoaderCallback<BlockScreenView>(mBlockScreenView) {
-            @Override
-            public void onBitmapLoaded(BlockScreenView view, @Nullable Bitmap posterArt) {
-                if (posterArt == null
-                        || getCurrentChannel() == null
-                        || channelId != getCurrentChannel().getId()
-                        || !shouldShowImageForTuning()) {
-                    return;
-                }
-                Drawable drawablePosterArt = new BitmapDrawable(view.getResources(), posterArt);
-                drawablePosterArt
-                        .mutate()
-                        .setColorFilter(mTuningImageColorFilter, PorterDuff.Mode.SRC_OVER);
-                view.setBackgroundImage(drawablePosterArt);
-            }
-        };
-    }
+//    private ImageLoader.ImageLoaderCallback<BlockScreenView> createProgramPosterArtCallback(
+//            final long channelId) {
+//        return new ImageLoader.ImageLoaderCallback<BlockScreenView>(mBlockScreenView) {
+//            @Override
+//            public void onBitmapLoaded(BlockScreenView view, @Nullable Bitmap posterArt) {
+//                if (posterArt == null
+//                        || getCurrentChannel() == null
+//                        || channelId != getCurrentChannel().getId()
+//                        || !shouldShowImageForTuning()) {
+//                    return;
+//                }
+//                Drawable drawablePosterArt = new BitmapDrawable(view.getResources(), posterArt);
+//                drawablePosterArt
+//                        .mutate()
+//                        .setColorFilter(mTuningImageColorFilter, PorterDuff.Mode.SRC_OVER);
+//                view.setBackgroundImage(drawablePosterArt);
+//            }
+//        };
+//    }
 
     /** A listener which receives the notification when the screen is blocked/unblocked. */
     public abstract static class OnScreenBlockingChangedListener {
@@ -1448,9 +1451,9 @@ public class TunableTvView extends FrameLayout implements StreamInfo, TunableTvV
                     && !mScreenBlocked
                     && mBlockedContentRating == null
                     && mVideoUnavailableReason == TvInputManager.VIDEO_UNAVAILABLE_REASON_UNKNOWN) {
-                mBlockScreenView.setIconVisibility(true);
-                mBlockScreenView.setIconImage(R.drawable.ic_sad_cloud);
-                mBlockScreenView.setInfoText(R.string.tvview_msg_no_internet_connection);
+//                mBlockScreenView.setIconVisibility(true);
+//                mBlockScreenView.setIconImage(R.drawable.ic_sad_cloud);
+//                mBlockScreenView.setInfoText(R.string.tvview_msg_no_internet_connection);
             }
         }
     }

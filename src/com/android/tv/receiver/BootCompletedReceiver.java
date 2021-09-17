@@ -48,7 +48,7 @@ import com.android.tv.util.SetupUtils;
  */
 public class BootCompletedReceiver extends BroadcastReceiver {
     private static final String TAG = "BootCompletedReceiver";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     @Override
     public void onReceive(Context context, Intent intent) {

@@ -100,7 +100,8 @@ public class TunerSession extends TisSessionCompat implements CommonPreferencesC
 
     @Override
     public boolean onSetSurface(Surface surface) {
-        mSessionWorker.setSurface(surface);
+        Log.d("TunerSession.java", Log.getStackTraceString(new Throwable()));
+		mSessionWorker.setSurface(surface);
         return true;
     }
 

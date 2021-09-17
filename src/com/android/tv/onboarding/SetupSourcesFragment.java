@@ -17,12 +17,15 @@
 package com.android.tv.onboarding;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Typeface;
+import android.media.tv.TvContract;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager.TvInputCallback;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +36,9 @@ import androidx.leanback.widget.GuidedAction;
 import androidx.leanback.widget.GuidedActionsStylist;
 import androidx.leanback.widget.VerticalGridView;
 
+import com.android.tv.MainActivity;
 import com.android.tv.R;
+import com.android.tv.SelectInputActivity;
 import com.android.tv.TvSingletons;
 import com.android.tv.common.ui.setup.SetupGuidedStepFragment;
 import com.android.tv.common.ui.setup.SetupMultiPaneFragment;
@@ -294,8 +299,8 @@ public class SetupSourcesFragment extends SetupMultiPaneFragment {
                                 .id(ACTION_HEADER)
                                 .title(null)
                                 .description(getString(R.string.setup_category_new))
-                                .focusable(false)
-                                .infoOnly(true)
+                                //.focusable(false)
+                                //.infoOnly(true)
                                 .build());
             }
             for (int i = 0; i < mInputs.size(); ++i) {
@@ -308,6 +313,7 @@ public class SetupSourcesFragment extends SetupMultiPaneFragment {
                                     .description(getString(R.string.setup_category_done))
                                     .focusable(false)
                                     .infoOnly(true)
+                                    .enabled(false)
                                     .build());
                 }
                 TvInputInfo input = mInputs.get(i);
@@ -339,6 +345,9 @@ public class SetupSourcesFragment extends SetupMultiPaneFragment {
                                 .id(ACTION_INPUT_START + i)
                                 .title(input.loadLabel(getActivity()).toString())
                                 .description(description)
+                                .focusable(false)
+                                .infoOnly(true)
+                                .enabled(false)
                                 .build());
             }
             if (mInputs.size() > 0) {
@@ -376,10 +385,29 @@ public class SetupSourcesFragment extends SetupMultiPaneFragment {
             }
             int index = (int) action.getId() - ACTION_INPUT_START;
             if (index >= 0) {
-                TvInputInfo input = mInputs.get(index);
-                Bundle params = new Bundle();
-                params.putString(ACTION_PARAM_KEY_INPUT_ID, input.getId());
-                mParentFragment.onActionClick(ACTION_CATEGORY, ACTION_SETUP_INPUT, params);
+//                TvInputInfo input = mInputs.get(index);
+//                Bundle params = new Bundle();
+//                params.putString(ACTION_PARAM_KEY_INPUT_ID, input.getId());
+//                mParentFragment.onActionClick(ACTION_CATEGORY, ACTION_SETUP_INPUT, params);
+            } else if (ACTION_HEADER == (int) action.getId()) {
+                for (TvInputInfo input : mInputManager.getTvInputInfos(false, false)) {
+                    if (input.isPassthroughInput()) {
+                        Log.d("wgh", " this input is passthrough input, id = " + input.getId());
+                        Intent intent =
+                                new Intent(
+                                        Intent.ACTION_VIEW,
+                                        TvContract.buildChannelUriForPassthroughInput(input.getId()),
+                                        getContext(),
+                                        MainActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        return;
+                    }
+                }
+
+                startActivity(
+                        new Intent(getActivity(), SelectInputActivity.class)
+                                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             }
         }
 

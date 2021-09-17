@@ -430,7 +430,7 @@
     <!-- Setup Sources Fragment -->
     <eat-comment />
     <!-- Category name for the newly installed channel sources(inputs).-->
-    <string name="setup_category_new">New</string>
+    <string name="setup_category_new">Switch source to HDMI-IN</string>
     <!-- Category name for the installed channel sources(inputs). -->
     <string name="setup_category_done">Sources</string>
     <!-- Description of an input to describe its channel count. [CHAR LIMIT=40] -->

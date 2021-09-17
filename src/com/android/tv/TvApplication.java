@@ -88,7 +88,7 @@ public abstract class TvApplication extends BaseApplication implements TvSinglet
 
     protected static final StartupMeasure STARTUP_MEASURE = StartupMeasureFactory.create();
     private static final String TAG = "TvApplication";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     /**
      * Broadcast Action: The user has updated LC to a new version that supports tuner input. {@link

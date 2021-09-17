@@ -21,6 +21,7 @@ import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
 import android.os.Handler;
 import com.android.tv.util.TvInputManagerHelper;
+import android.media.tv.TvInputHardwareInfo;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -107,6 +108,11 @@ public class FakeTvInputManager implements TvInputManagerHelper.TvInputManagerIn
     @Override
     public List<TvInputInfo> getTvInputList() {
         return new ArrayList(mInputMap.values());
+    }
+
+    @Override
+    public List<TvInputHardwareInfo> getHardwareList() {
+        return new ArrayList<>();
     }
 
     @Override

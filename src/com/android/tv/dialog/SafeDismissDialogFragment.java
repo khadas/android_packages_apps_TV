@@ -53,7 +53,7 @@ public abstract class SafeDismissDialogFragment extends DialogFragment implement
     @Override
     public void onDestroy() {
         if (mActivity != null) {
-            mActivity.getOverlayManager().onDialogDestroyed();
+//            mActivity.getOverlayManager().onDialogDestroyed();
         }
         super.onDestroy();
     }

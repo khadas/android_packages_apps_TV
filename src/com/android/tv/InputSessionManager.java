@@ -64,7 +64,7 @@ import java.util.Set;
 @TargetApi(Build.VERSION_CODES.N)
 public class InputSessionManager {
     private static final String TAG = "InputSessionManager";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     private final Context mContext;
     private final TvInputManagerHelper mInputManager;
@@ -375,7 +375,7 @@ public class InputSessionManager {
         public void reset() {
             if (DEBUG) Log.d(TAG, "Reset TvView session");
             mTuned = false;
-            mTvView.reset();
+//            mTvView.reset();
             mNeedToBeRetuned = false;
             notifyTvViewChannelChange(null);
         }
