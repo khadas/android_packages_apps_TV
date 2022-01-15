@@ -91,6 +91,7 @@ import com.android.tv.common.util.Debug;
 import com.android.tv.common.util.DurationTimer;
 import com.android.tv.common.util.PermissionUtils;
 import com.android.tv.common.util.SystemProperties;
+import com.android.tv.common.util.SystemPropertiesProxy;
 import com.android.tv.data.ChannelDataManager;
 import com.android.tv.data.ChannelImpl;
 import com.android.tv.data.OnCurrentProgramUpdatedListener;
@@ -924,6 +925,11 @@ public class MainActivity extends Activity
             // TODO(b/110969180): figure out when to call AudioOnlyTvServiceUtil.stopAudioOnlyInput
             AudioOnlyTvServiceUtil.startAudioOnlyInput(this, mLastInputIdFromIntent);
         }
+        SystemPropertiesProxy.set("vendor.hdmiin.audiorate", "48KHZ");
+        Intent intent = new Intent();
+        ComponentName cn = new ComponentName("com.rockchip.audiotest", "com.rockchip.audiotest.HdmiInAudioService");
+        intent.setComponent(cn);
+        startService(intent);
         Debug.getTimer(Debug.TAG_START_UP_TIMER).log("MainActivity.onResume end");
     }
 
@@ -951,6 +957,10 @@ public class MainActivity extends Activity
         } else {
             mTracker.sendScreenView(SCREEN_BEHIND_NAME);
         }
+        Intent intent = new Intent();
+        ComponentName cn = new ComponentName("com.rockchip.audiotest", "com.rockchip.audiotest.HdmiInAudioService");
+        intent.setComponent(cn);
+        stopService(intent);
         super.onPause();
     }
 

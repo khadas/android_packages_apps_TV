@@ -87,9 +87,15 @@ public class SetupSourcesFragment extends SetupMultiPaneFragment {
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = super.onCreateView(inflater, container, savedInstanceState);
-        TvSingletons.getSingletons(getActivity()).getTracker().sendScreenView(SETUP_TRACKER_LABEL);
-        return view;
+        //View view = super.onCreateView(inflater, container, savedInstanceState);
+        //TvSingletons.getSingletons(getActivity()).getTracker().sendScreenView(SETUP_TRACKER_LABEL);
+        Intent intent = new Intent(Intent.ACTION_VIEW,
+            TvContract.buildChannelUriForPassthroughInput("com.example.partnersupportsampletvinput/.SampleTvInputService/HW0"),
+            getContext(),MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        getActivity().finish();
+        return null;
     }
 
     @Override
