@@ -68,7 +68,7 @@ public class SampleTvInputService extends TvInputService {
                 Log.e(TAG, "onStreamConfigChanged: " + config.toString() + ", maxWidth = " + config.getMaxWidth() + ", maxHeight = " + config.getMaxHeight() + ", generation=" + config.getGeneration());
             }
             Log.d(TAG, "nStreamConfigGeneration = " + nStreamConfigGeneration);
-            if (isTuneFinished && mConfigs != null && mConfigs.length != 0 && mConfigs[0].getMaxWidth() != 0 && mConfigs[0].getMaxWidth() != configs[0].getMaxWidth()) {
+            if (isTuneFinished) {// && mConfigs != null && mConfigs.length != 0 && mConfigs[0].getMaxWidth() != 0 && mConfigs[0].getMaxWidth() != configs[0].getMaxWidth()) {
                 new TvInputStreamChangeThread(configs[0]).run();
             }
             mConfigs = configs;
@@ -85,7 +85,7 @@ public class SampleTvInputService extends TvInputService {
                     .type(streamConfig.getType())
                     .maxWidth(streamConfig.getMaxWidth())
                     .maxHeight(streamConfig.getMaxHeight())
-                    .generation(mStreamConfigGeneration)
+                    .generation(streamConfig.getGeneration())
                     .build();
         }
 
