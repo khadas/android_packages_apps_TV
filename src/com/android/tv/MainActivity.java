@@ -370,6 +370,7 @@ public class MainActivity extends Activity
     private final Set<OnActionClickListener> mOnActionClickListeners = new ArraySet<>();
 
     private BroadcastReceiver mHomeKeyEventBroadCastReceiver;
+    private boolean mStopWithScreenOff;
 
     private final BroadcastReceiver mBroadcastReceiver =
             new BroadcastReceiver() {
@@ -738,6 +739,7 @@ public class MainActivity extends Activity
         mHomeKeyEventBroadCastReceiver = new HomeKeyEventBroadCastReceiver();
         registerReceiver(mHomeKeyEventBroadCastReceiver, new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
         Debug.getTimer(Debug.TAG_START_UP_TIMER).log("MainActivity.onCreate end");
+        mStopWithScreenOff = false;
     }
 
     private void startOnboardingActivity() {
@@ -853,6 +855,11 @@ public class MainActivity extends Activity
                     .executeNetworkTunerDiscoveryAsyncTask(this);
         }
         mEpgFetcher.fetchImmediatelyIfNeeded();
+
+        if (mStopWithScreenOff) {
+            mStopWithScreenOff = false;
+            recreate();
+        }
     }
 
     @Override
@@ -1113,6 +1120,8 @@ public class MainActivity extends Activity
                 // If we verify that checking isInteractive is enough, we can remove the logic
                 // for SCREEN_OFF intent.
                 markCurrentChannelDuringScreenOff();
+                //screen off will do onStop, so will not receiver screen on off broadcast
+                mStopWithScreenOff = true;
             }
         }
         if (mChannelTuner.isCurrentChannelPassthrough()) {
