@@ -934,9 +934,13 @@ public class MainActivity extends Activity
         }
         SystemPropertiesProxy.set("vendor.hdmiin.audiorate", "48KHZ");
         Intent intent = new Intent();
-        ComponentName cn = new ComponentName("com.rockchip.audiotest", "com.rockchip.audiotest.HdmiInAudioService");
+        ComponentName cn = new ComponentName("com.rockchip.rkhdmiinaudio", "com.rockchip.rkhdmiinaudio.HdmiInAudioService");
         intent.setComponent(cn);
-        startService(intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent);
+        } else {
+            startService(intent);
+        }
         Debug.getTimer(Debug.TAG_START_UP_TIMER).log("MainActivity.onResume end");
     }
 
@@ -965,7 +969,7 @@ public class MainActivity extends Activity
             mTracker.sendScreenView(SCREEN_BEHIND_NAME);
         }
         Intent intent = new Intent();
-        ComponentName cn = new ComponentName("com.rockchip.audiotest", "com.rockchip.audiotest.HdmiInAudioService");
+        ComponentName cn = new ComponentName("com.rockchip.rkhdmiinaudio", "com.rockchip.rkhdmiinaudio.HdmiInAudioService");
         intent.setComponent(cn);
         stopService(intent);
         super.onPause();
