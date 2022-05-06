@@ -968,11 +968,16 @@ public class MainActivity extends Activity
         } else {
             mTracker.sendScreenView(SCREEN_BEHIND_NAME);
         }
+        stopHdmiAudioService();
+        super.onPause();
+    }
+
+    private void stopHdmiAudioService() {
+        if (DEBUG) Log.v(TAG, "stopHdmiAudioService");
         Intent intent = new Intent();
         ComponentName cn = new ComponentName("com.rockchip.rkhdmiinaudio", "com.rockchip.rkhdmiinaudio.HdmiInAudioService");
         intent.setComponent(cn);
         stopService(intent);
-        super.onPause();
     }
 
     /** Returns true if {@link #onResume} is called and {@link #onPause} is not called yet. */
@@ -3087,14 +3092,19 @@ public class MainActivity extends Activity
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.e(TAG, "Live TV HomeKeyEventBroadCastReceiver");
-
             try {
-                Thread.sleep(3000);
+                Thread.sleep(50);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
+            stopHdmiAudioService();
             finish();
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.exit(0);
         }
     }
 }

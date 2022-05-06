@@ -111,7 +111,7 @@
         </receiver>
 
         <activity android:name="com.android.tv.TvActivity"
-             android:screenOrientation="landscape"
+             android:screenOrientation="unspecified"
              android:exported="true"
              android:launchMode="singleTask">
             <intent-filter>
@@ -126,7 +126,7 @@
              android:configChanges="keyboard|keyboardHidden|screenSize|smallestScreenSize|screenLayout|orientation"
              android:launchMode="singleTask"
              android:resizeableActivity="true"
-             android:screenOrientation="landscape"
+             android:screenOrientation="unspecified"
              android:supportsPictureInPicture="true"
              android:theme="@style/Theme.TV.MainActivity"
              android:exported="true">
@@ -177,7 +177,7 @@
             </intent-filter>
         </activity>
         <activity android:name="com.android.tv.onboarding.OnboardingActivity"
-             android:screenOrientation="landscape"
+             android:screenOrientation="unspecified"
              android:configChanges="keyboard|keyboardHidden"
              android:launchMode="singleTop"
              android:theme="@style/Theme.Setup.GuidedStep"/>
