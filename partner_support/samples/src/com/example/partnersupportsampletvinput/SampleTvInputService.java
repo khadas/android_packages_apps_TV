@@ -34,6 +34,7 @@ import android.media.tv.TvStreamConfig;
 import android.view.KeyEvent;
 import android.text.TextUtils;
 import android.net.Uri;
+import android.os.Bundle;
 import android.view.Surface;
 import android.util.Log;
 import android.content.BroadcastReceiver;
@@ -72,6 +73,15 @@ public class SampleTvInputService extends TvInputService {
                 new TvInputStreamChangeThread(configs[0]).run();
             }
             mConfigs = configs;
+        }
+        @Override
+        public void onPrivCmdToApp(String action, Bundle data) {
+            Log.d(TAG, "onPrivCmdToApp " + action);
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_HDMIIN_RK_PRIV_CMD);
+            intent.putExtra("action", action);
+            intent.putExtra("data", data);
+            sendBroadcast(intent);
         }
     };
 
@@ -155,6 +165,13 @@ public class SampleTvInputService extends TvInputService {
             isTuneFinished = true;
             nStreamConfigGeneration = mConfigs[0].getGeneration();
             return true;
+        }
+
+        @Override
+        public void onAppPrivateCommand(String action, Bundle data) {
+            if (null != mHardware) {
+                mHardware.sendAppPrivateCommand(action, data);
+            }
         }
 
         public void onSetCaptionEnabled(boolean b) {}

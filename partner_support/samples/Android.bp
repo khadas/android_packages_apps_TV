@@ -20,7 +20,8 @@ android_app {
         enabled: false,
     },
     // Overlay view related functionality requires system APIs.
-    sdk_version: "system_current",
+    //sdk_version: "system_current",
+    platform_apis: true,
     min_sdk_version: "23", // M
 
     // Required for com.android.tv.permission.RECEIVE_INPUT_EVENT
