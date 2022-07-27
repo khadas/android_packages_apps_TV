@@ -71,19 +71,24 @@ public class SampleTvInputService extends TvInputService {
             Log.d(TAG, "nStreamConfigGeneration = " + nStreamConfigGeneration);
             if (isTuneFinished) {// && mConfigs != null && mConfigs.length != 0 && mConfigs[0].getMaxWidth() != 0 && mConfigs[0].getMaxWidth() != configs[0].getMaxWidth()) {
                 new TvInputStreamChangeThread(configs[0]).run();
+                sendPrivCmdBroadcast("sourcechange", new Bundle());
             }
             mConfigs = configs;
         }
         @Override
         public void onPrivCmdToApp(String action, Bundle data) {
             Log.d(TAG, "onPrivCmdToApp " + action);
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_HDMIIN_RK_PRIV_CMD);
-            intent.putExtra("action", action);
-            intent.putExtra("data", data);
-            sendBroadcast(intent);
+            sendPrivCmdBroadcast(action, data);
         }
     };
+
+    private void sendPrivCmdBroadcast(String action, Bundle data) {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_HDMIIN_RK_PRIV_CMD);
+        intent.putExtra("action", action);
+        intent.putExtra("data", data);
+        sendBroadcast(intent);
+    }
 
     class TvInputStreamChangeThread extends Thread {
         private TvStreamConfig config;
