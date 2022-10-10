@@ -7,18 +7,21 @@ android_app {
 
     // Include all java files.
     srcs: ["src/**/*.java"],
+    certificate: "platform",
 
     static_libs: [
         "androidx.leanback_leanback",
         "androidx.tvprovider_tvprovider",
         "live-channels-partner-support",
     ],
+    required: ["com.example.partnersupportsampletvinput.xml"],
 
     optimize: {
         enabled: false,
     },
     // Overlay view related functionality requires system APIs.
-    sdk_version: "system_current",
+    //sdk_version: "system_current",
+    platform_apis: true,
     min_sdk_version: "23", // M
 
     // Required for com.android.tv.permission.RECEIVE_INPUT_EVENT
@@ -26,4 +29,10 @@ android_app {
 
     resource_dirs: ["res"],
 
+}
+
+prebuilt_etc {
+    name: "com.example.partnersupportsampletvinput.xml",
+    sub_dir: "permissions",
+    src: "com.example.partnersupportsampletvinput.xml",
 }
