@@ -65,6 +65,10 @@ public class SampleTvInputService extends TvInputService {
         }
         @Override
         public void onStreamConfigChanged(TvStreamConfig[] configs) {
+            if (null == configs || configs.length == 0) {
+                Log.w(TAG, "force skip empty configs");
+                return;
+            }
             for (TvStreamConfig config : configs) {
                 Log.e(TAG, "onStreamConfigChanged: " + config.toString() + ", maxWidth = " + config.getMaxWidth() + ", maxHeight = " + config.getMaxHeight() + ", generation=" + config.getGeneration());
             }
