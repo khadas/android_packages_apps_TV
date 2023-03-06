@@ -21,9 +21,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
-
+import android.graphics.Point;
 import android.media.tv.TvInputService;
-
 import android.media.tv.TvInputManager;
 import android.media.tv.TvInputManager.Hardware;
 import android.media.tv.TvInputManager.HardwareCallback;
@@ -31,7 +30,9 @@ import android.media.tv.TvInputHardwareInfo;
 import android.hardware.hdmi.HdmiDeviceInfo;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvStreamConfig;
+import android.os.SystemProperties;
 import android.view.KeyEvent;
+import android.view.WindowManager;
 import android.text.TextUtils;
 import android.net.Uri;
 import android.os.Bundle;
@@ -47,6 +48,7 @@ public class SampleTvInputService extends TvInputService {
             "com.example.partnersupportsampletvinput/.SampleTvInputService";
 
     public static final String TAG = "SampleTvInputService";
+    private WindowManager mWm;
     private TvInputManager mTvInputManager;
     private Hardware mHardware;
     private TvStreamConfig[] mConfigs;
@@ -120,6 +122,7 @@ public class SampleTvInputService extends TvInputService {
         super.onCreate();
         Log.d(TAG, "onCreate() in");
         mTvInputManager = (TvInputManager)this.getSystemService(Context.TV_INPUT_SERVICE);
+        mWm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
 
         mHomeKeyEventBroadCastReceiver = new HomeKeyEventBroadCastReceiver();
         registerReceiver(mHomeKeyEventBroadCastReceiver, new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
@@ -170,6 +173,24 @@ public class SampleTvInputService extends TvInputService {
         @Override
         public boolean onTune(Uri uri) {
             Log.e(TAG, "onTune!     getStreamId = " + mConfigs[0].getStreamId() + ", generation=" + mConfigs[0].getGeneration() + ", width=" + mConfigs[0].getMaxWidth());
+            try {
+                if (null != mSurface) {
+                    Point screenSize = new Point();
+                    mWm.getDefaultDisplay().getRealSize(screenSize);
+                    Point defaultSurfaceSize = mSurface.getDefaultSize();
+                    Log.v(TAG, screenSize.x + ", " + screenSize.y + "==="
+                            + defaultSurfaceSize.x + ", " + defaultSurfaceSize.y);
+                    if (screenSize.x > defaultSurfaceSize.x
+                            || screenSize.y > defaultSurfaceSize.y) {
+                        SystemProperties.set("tvinput.hdmiin.buff_type", "1");
+                    } else {
+                        SystemProperties.set("tvinput.hdmiin.buff_type", "0");
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                SystemProperties.set("tvinput.hdmiin.buff_type", "0");
+            }
             mHardware.setSurface(mSurface, mConfigs[0]);
             isTuneFinished = true;
             nStreamConfigGeneration = mConfigs[0].getGeneration();
