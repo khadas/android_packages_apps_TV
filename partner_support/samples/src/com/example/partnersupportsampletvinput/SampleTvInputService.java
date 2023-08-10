@@ -48,6 +48,8 @@ public class SampleTvInputService extends TvInputService {
             "com.example.partnersupportsampletvinput/.SampleTvInputService";
 
     public static final String TAG = "SampleTvInputService";
+    public static final String CMD_HDMIIN_RESET = "hdmiinreset";
+
     private WindowManager mWm;
     private TvInputManager mTvInputManager;
     private Hardware mHardware;
@@ -84,6 +86,14 @@ public class SampleTvInputService extends TvInputService {
         @Override
         public void onPrivCmdToApp(String action, Bundle data) {
             Log.d(TAG, "onPrivCmdToApp " + action);
+            if(CMD_HDMIIN_RESET.equals(action)) {
+                if (mHardware != null) {
+                    Log.d(TAG, "mSurface reset");
+                    mHardware.setSurface(null, null);
+                    new TvInputStreamChangeThread(mConfigs[0]).run();
+                }
+                return;
+            }
             sendPrivCmdBroadcast(action, data);
         }
     };
