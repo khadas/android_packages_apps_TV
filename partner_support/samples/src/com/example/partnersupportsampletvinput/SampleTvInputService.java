@@ -30,6 +30,8 @@ import android.media.tv.TvInputHardwareInfo;
 import android.hardware.hdmi.HdmiDeviceInfo;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvStreamConfig;
+import android.os.Handler;
+import android.os.Message;
 import android.os.SystemProperties;
 import android.view.KeyEvent;
 import android.view.WindowManager;
@@ -59,6 +61,31 @@ public class SampleTvInputService extends TvInputService {
     private boolean isTuneFinished = false;
     private int nStreamConfigGeneration = 0;
     private static int mStreamConfigGeneration = 2;//user define, fix it for now.
+    private final int MSG_WHAT_RECONNECT = 1;
+    private long mReConnectDelayedTime = 1000;
+    private Object mLock = new Object();
+    private boolean mIsDestory = false;
+    private boolean mNeedReconnect;
+
+    private Handler mHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            if (mIsDestory) {
+                return;
+            }
+            synchronized (mLock){
+                if (mIsDestory) {
+                    return;
+                }
+                Log.d(TAG, "handleMessage " + msg.what + ", mNeedReconnect=" + mNeedReconnect);
+                if (MSG_WHAT_RECONNECT == msg.what) {
+                    if (null != mConfigs && mConfigs.length > 0 && mNeedReconnect) {
+                        new TvInputStreamChangeThread(mConfigs[0]).run();
+                    }
+                }
+            }
+        }
+    };
 
     private BroadcastReceiver mHomeKeyEventBroadCastReceiver;
 
@@ -73,13 +100,20 @@ public class SampleTvInputService extends TvInputService {
                 Log.w(TAG, "force skip empty configs");
                 return;
             }
+            mHandler.removeMessages(MSG_WHAT_RECONNECT);
             for (TvStreamConfig config : configs) {
                 Log.e(TAG, "onStreamConfigChanged: " + config.toString() + ", maxWidth = " + config.getMaxWidth() + ", maxHeight = " + config.getMaxHeight() + ", generation=" + config.getGeneration());
             }
-            Log.d(TAG, "nStreamConfigGeneration = " + nStreamConfigGeneration);
+            Log.d(TAG, "isTuneFinished=" + isTuneFinished+ ", nStreamConfigGeneration = " + nStreamConfigGeneration);
             if (isTuneFinished) {// && mConfigs != null && mConfigs.length != 0 && mConfigs[0].getMaxWidth() != 0 && mConfigs[0].getMaxWidth() != configs[0].getMaxWidth()) {
+                mNeedReconnect = false;
                 new TvInputStreamChangeThread(configs[0]).run();
                 sendPrivCmdBroadcast("sourcechange", new Bundle());
+            } else if (mNeedReconnect) {
+                Log.d(TAG, "==========need reconnect===========");
+                mHandler.sendEmptyMessageDelayed(MSG_WHAT_RECONNECT, mReConnectDelayedTime);
+                //new TvInputStreamChangeThread(configs[0]).run();
+                //sendPrivCmdBroadcast("sourcechange", new Bundle());
             }
             mConfigs = configs;
         }
@@ -123,6 +157,7 @@ public class SampleTvInputService extends TvInputService {
         public void run() {
             Log.d(TAG, "config = " + config.toString());
             mHardware.setSurface(mSurface, config);
+            mNeedReconnect = false;
             isTuneFinished = true;
         }
     }
@@ -136,10 +171,12 @@ public class SampleTvInputService extends TvInputService {
 
         mHomeKeyEventBroadCastReceiver = new HomeKeyEventBroadCastReceiver();
         registerReceiver(mHomeKeyEventBroadCastReceiver, new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+        mIsDestory = false;
     }
 
     @Override
     public void onDestroy() {
+        mIsDestory = true;
         super.onDestroy();
         Log.d(TAG, "onDestroy() in");
         if (mHomeKeyEventBroadCastReceiver != null)
@@ -160,16 +197,20 @@ public class SampleTvInputService extends TvInputService {
         }
 
         public void onRelease() {
-            Log.d(TAG, "===================onRelease()===========================");
+            Log.d(TAG, "===================onRelease() set surface start ===========================");
             mHardware.setSurface(null, null);
+            Log.d(TAG, "===================onRelease set surface finsih()===========================");
+            mNeedReconnect = false;
             isTuneFinished = false;
             nStreamConfigGeneration = 0;
         }
 
         public boolean onSetSurface(Surface surface) {
-            Log.e(TAG, "onSetSurface!   surface = " + surface);
+            Log.e(TAG, "BaseTvInputSessionImpl onSetSurface!   surface = " + surface);
             if (surface == null) {
                 mHardware.setSurface(null, null);
+                Log.e(TAG, "BaseTvInputSessionImpl onSetSurface! finish  surface = " + surface);
+                mNeedReconnect = false;
                 isTuneFinished = false;
                 nStreamConfigGeneration = 0;
                 return true;
@@ -201,7 +242,9 @@ public class SampleTvInputService extends TvInputService {
                 e.printStackTrace();
                 SystemProperties.set("tvinput.hdmiin.buff_type", "0");
             }
+            mNeedReconnect = true;
             mHardware.setSurface(mSurface, mConfigs[0]);
+            Log.e(TAG, "onTune! on set surface success");
             isTuneFinished = true;
             nStreamConfigGeneration = mConfigs[0].getGeneration();
             return true;
@@ -330,6 +373,7 @@ public class SampleTvInputService extends TvInputService {
             Log.e(TAG, "SampleTvInputService HomeKeyEventBroadCastReceiver");
             mHardware.setSurface(null, null);
             isTuneFinished = false;
+            mNeedReconnect = false;
             nStreamConfigGeneration = 0;
         }
     }
