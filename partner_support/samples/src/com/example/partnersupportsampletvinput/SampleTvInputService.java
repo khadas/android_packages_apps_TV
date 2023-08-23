@@ -233,14 +233,14 @@ public class SampleTvInputService extends TvInputService {
                             + defaultSurfaceSize.x + ", " + defaultSurfaceSize.y);
                     if (screenSize.x > defaultSurfaceSize.x
                             || screenSize.y > defaultSurfaceSize.y) {
-                        SystemProperties.set("tvinput.hdmiin.buff_type", "1");
+                        //SystemProperties.set("tvinput.hdmiin.buff_type", "1");
                     } else {
-                        SystemProperties.set("tvinput.hdmiin.buff_type", "0");
+                        //SystemProperties.set("tvinput.hdmiin.buff_type", "0");
                     }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                SystemProperties.set("tvinput.hdmiin.buff_type", "0");
+                //SystemProperties.set("tvinput.hdmiin.buff_type", "0");
             }
             mNeedReconnect = true;
             mHardware.setSurface(mSurface, mConfigs[0]);
